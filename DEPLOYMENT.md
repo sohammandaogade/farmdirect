@@ -4,11 +4,11 @@ FarmDirect is architected as a **unified full-stack production service**. The Fl
 
 ---
 
-## 🌐 1. Live Public Link (Instant Access)
+## 🌐 1. Live Public Link (24/7 Cloud Deployed)
 
-The application is **currently live and publicly accessible over HTTPS** via Cloudflare's edge network:
+The application is **officially deployed and running 24/7 on Render Cloud**:
 
-🔗 **Public Live URL:** [https://moving-nancy-briefly-luis.trycloudflare.com](https://moving-nancy-briefly-luis.trycloudflare.com)
+🔗 **Permanent Live URL:** [https://farmdirect-bqe2.onrender.com](https://farmdirect-bqe2.onrender.com)
 
 ### Quick Demo Credentials (Password for all: `password123`)
 | Role | Email | Features to Test |
