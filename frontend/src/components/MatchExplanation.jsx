@@ -1,0 +1,57 @@
+import React from 'react';
+import { CheckCircle2, AlertTriangle, HelpCircle, ShieldCheck } from 'lucide-react';
+
+export const MatchExplanation = ({ explanation, breakdown, isOpen, onClose }) => {
+  if (!explanation) return null;
+
+  const factors = [
+    { key: 'crop', label: 'Produce Compatibility (30%)', text: explanation.crop, score: breakdown?.crop },
+    { key: 'quantity', label: 'Volume Fulfillment (20%)', text: explanation.quantity, score: breakdown?.quantity },
+    { key: 'price', label: 'Budget Fit (20%)', text: explanation.price, score: breakdown?.price },
+    { key: 'location', label: 'Geographic Proximity (15%)', text: explanation.location, score: breakdown?.location },
+    { key: 'quality', label: 'Quality & Grade (10%)', text: explanation.quality, score: breakdown?.quality },
+    { key: 'availability', label: 'Harvest Schedule (5%)', text: explanation.availability, score: breakdown?.availability },
+  ];
+
+  return (
+    <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 mt-4">
+      <div className="flex items-center gap-2 mb-3">
+        <ShieldCheck className="w-5 h-5 text-emerald-600" />
+        <h4 className="text-sm font-semibold text-slate-800">Explainable AI Match Breakdown</h4>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        {factors.map((f) => (
+          <div key={f.key} className="bg-white p-3 rounded-xl border border-slate-100 shadow-xs flex items-start gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
+                <span>{f.label}</span>
+                {f.score !== undefined && (
+                  <span className="text-slate-400 font-mono text-[11px]">{f.score}/100</span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5 truncate">{f.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {explanation.considerations && explanation.considerations.length > 0 && (
+        <div className="mt-3 p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl text-xs text-amber-900">
+          <div className="font-semibold flex items-center gap-1.5 mb-1">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+            Key Considerations:
+          </div>
+          <ul className="list-disc list-inside space-y-0.5 text-amber-800">
+            {explanation.considerations.map((c, i) => (
+              <li key={i}>{c}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MatchExplanation;
