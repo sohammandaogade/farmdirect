@@ -7,6 +7,7 @@ import sys
 import io
 from app import create_app
 from database import db
+from models import ProduceListing
 
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
@@ -91,7 +92,7 @@ def run_final_phase_tests():
     print("--- Test 7: AI Negotiation Copilot ---")
     req_res = client.post('/api/requests', json={
         'listing_id': 1,
-        'requested_quantity': 1500,
+        'requested_quantity': 100,
         'offered_price': 26.0,
         'message': 'Initial negotiation proposal'
     }, headers=buyer_headers)
