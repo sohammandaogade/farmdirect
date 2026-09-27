@@ -1,8 +1,7 @@
 import unittest
 import io
 import numpy as np
-from PIL import Image
-from scipy.ndimage import gaussian_filter
+from PIL import Image, ImageFilter
 from app import create_app
 from database import db
 from models import QualityInspection, User, ProduceListing
@@ -21,10 +20,9 @@ def create_synthetic_image(produce_color, bg_color=(240, 240, 240), rot_ratio=0.
         rot_mask = produce_mask & ((x - (cx - r_radius // 3))**2 + (y - (cy - r_radius // 3))**2 <= rot_radius**2)
         arr[rot_mask] = [22, 18, 14]  # dark necrotic rot
 
-    if blur_sigma > 0.0:
-        arr = gaussian_filter(arr.astype(float), sigma=blur_sigma).astype(np.uint8)
-
     img = Image.fromarray(arr)
+    if blur_sigma > 0.0:
+        img = img.filter(ImageFilter.GaussianBlur(radius=blur_sigma))
     buf = io.BytesIO()
     img.save(buf, format='JPEG')
     buf.seek(0)

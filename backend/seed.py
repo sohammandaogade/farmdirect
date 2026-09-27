@@ -609,7 +609,9 @@ def seed_database():
         from app import create_app
         local_app = create_app()
         with local_app.app_context():
-            _execute_seed_logic()
+            from models import User
+            if User.query.filter_by(email="admin@farmdirect.demo").first() is None:
+                _execute_seed_logic()
 
 if __name__ == '__main__':
     seed_database()
