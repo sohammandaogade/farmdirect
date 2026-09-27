@@ -1,5 +1,5 @@
 from datetime import datetime, date, timedelta
-from app import create_app
+from flask import current_app
 from database import db
 from models import (
     User, FarmerProfile, BuyerProfile, ProduceListing, PurchaseRequest, Negotiation,
@@ -9,8 +9,6 @@ from models import (
 )
 
 from sqlalchemy import text, inspect
-
-app = create_app()
 
 def ensure_schema_columns():
     try:
@@ -35,8 +33,8 @@ def ensure_schema_columns():
     except Exception as e:
         print(f"Schema verification note: {e}")
 
-def seed_database():
-    with app.app_context():
+def _execute_seed_logic():
+    with db.session.no_autoflush:
         print("Ensuring database tables exist (idempotent seed)...")
         # NEVER call db.drop_all() in production or idempotent seeding!
         db.create_all()
@@ -603,6 +601,15 @@ def seed_database():
 
         db.session.commit()
         print("Database seeding completed successfully (idempotent, safe for restarts)!")
+
+def seed_database():
+    if current_app:
+        _execute_seed_logic()
+    else:
+        from app import create_app
+        local_app = create_app()
+        with local_app.app_context():
+            _execute_seed_logic()
 
 if __name__ == '__main__':
     seed_database()

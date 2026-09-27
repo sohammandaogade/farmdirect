@@ -3,7 +3,7 @@ services:
     name: farmdirect-marketplace
     runtime: python
     buildCommand: bash build.sh
-    startCommand: cd backend && gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
+    startCommand: cd backend && python seed.py && gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
     plan: free
     region: oregon
     envVars:

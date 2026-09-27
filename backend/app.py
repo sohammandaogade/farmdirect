@@ -129,6 +129,16 @@ def create_app(config_class=Config):
         except Exception as e:
             app.logger.warning(f"Schema column verification warning: {e}")
 
+        # Idempotently seed baseline users and listings if not present
+        try:
+            from models import User
+            if User.query.filter_by(email="admin@farmdirect.demo").first() is None:
+                app.logger.info("Baseline admin user missing. Running idempotent database seeding...")
+                from seed import seed_database
+                seed_database()
+        except Exception as e:
+            app.logger.warning(f"Auto-seed verification warning: {e}")
+
     return app
 
 app = create_app()
