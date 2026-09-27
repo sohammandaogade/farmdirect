@@ -18,8 +18,16 @@ from routes.logistics import logistics_bp
 from routes.analytics import analytics_bp
 from routes.admin import admin_bp
 from routes.notifications import notifications_bp
+from routes.ai import ai_bp
+from routes.copilot import copilot_bp
+from routes.digital_twin import digital_twin_bp
+from routes.waste import waste_bp
+from routes.command_center import command_center_bp
+from routes.quality import quality_bp
 
 frontend_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'))
+uploads_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), 'uploads'))
+os.makedirs(uploads_folder, exist_ok=True)
 
 def create_app(config_class=Config):
     app = Flask(__name__, static_folder=frontend_folder, static_url_path='')
@@ -45,6 +53,12 @@ def create_app(config_class=Config):
     app.register_blueprint(analytics_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(notifications_bp)
+    app.register_blueprint(ai_bp)
+    app.register_blueprint(copilot_bp)
+    app.register_blueprint(digital_twin_bp)
+    app.register_blueprint(waste_bp)
+    app.register_blueprint(command_center_bp)
+    app.register_blueprint(quality_bp)
 
     @app.route('/api/health', methods=['GET'])
     def health_check():
@@ -54,6 +68,10 @@ def create_app(config_class=Config):
             'version': '1.0.0',
             'database': 'connected'
         }), 200
+
+    @app.route('/uploads/<path:filename>')
+    def serve_uploaded_file(filename):
+        return send_from_directory(uploads_folder, filename)
 
     # Serve built React Single Page Application
     @app.route('/')

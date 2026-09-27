@@ -1,7 +1,12 @@
 from datetime import datetime, date, timedelta
 from app import create_app
 from database import db
-from models import User, FarmerProfile, BuyerProfile, ProduceListing, PurchaseRequest, Negotiation, Order, OrderStatusHistory, PriceReference, Notification
+from models import (
+    User, FarmerProfile, BuyerProfile, ProduceListing, PurchaseRequest, Negotiation,
+    Order, OrderStatusHistory, PriceReference, Notification,
+    SoilProfile, CropHistory, FarmExpense, FarmerPerformance, BuyerPerformance,
+    QualityInspection, WasteListing, WasteOrder, AnomalyEvent, CropMarketHistory
+)
 
 app = create_app()
 
@@ -387,8 +392,169 @@ def seed_database():
         )
         db.session.add_all([n1, n2])
 
+        print("Seeding Farm Digital Twin: Soil Profiles & Crop Histories...")
+        # 8. Soil Profiles (Farmers f1 through f5)
+        sp1 = SoilProfile(farmer_id=f1.id, soil_type="Black Regur Soil (Vertisol)", ph_level=7.2, organic_carbon_pct=0.74, nitrogen_kg_ha=250.0, phosphorus_kg_ha=24.0, potassium_kg_ha=330.0, moisture_pct=26.0, last_tested_date=date.today() - timedelta(days=45))
+        sp2 = SoilProfile(farmer_id=f2.id, soil_type="Fertile Alluvial Clay Loam", ph_level=6.9, organic_carbon_pct=0.81, nitrogen_kg_ha=270.0, phosphorus_kg_ha=28.0, potassium_kg_ha=350.0, moisture_pct=28.0, last_tested_date=date.today() - timedelta(days=60))
+        sp3 = SoilProfile(farmer_id=f3.id, soil_type="Mountainous Red Loam", ph_level=6.6, organic_carbon_pct=0.65, nitrogen_kg_ha=220.0, phosphorus_kg_ha=19.0, potassium_kg_ha=290.0, moisture_pct=24.0, last_tested_date=date.today() - timedelta(days=30))
+        sp4 = SoilProfile(farmer_id=f4.id, soil_type="Semi-Arid Sandy Clay Loam", ph_level=7.4, organic_carbon_pct=0.60, nitrogen_kg_ha=210.0, phosphorus_kg_ha=20.0, potassium_kg_ha=310.0, moisture_pct=22.0, last_tested_date=date.today() - timedelta(days=75))
+        sp5 = SoilProfile(farmer_id=f5.id, soil_type="Krishna River Alluvial Basin", ph_level=7.0, organic_carbon_pct=0.78, nitrogen_kg_ha=260.0, phosphorus_kg_ha=26.0, potassium_kg_ha=340.0, moisture_pct=30.0, last_tested_date=date.today() - timedelta(days=20))
+        db.session.add_all([sp1, sp2, sp3, sp4, sp5])
+
+        # 9. Crop Histories (Historical seasons for yields, margins, twin analytics)
+        ch1 = CropHistory(farmer_id=f1.id, crop="Tomato", season="Kharif 2025", year=2025, planted_area_acres=4.0, yield_kg=16000.0, selling_price_avg=26.50, gross_revenue=424000.0, cultivation_cost=168000.0)
+        ch2 = CropHistory(farmer_id=f1.id, crop="Onion", season="Rabi 2024-25", year=2024, planted_area_acres=6.0, yield_kg=21000.0, selling_price_avg=22.00, gross_revenue=462000.0, cultivation_cost=190000.0)
+        ch3 = CropHistory(farmer_id=f2.id, crop="Grapes", season="Rabi 2024-25", year=2024, planted_area_acres=8.0, yield_kg=32000.0, selling_price_avg=65.00, gross_revenue=2080000.0, cultivation_cost=840000.0)
+        ch4 = CropHistory(farmer_id=f2.id, crop="Onion", season="Kharif 2025", year=2025, planted_area_acres=5.0, yield_kg=18000.0, selling_price_avg=24.00, gross_revenue=432000.0, cultivation_cost=160000.0)
+        ch5 = CropHistory(farmer_id=f3.id, crop="Potato", season="Rabi 2024-25", year=2024, planted_area_acres=5.0, yield_kg=25000.0, selling_price_avg=19.50, gross_revenue=487500.0, cultivation_cost=195000.0)
+        ch6 = CropHistory(farmer_id=f4.id, crop="Wheat", season="Rabi 2024-25", year=2024, planted_area_acres=10.0, yield_kg=35000.0, selling_price_avg=28.00, gross_revenue=980000.0, cultivation_cost=380000.0)
+        ch7 = CropHistory(farmer_id=f5.id, crop="Cauliflower", season="Kharif 2025", year=2025, planted_area_acres=4.0, yield_kg=14000.0, selling_price_avg=21.00, gross_revenue=294000.0, cultivation_cost=120000.0)
+        db.session.add_all([ch1, ch2, ch3, ch4, ch5, ch6, ch7])
+
+        # 10. Farm Expenses
+        exp1 = FarmExpense(farmer_id=f1.id, category="Seeds & Saplings", amount=24000.0, expense_date=date.today() - timedelta(days=90), description="Certified hybrid tomato seeds (Abhinav variety)")
+        exp2 = FarmExpense(farmer_id=f1.id, category="Organic Fertilizers & Bio-inputs", amount=38000.0, expense_date=date.today() - timedelta(days=60), description="Enriched vermicompost and neem cake bio-manure")
+        exp3 = FarmExpense(farmer_id=f1.id, category="Micro-irrigation & Power", amount=16500.0, expense_date=date.today() - timedelta(days=40), description="Drip line lateral replacement and pump maintenance")
+        exp4 = FarmExpense(farmer_id=f1.id, category="Harvesting Labor", amount=42000.0, expense_date=date.today() - timedelta(days=10), description="Manual early-morning harvesting and crate sorting")
+        db.session.add_all([exp1, exp2, exp3, exp4])
+
+        print("Seeding Trust & Performance Benchmarks...")
+        # 11. Performance & Trust Records
+        tp1 = FarmerPerformance(farmer_id=f1.id, order_completion_rate=98.5, on_time_delivery_rate=96.0, quantity_accuracy_score=98.0, quality_consistency_score=95.0, cancellation_rate=1.5, dispute_count=0, avg_response_hours=1.4, reliability_tier="Elite 5-Star Pro")
+        tp2 = FarmerPerformance(farmer_id=f2.id, order_completion_rate=97.0, on_time_delivery_rate=94.0, quantity_accuracy_score=96.0, quality_consistency_score=93.0, cancellation_rate=2.0, dispute_count=0, avg_response_hours=2.1, reliability_tier="Verified Pro")
+        tp3 = FarmerPerformance(farmer_id=f3.id, order_completion_rate=96.0, on_time_delivery_rate=92.0, quantity_accuracy_score=95.0, quality_consistency_score=91.0, cancellation_rate=3.0, dispute_count=0, avg_response_hours=2.8, reliability_tier="Standard Reliable")
+        tp4 = FarmerPerformance(farmer_id=f4.id, order_completion_rate=99.0, on_time_delivery_rate=98.0, quantity_accuracy_score=99.0, quality_consistency_score=97.0, cancellation_rate=0.5, dispute_count=0, avg_response_hours=1.1, reliability_tier="Elite 5-Star Pro")
+        tp5 = FarmerPerformance(farmer_id=f5.id, order_completion_rate=95.0, on_time_delivery_rate=93.0, quantity_accuracy_score=94.0, quality_consistency_score=90.0, cancellation_rate=3.5, dispute_count=0, avg_response_hours=3.2, reliability_tier="Standard Reliable")
+        db.session.add_all([tp1, tp2, tp3, tp4, tp5])
+
+        bp1 = BuyerPerformance(buyer_id=b1.id, order_completion_rate=99.2, cancellation_rate=0.8, avg_response_hours=1.5, dispute_count=0, reliability_tier="Verified Prime Commercial Buyer")
+        bp2 = BuyerPerformance(buyer_id=b2.id, order_completion_rate=98.0, cancellation_rate=1.8, avg_response_hours=2.2, dispute_count=0, reliability_tier="Verified Commercial Buyer")
+        db.session.add_all([bp1, bp2])
+
+        print("Seeding Computer-Vision Quality Assessments...")
+        # 12. Quality Inspections
+        qi1 = QualityInspection(
+            listing_id=demo_tomato.id,
+            farmer_id=f1.id,
+            image_url="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600",
+            declared_grade="Grade A",
+            ai_assessed_grade="Grade A",
+            ripeness_pct=89.5,
+            uniformity_score=94.0,
+            defect_detected_pct=2.5,
+            confidence_score=96.2,
+            verification_status="VERIFIED_ALIGNED",
+            assessment_notes="Uniform vibrant red skin, solid firmness, zero visible blemishes or pest indentations. Caliber 65-70mm consistent.",
+            disclaimer="AI-assisted visual quality assessment. Not certified laboratory inspection."
+        )
+        qi2 = QualityInspection(
+            listing_id=other_listings[0].id,
+            farmer_id=f1.id,
+            image_url="https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=600",
+            declared_grade="Grade A",
+            ai_assessed_grade="Grade A-",
+            ripeness_pct=92.0,
+            uniformity_score=88.0,
+            defect_detected_pct=4.1,
+            confidence_score=91.8,
+            verification_status="VERIFIED_ALIGNED",
+            assessment_notes="Dry tight outer skin, uniform red globes. Slight size dispersion (+/- 8mm) but well within commercial Grade A norms.",
+            disclaimer="AI-assisted visual quality assessment. Not certified laboratory inspection."
+        )
+        qi3 = QualityInspection(
+            listing_id=other_listings[2].id,
+            farmer_id=f2.id,
+            image_url="https://images.unsplash.com/photo-1546470427-e26264be0b11?w=600",
+            declared_grade="Grade B",
+            ai_assessed_grade="Grade B",
+            ripeness_pct=95.0,
+            uniformity_score=82.0,
+            defect_detected_pct=7.8,
+            confidence_score=93.5,
+            verification_status="VERIFIED_ALIGNED",
+            assessment_notes="Deep red processing-stage maturity. Minor skin scars not affecting pulp or brix content. Excellent for sauce processing.",
+            disclaimer="AI-assisted visual quality assessment. Not certified laboratory inspection."
+        )
+        db.session.add_all([qi1, qi2, qi3])
+
+        print("Seeding Farm Waste Marketplace...")
+        # 13. Waste Listings
+        wl1 = WasteListing(
+            farmer_id=f1.id,
+            waste_type="Sugarcane Bagasse & Dry Biomass",
+            quantity=15.0,
+            unit="tonnes",
+            asking_price=1400.0,
+            location="Pune",
+            latitude=18.5204,
+            longitude=73.8567,
+            description="Sun-dried fibrous sugarcane residue from organic farm crusher. High calorific density, clean and dry for biomass briquetting, boiler fuel, or particle board manufacturing.",
+            suggested_uses="Biomass Briquettes, Boiler Fuel, Paper Pulp, Composting",
+            image_url="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?w=600",
+            status="ACTIVE"
+        )
+        wl2 = WasteListing(
+            farmer_id=f4.id,
+            waste_type="Golden Wheat Straw Bales",
+            quantity=25.0,
+            unit="tonnes",
+            asking_price=1850.0,
+            location="Ahmednagar",
+            latitude=19.0952,
+            longitude=74.7496,
+            description="Machine-baled golden wheat straw with <12% moisture. Ideal for dairy farm fodder mixing, mushroom cultivation substrate, or ecological mulching.",
+            suggested_uses="Cattle Fodder, Mushroom Cultivation, Mulch, Packaging",
+            image_url="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+            status="ACTIVE"
+        )
+        wl3 = WasteListing(
+            farmer_id=f2.id,
+            waste_type="Tomato Pomace & Organic Seeds",
+            quantity=8.0,
+            unit="tonnes",
+            asking_price=950.0,
+            location="Nashik",
+            latitude=19.9975,
+            longitude=73.7898,
+            description="Freshly separated tomato skins and seeds from food processing sorting. Rich in crude protein and lycopene for livestock feed supplementation.",
+            suggested_uses="Livestock Feed, Vermicompost Booster, Soil Conditioning",
+            image_url="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600",
+            status="ACTIVE"
+        )
+        wl4 = WasteListing(
+            farmer_id=f5.id,
+            waste_type="Organic Rice Husk & Ash Precursor",
+            quantity=30.0,
+            unit="tonnes",
+            asking_price=1200.0,
+            location="Sangli",
+            latitude=16.8524,
+            longitude=74.5815,
+            description="Clean de-husked golden paddy husks from Krishna river rice mills. Uniform consistency suitable for insulation, silica synthesis, or nursery bedding.",
+            suggested_uses="Thermal Insulation, Industrial Silica, Nursery Pot Bedding",
+            image_url="https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600",
+            status="ACTIVE"
+        )
+        db.session.add_all([wl1, wl2, wl3, wl4])
+
+        print("Seeding Regional Demand Intelligence & Anomalies...")
+        # 14. Crop Market History & Demand Records
+        cmh1 = CropMarketHistory(crop="Tomato", region="Pune", demand_index=88.0, trend="INCREASING", forecast_7d_pct=12.5, forecast_14d_pct=18.0, avg_price=27.80, volume_traded_kg=45000.0, snapshot_date=date.today(), explanation="Buyer procurement request volume increased by 22% over past 10 days driven by hospitality corridor demand.")
+        cmh2 = CropMarketHistory(crop="Tomato", region="Nashik", demand_index=82.0, trend="INCREASING", forecast_7d_pct=9.0, forecast_14d_pct=14.5, avg_price=25.20, volume_traded_kg=38000.0, snapshot_date=date.today(), explanation="Processing-grade tomato demand solid from Mumbai puree manufacturers.")
+        cmh3 = CropMarketHistory(crop="Onion", region="Nashik", demand_index=94.0, trend="INCREASING", forecast_7d_pct=15.0, forecast_14d_pct=22.0, avg_price=24.50, volume_traded_kg=82000.0, snapshot_date=date.today(), explanation="Export procurement channels active; mandi arrivals tightening post-monsoon.")
+        cmh4 = CropMarketHistory(crop="Potato", region="Satara", demand_index=72.0, trend="STABLE", forecast_7d_pct=3.0, forecast_14d_pct=5.0, avg_price=20.00, volume_traded_kg=29000.0, snapshot_date=date.today(), explanation="Balanced local demand and stable cold-storage inventory releases.")
+        cmh5 = CropMarketHistory(crop="Wheat", region="Ahmednagar", demand_index=78.0, trend="STABLE", forecast_7d_pct=2.0, forecast_14d_pct=4.0, avg_price=28.50, volume_traded_kg=54000.0, snapshot_date=date.today(), explanation="Steady flour mill off-take maintaining equilibrium.")
+        cmh6 = CropMarketHistory(crop="Cauliflower", region="Sangli", demand_index=65.0, trend="DECREASING", forecast_7d_pct=-4.0, forecast_14d_pct=-7.5, avg_price=23.00, volume_traded_kg=19000.0, snapshot_date=date.today(), explanation="Seasonal harvest peaks across adjacent talukas expanding immediate wholesale supply.")
+        db.session.add_all([cmh1, cmh2, cmh3, cmh4, cmh5, cmh6])
+
+        # 15. Anomaly Events
+        ae1 = AnomalyEvent(entity_type="LISTING", entity_id=1, anomaly_type="PRICE_OUTLIER", severity="LOW", title="Minor Price Premium on Organic Produce", details="Listing price is ₹28/kg while historical baseline is ₹27.50/kg. Within standard acceptable variance for certified quality.", status="RESOLVED", resolution_note="Verified as normal premium for certified organic produce.")
+        ae2 = AnomalyEvent(entity_type="LISTING", entity_id=999, anomaly_type="PRICE_OUTLIER", severity="HIGH", title="Potential Price Outlier: Bell Pepper Offer", details="Observed quote ₹85/kg exceeds benchmark range (₹42–₹48/kg) by 81%. Flags automated caution before contract creation.", status="NEEDS_REVIEW")
+        ae3 = AnomalyEvent(entity_type="ORDER", entity_id=101, anomaly_type="QUANTITY_SPIKE", severity="MEDIUM", title="Large Bulk Procurement Request", details="Single purchase request for 12,000 kg exceeds average buyer order size (1,800 kg) by 6.6x.", status="NEEDS_REVIEW")
+        db.session.add_all([ae1, ae2, ae3])
+
         db.session.commit()
-        print("Database seeding completed successfully!")
+        print("Database seeding completed successfully with all Final Phase entities!")
 
 if __name__ == '__main__':
     seed_database()

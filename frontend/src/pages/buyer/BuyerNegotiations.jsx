@@ -5,6 +5,7 @@ import { negotiationsAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import NegotiationTimeline from '../../components/NegotiationTimeline';
+import NegotiationCopilotCard from '../../components/NegotiationCopilotCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export const BuyerNegotiations = () => {
@@ -131,6 +132,21 @@ export const BuyerNegotiations = () => {
           <span className="text-[11px] text-slate-500 block mt-0.5">Target: {request?.requested_quantity?.toLocaleString()} kg</span>
         </div>
       </div>
+
+      {/* AI Negotiation Copilot */}
+      {request?.status === 'NEGOTIATING' && (
+        <NegotiationCopilotCard
+          requestId={requestId}
+          userRole="buyer"
+          onApplyCounter={(price) => {
+            handleCounter({
+              offered_price: price,
+              offered_quantity: request.requested_quantity,
+              message: `AI Copilot suggested counter-offer: ₹${price}/kg`,
+            });
+          }}
+        />
+      )}
 
       <NegotiationTimeline
         request={request}

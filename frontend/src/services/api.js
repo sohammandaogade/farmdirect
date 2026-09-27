@@ -117,4 +117,53 @@ export const notificationsAPI = {
   markOneRead: (id) => api.put(`/notifications/${id}/read`),
 };
 
+export const aiAPI = {
+  getHybridMatches: (data) => api.post('/ai/hybrid-match', data),
+  getDemand: (crop = 'Tomato', region = 'Pune') =>
+    api.get('/ai/demand', { params: { crop, region } }),
+  getPriceForecast: (crop = 'Tomato', region = 'Pune', quantity = 1000) =>
+    api.get('/ai/price-forecast', { params: { crop, region, quantity } }),
+  calculateProfit: (data) => api.post('/ai/profit-calculator', data),
+  getSmartSelling: (data) => api.post('/ai/smart-selling', data),
+  getNegotiationCopilot: (requestId, role = 'farmer') =>
+    api.post('/ai/negotiation-copilot', { request_id: requestId, role }),
+  optimizeProcurement: (data) => api.post('/ai/procurement-optimizer', data),
+  checkDuplicate: (data) => api.post('/ai/duplicate-check', data),
+};
+
+export const copilotAPI = {
+  askFarmer: (query) => api.post('/copilot/farmer', { query }),
+  askBuyer: (query) => api.post('/copilot/buyer', { query }),
+  voiceAssistant: (transcript) => api.post('/copilot/voice-command', { transcript }),
+  generateListing: (prompt) => api.post('/copilot/generate-listing', { prompt }),
+};
+
+export const digitalTwinAPI = {
+  getTwin: (farmerId) => api.get(`/digital-twin/farmer/${farmerId}`),
+  getInventoryIntelligence: () => api.get('/digital-twin/inventory-intelligence'),
+  updateSoil: (data) => api.post('/digital-twin/soil', data),
+};
+
+export const wasteAPI = {
+  getListings: (params = {}) => api.get('/waste/listings', { params }),
+  createListing: (data) => api.post('/waste/listings', data),
+  getMyListings: () => api.get('/waste/my-listings'),
+  createOrder: (data) => api.post('/waste/orders', data),
+};
+
+export const commandCenterAPI = {
+  getMetrics: () => api.get('/command-center/metrics'),
+  getHeatmap: (layer = 'supply') => api.get('/command-center/heatmap', { params: { layer } }),
+  simulate: (data) => api.post('/command-center/simulate', data),
+  getAnomalies: (status) => api.get('/command-center/anomalies', { params: { status } }),
+  updateAnomaly: (id, data) => api.put(`/command-center/anomalies/${id}`, data),
+};
+
+export const qualityAPI = {
+  uploadAndInspect: (formData) =>
+    api.post('/quality/upload-inspect', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+};
+
 export default api;

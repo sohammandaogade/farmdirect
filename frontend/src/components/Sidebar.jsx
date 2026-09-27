@@ -15,6 +15,12 @@ import {
   Users,
   Layers,
   X,
+  Activity,
+  Recycle,
+  Sliders,
+  ShieldAlert,
+  Bot,
+  MapPin,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -35,9 +41,13 @@ export const Sidebar = ({ isOpen, onClose }) => {
         { to: '/farmer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { to: '/farmer/listings', label: 'My Listings', icon: Sprout },
         { to: '/farmer/listings/new', label: 'Add Produce', icon: PlusCircle },
+        { to: '/farmer/inventory-intelligence', label: 'Inventory & Timing', icon: Sparkles, badge: 'AI' },
+        { to: '/farmer/digital-twin', label: 'Farm Digital Twin', icon: Activity, badge: 'AI' },
         { to: '/farmer/requests', label: 'Purchase Requests', icon: Inbox },
         { to: '/farmer/orders', label: 'Orders & Shipments', icon: Truck },
+        { to: '/waste-marketplace', label: 'Waste Marketplace', icon: Recycle },
         { to: '/farmer/analytics', label: 'Sales Analytics', icon: LineChart },
+        { to: '/farmer/copilot', label: 'Farmer AI Copilot', icon: Bot, badge: 'AI' },
         { to: '/farmer/profile', label: 'Farm Profile', icon: User },
       ];
     } else if (user.role === 'buyer') {
@@ -45,16 +55,22 @@ export const Sidebar = ({ isOpen, onClose }) => {
         { to: '/buyer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { to: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
         { to: '/buyer/smart-match', label: 'AI Smart Match', icon: Sparkles, badge: 'AI' },
+        { to: '/buyer/procurement', label: 'Procurement Optimizer', icon: Layers, badge: 'AI' },
         { to: '/buyer/requests', label: 'My Requests', icon: Inbox },
         { to: '/buyer/orders', label: 'Active Orders', icon: Truck },
         { to: '/buyer/history', label: 'Purchase History', icon: History },
+        { to: '/waste-marketplace', label: 'Waste Marketplace', icon: Recycle },
         { to: '/buyer/analytics', label: 'Spend Analytics', icon: LineChart },
+        { to: '/buyer/copilot', label: 'Buyer AI Copilot', icon: Bot, badge: 'AI' },
         { to: '/buyer/profile', label: 'Business Profile', icon: User },
       ];
     } else {
       // Admin
       return [
-        { to: '/admin/dashboard', label: 'Admin Overview', icon: LayoutDashboard },
+        { to: '/admin/dashboard', label: 'Command Center', icon: LayoutDashboard },
+        { to: '/admin/market-intelligence', label: 'Regional Heatmap', icon: MapPin, badge: 'AI' },
+        { to: '/admin/simulator', label: 'What-If Simulator', icon: Sliders, badge: 'AI' },
+        { to: '/admin/anomalies', label: 'Fraud & Anomalies', icon: ShieldAlert, badge: 'Audit' },
         { to: '/admin/users', label: 'User Directory', icon: Users },
         { to: '/admin/listings', label: 'All Listings', icon: Layers },
         { to: '/admin/orders', label: 'All Orders', icon: Truck },

@@ -37,6 +37,43 @@ export const MatchExplanation = ({ explanation, breakdown, isOpen, onClose }) =>
         ))}
       </div>
 
+      {/* Positive & Negative Factors Checklist */}
+      {(explanation.positive_factors?.length > 0 || explanation.negative_factors?.length > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          {explanation.positive_factors?.length > 0 && (
+            <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 block">
+                (+) Key Match Strengths:
+              </span>
+              <ul className="space-y-1 text-xs text-emerald-900 font-medium">
+                {explanation.positive_factors.map((p, idx) => (
+                  <li key={idx} className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {explanation.negative_factors?.length > 0 && (
+            <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 block">
+                (-) Trade-off Considerations:
+              </span>
+              <ul className="space-y-1 text-xs text-amber-900 font-medium">
+                {explanation.negative_factors.map((n, idx) => (
+                  <li key={idx} className="flex items-start gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                    <span>{n}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
       {explanation.considerations && explanation.considerations.length > 0 && (
         <div className="mt-3 p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl text-xs text-amber-900">
           <div className="font-semibold flex items-center gap-1.5 mb-1">

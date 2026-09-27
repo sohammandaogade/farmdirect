@@ -24,16 +24,24 @@ import FarmerNegotiations from './pages/farmer/FarmerNegotiations';
 import FarmerOrders from './pages/farmer/FarmerOrders';
 import FarmerAnalytics from './pages/farmer/FarmerAnalytics';
 import FarmerProfile from './pages/farmer/FarmerProfile';
+import FarmDigitalTwin from './pages/farmer/FarmDigitalTwin';
+import FarmerInventoryIntelligence from './pages/farmer/FarmerInventoryIntelligence';
+import FarmerCopilot from './pages/farmer/FarmerCopilot';
 
 // Pages - Buyer
 import BuyerDashboard from './pages/buyer/BuyerDashboard';
 import SmartMatch from './pages/buyer/SmartMatch';
+import AIProcurement from './pages/buyer/AIProcurement';
 import BuyerRequests from './pages/buyer/BuyerRequests';
 import BuyerNegotiations from './pages/buyer/BuyerNegotiations';
 import BuyerOrders from './pages/buyer/BuyerOrders';
 import PurchaseHistory from './pages/buyer/PurchaseHistory';
 import BuyerAnalytics from './pages/buyer/BuyerAnalytics';
 import BuyerProfile from './pages/buyer/BuyerProfile';
+import BuyerCopilot from './pages/buyer/BuyerCopilot';
+
+// Pages - Waste Marketplace
+import WasteMarketplace from './pages/waste/WasteMarketplace';
 
 // Pages - Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -41,6 +49,9 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminListings from './pages/admin/AdminListings';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
+import MarketIntelligence from './pages/admin/MarketIntelligence';
+import WhatIfSimulator from './pages/admin/WhatIfSimulator';
+import AnomalyDetection from './pages/admin/AnomalyDetection';
 
 // Protected Route Guard
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -89,12 +100,13 @@ export default function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            {/* Public Routes */}
+            {/* Public / Shared Routes */}
             <Route path="/" element={<PortalLayout><Landing /></PortalLayout>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/marketplace" element={<PortalLayout><Marketplace /></PortalLayout>} />
             <Route path="/marketplace/:id" element={<PortalLayout><ListingDetails /></PortalLayout>} />
+            <Route path="/waste-marketplace" element={<PortalLayout><WasteMarketplace /></PortalLayout>} />
 
             {/* Farmer Routes */}
             <Route
@@ -102,6 +114,30 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['farmer']}>
                   <PortalLayout><FarmerDashboard /></PortalLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/digital-twin"
+              element={
+                <ProtectedRoute allowedRoles={['farmer']}>
+                  <PortalLayout><FarmDigitalTwin /></PortalLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/inventory-intelligence"
+              element={
+                <ProtectedRoute allowedRoles={['farmer']}>
+                  <PortalLayout><FarmerInventoryIntelligence /></PortalLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/farmer/copilot"
+              element={
+                <ProtectedRoute allowedRoles={['farmer']}>
+                  <PortalLayout><FarmerCopilot /></PortalLayout>
                 </ProtectedRoute>
               }
             />
@@ -188,6 +224,22 @@ export default function App() {
               }
             />
             <Route
+              path="/buyer/procurement"
+              element={
+                <ProtectedRoute allowedRoles={['buyer']}>
+                  <PortalLayout><AIProcurement /></PortalLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/buyer/copilot"
+              element={
+                <ProtectedRoute allowedRoles={['buyer']}>
+                  <PortalLayout><BuyerCopilot /></PortalLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/buyer/requests"
               element={
                 <ProtectedRoute allowedRoles={['buyer']}>
@@ -242,6 +294,30 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <PortalLayout><AdminDashboard /></PortalLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/market-intelligence"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <PortalLayout><MarketIntelligence /></PortalLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/simulator"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <PortalLayout><WhatIfSimulator /></PortalLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/anomalies"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <PortalLayout><AnomalyDetection /></PortalLayout>
                 </ProtectedRoute>
               }
             />
