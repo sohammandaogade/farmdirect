@@ -47,9 +47,9 @@ export const Register = () => {
     try {
       const payload = {
         role,
-        name,
-        email,
-        phone,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
         password,
       };
 

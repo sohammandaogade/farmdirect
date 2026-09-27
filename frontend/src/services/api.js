@@ -164,6 +164,7 @@ export const qualityAPI = {
     api.post('/quality/upload-inspect', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  getListingInspection: (listingId) => api.get(`/quality/listing/${listingId}`),
 };
 
 export default api;

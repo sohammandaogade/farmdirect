@@ -11,6 +11,9 @@ import {
   Sprout,
   Send,
   Edit3,
+  ShieldCheck,
+  AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 import { marketplaceAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -148,6 +151,64 @@ export const ListingDetails = () => {
           {/* Fair Price Insight Card */}
           {listing.price_insight && (
             <FairPriceInsight insight={listing.price_insight} />
+          )}
+
+          {/* AI Quality Inspection Report Card */}
+          {listing.quality_inspection && (
+            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">AI Quality Inspection Audit</h3>
+                    <p className="text-[11px] text-slate-400">
+                      {listing.quality_inspection.model_name || 'FarmDirect-AgriVision'} v{listing.quality_inspection.model_version || '2.0.0'}
+                    </p>
+                  </div>
+                </div>
+                <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  listing.quality_inspection.verification_status === 'VERIFIED_ALIGNED' || listing.quality_inspection.verification_status === 'VERIFIED_SUPERIOR'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : listing.quality_inspection.verification_status === 'VISIBLE_DEFECTS' || listing.quality_inspection.verification_status === 'CROP_MISMATCH'
+                    ? 'bg-rose-100 text-rose-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {listing.quality_inspection.verification_status?.replace('_', ' ')}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center text-xs">
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">Declared</span>
+                  <strong className="text-slate-800 text-sm mt-0.5 block">{listing.quality_grade}</strong>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <span className="text-[10px] font-bold text-emerald-600 block uppercase">AI Assessed</span>
+                  <strong className="text-emerald-700 text-sm mt-0.5 block">{listing.quality_inspection.ai_assessed_grade}</strong>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">Defects</span>
+                  <strong className="text-slate-800 text-sm mt-0.5 block">{listing.quality_inspection.defect_detected_pct}%</strong>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">Confidence</span>
+                  <strong className="text-slate-800 text-sm mt-0.5 block">{listing.quality_inspection.confidence_score}%</strong>
+                </div>
+              </div>
+
+              {listing.quality_inspection.assessment_notes && (
+                <div className="p-3.5 bg-slate-50/80 rounded-2xl text-xs text-slate-600 leading-relaxed border border-slate-100">
+                  <span className="font-bold text-slate-700 block mb-1">Optical Inspection Notes:</span>
+                  {listing.quality_inspection.assessment_notes}
+                </div>
+              )}
+
+              <p className="text-[10px] text-slate-400 text-center italic">
+                {listing.quality_inspection.disclaimer || 'AI-assisted visual quality assessment. Not certified laboratory inspection.'}
+              </p>
+            </div>
           )}
         </div>
 

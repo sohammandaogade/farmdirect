@@ -106,6 +106,28 @@ def create_app(config_class=Config):
 
     with app.app_context():
         db.create_all()
+        try:
+            from sqlalchemy import text, inspect
+            inspector = inspect(db.engine)
+            if 'quality_inspections' in inspector.get_table_names():
+                existing_cols = {c['name'] for c in inspector.get_columns('quality_inspections')}
+                new_cols = [
+                    ('expected_crop', 'VARCHAR(100)'),
+                    ('detected_crop', 'VARCHAR(100)'),
+                    ('crop_confidence', 'FLOAT DEFAULT 0.0'),
+                    ('image_quality_status', 'VARCHAR(50) DEFAULT "VALID"'),
+                    ('visible_defect_level', 'VARCHAR(50) DEFAULT "LOW"'),
+                    ('defect_confidence', 'FLOAT DEFAULT 0.0'),
+                    ('model_name', 'VARCHAR(100) DEFAULT "FarmDirect-AgriVision-ColorTextureEngine"'),
+                    ('model_version', 'VARCHAR(50) DEFAULT "2.0.0"')
+                ]
+                with db.engine.connect() as conn:
+                    for col_name, col_type in new_cols:
+                        if col_name not in existing_cols:
+                            conn.execute(text(f'ALTER TABLE quality_inspections ADD COLUMN {col_name} {col_type}'))
+                    conn.commit()
+        except Exception as e:
+            app.logger.warning(f"Schema column verification warning: {e}")
 
     return app
 

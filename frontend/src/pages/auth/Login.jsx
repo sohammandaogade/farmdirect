@@ -28,7 +28,7 @@ export const Login = () => {
     setLoading(true);
 
     try {
-      const user = await login(email, password);
+      const user = await login(email.trim().toLowerCase(), password);
       showToast(`Welcome back, ${user.name}!`);
       redirectUser(user.role);
     } catch (err) {

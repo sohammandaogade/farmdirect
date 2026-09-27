@@ -87,6 +87,12 @@ def get_listing_detail(listing_id):
         listing.expected_price
     )
 
+    # Attach verified AI quality inspection if available
+    from models import QualityInspection
+    insp = QualityInspection.query.filter_by(listing_id=listing.id).order_by(QualityInspection.created_at.desc()).first()
+    if insp:
+        data['quality_inspection'] = insp.to_dict()
+
     # Check if a buyer is calling and provide logistics estimate
     auth_header = request.headers.get('Authorization')
     if auth_header and auth_header.startswith('Bearer '):

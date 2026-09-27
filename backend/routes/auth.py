@@ -1,9 +1,12 @@
+import logging
 from flask import Blueprint, request, jsonify
+from sqlalchemy.exc import IntegrityError
 from database import db
 from models import User, FarmerProfile, BuyerProfile
 from utils.auth import generate_token, token_required
 from utils.validation import validate_email
 
+logger = logging.getLogger('farmdirect.auth')
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 @auth_bp.route('/register', methods=['POST'])
@@ -30,53 +33,63 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({'success': False, 'message': 'An account with this email already exists.'}), 400
 
-    user = User(
-        name=name,
-        email=email,
-        phone=phone,
-        role=role
-    )
-    user.set_password(password)
-    db.session.add(user)
-    db.session.flush()
-
-    if role == 'farmer':
-        farm_name = data.get('farm_name', '').strip() or f"{name}'s Farm"
-        location = data.get('farm_location', '').strip() or data.get('location', '').strip()
-        farm_size = data.get('farm_size', '').strip()
-        primary_crops = data.get('primary_crops', '').strip()
-
-        if not location:
-            db.session.rollback()
-            return jsonify({'success': False, 'message': 'Farm location is required for farmer registration.'}), 400
-
-        profile = FarmerProfile(
-            user_id=user.id,
-            farm_name=farm_name,
-            location=location,
-            farm_size=farm_size,
-            primary_crops=primary_crops
+    try:
+        user = User(
+            name=name,
+            email=email,
+            phone=phone,
+            role=role
         )
-        db.session.add(profile)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.flush()
 
-    elif role == 'buyer':
-        business_name = data.get('business_name', '').strip() or f"{name} Enterprise"
-        buyer_type = data.get('buyer_type', '').strip() or 'Restaurant'
-        location = data.get('business_location', '').strip() or data.get('location', '').strip()
+        if role == 'farmer':
+            farm_name = data.get('farm_name', '').strip() or f"{name}'s Farm"
+            location = data.get('farm_location', '').strip() or data.get('location', '').strip()
+            farm_size = data.get('farm_size', '').strip()
+            primary_crops = data.get('primary_crops', '').strip()
 
-        if not location:
-            db.session.rollback()
-            return jsonify({'success': False, 'message': 'Business location is required for buyer registration.'}), 400
+            if not location:
+                db.session.rollback()
+                return jsonify({'success': False, 'message': 'Farm location is required for farmer registration.'}), 400
 
-        profile = BuyerProfile(
-            user_id=user.id,
-            business_name=business_name,
-            buyer_type=buyer_type,
-            location=location
-        )
-        db.session.add(profile)
+            profile = FarmerProfile(
+                user_id=user.id,
+                farm_name=farm_name,
+                location=location,
+                farm_size=farm_size,
+                primary_crops=primary_crops
+            )
+            db.session.add(profile)
 
-    db.session.commit()
+        elif role == 'buyer':
+            business_name = data.get('business_name', '').strip() or f"{name} Enterprise"
+            buyer_type = data.get('buyer_type', '').strip() or 'Restaurant'
+            location = data.get('business_location', '').strip() or data.get('location', '').strip()
+
+            if not location:
+                db.session.rollback()
+                return jsonify({'success': False, 'message': 'Business location is required for buyer registration.'}), 400
+
+            profile = BuyerProfile(
+                user_id=user.id,
+                business_name=business_name,
+                buyer_type=buyer_type,
+                location=location
+            )
+            db.session.add(profile)
+
+        db.session.commit()
+        logger.info(f"[AUTH] USER REGISTERED: email={email}, user_id={user.id}, role={role}")
+    except IntegrityError as ie:
+        db.session.rollback()
+        logger.error(f"[AUTH] REGISTRATION INTEGRITY ERROR for email={email}: {str(ie)}")
+        return jsonify({'success': False, 'message': 'An account with this email already exists.'}), 400
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"[AUTH] REGISTRATION ERROR for email={email}: {str(e)}")
+        return jsonify({'success': False, 'message': 'Registration failed. Please try again.'}), 500
 
     token = generate_token(user)
     return jsonify({
@@ -98,12 +111,19 @@ def login():
         return jsonify({'success': False, 'message': 'Please provide both email and password.'}), 400
 
     user = User.query.filter_by(email=email).first()
-    if not user or not user.check_password(password):
+    if not user:
+        logger.warning(f"[AUTH] USER LOGIN FAILED: email={email} - Reason: User not found")
+        return jsonify({'success': False, 'message': 'Invalid email or password.'}), 401
+
+    if not user.check_password(password):
+        logger.warning(f"[AUTH] USER LOGIN FAILED: email={email} - Reason: Password mismatch")
         return jsonify({'success': False, 'message': 'Invalid email or password.'}), 401
 
     if not user.is_active:
+        logger.warning(f"[AUTH] USER LOGIN FAILED: email={email} - Reason: Account deactivated")
         return jsonify({'success': False, 'message': 'Your account has been deactivated. Please contact support.'}), 403
 
+    logger.info(f"[AUTH] USER LOGIN SUCCESS: email={email}, user_id={user.id}, role={user.role}")
     token = generate_token(user)
     return jsonify({
         'success': True,

@@ -547,6 +547,14 @@ class QualityInspection(db.Model):
     defect_detected_pct = db.Column(db.Float, default=4.0, nullable=False)
     confidence_score = db.Column(db.Float, default=92.0, nullable=False)
     verification_status = db.Column(db.String(50), default='VERIFIED_ALIGNED', nullable=False)
+    expected_crop = db.Column(db.String(100), nullable=True)
+    detected_crop = db.Column(db.String(100), nullable=True)
+    crop_confidence = db.Column(db.Float, default=0.0, nullable=True)
+    image_quality_status = db.Column(db.String(50), default='VALID', nullable=True)
+    visible_defect_level = db.Column(db.String(50), default='LOW', nullable=True)
+    defect_confidence = db.Column(db.Float, default=0.0, nullable=True)
+    model_name = db.Column(db.String(100), default='FarmDirect-AgriVision-ColorTextureEngine', nullable=True)
+    model_version = db.Column(db.String(50), default='2.0.0', nullable=True)
     assessment_notes = db.Column(db.Text, nullable=True)
     disclaimer = db.Column(db.String(255), default='AI-assisted visual quality assessment. Not certified laboratory inspection.', nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -562,6 +570,14 @@ class QualityInspection(db.Model):
             'image_url': self.image_url,
             'declared_grade': self.declared_grade,
             'ai_assessed_grade': self.ai_assessed_grade,
+            'expected_crop': self.expected_crop,
+            'detected_crop': self.detected_crop,
+            'crop_confidence': self.crop_confidence,
+            'image_quality_status': self.image_quality_status,
+            'visible_defect_level': self.visible_defect_level,
+            'defect_confidence': self.defect_confidence,
+            'model_name': self.model_name,
+            'model_version': self.model_version,
             'ripeness_pct': self.ripeness_pct,
             'uniformity_score': self.uniformity_score,
             'defect_detected_pct': self.defect_detected_pct,

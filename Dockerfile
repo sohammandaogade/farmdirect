@@ -28,5 +28,5 @@ EXPOSE 5000
 
 WORKDIR /app/backend
 
-# Seed database on container start and run gunicorn
-CMD ["sh", "-c", "python seed.py && gunicorn --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 app:app"]
+# Run gunicorn directly without destructive database recreation
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 app:app"]

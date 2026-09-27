@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Upload,
   ShieldAlert,
+  AlertTriangle,
   X,
 } from 'lucide-react';
 import { farmerAPI, priceAPI, qualityAPI, copilotAPI, aiAPI } from '../../services/api';
@@ -125,13 +126,22 @@ export const AddEditListing = () => {
       if (res.data.success) {
         const insp = res.data;
         setInspectionResult(insp);
-        if (insp.ai_assessed_grade) {
-          setQualityGrade(insp.ai_assessed_grade);
-        }
         if (insp.image_url) {
           setImageUrl(insp.image_url);
         }
-        showToast(`AI Quality Verification Complete: Grade ${insp.ai_assessed_grade || 'A'}`);
+        
+        // Handle specific verification feedback without overwriting farmer declaration
+        if (insp.verification_status === 'CROP_MISMATCH') {
+          showToast(`⚠️ Crop mismatch: Image resembles ${insp.detected_crop || 'different produce'}.`, 'error');
+        } else if (insp.verification_status === 'IMAGE_UNSUITABLE') {
+          showToast(`⚠️ Image unsuitable: ${insp.image_quality_status || 'Poor image quality'}.`, 'error');
+        } else if (insp.verification_status === 'VISIBLE_DEFECTS') {
+          showToast(`⚠️ High defects detected (${insp.defect_detected_pct}%). AI Grade: ${insp.ai_assessed_grade}.`, 'error');
+        } else if (insp.verification_status === 'REVIEW_REQUIRED') {
+          showToast(`Inspection review: AI Grade ${insp.ai_assessed_grade} vs Declared ${qualityGrade}.`, 'info');
+        } else {
+          showToast(`✅ Quality Verified: Grade ${insp.ai_assessed_grade || 'A'} (${insp.confidence_score}% confidence)`);
+        }
       }
     } catch (err) {
       console.error('Image inspection failed:', err);
@@ -312,30 +322,134 @@ export const AddEditListing = () => {
           </div>
 
           {inspectionResult ? (
-            <div className="p-3 bg-white rounded-xl border border-emerald-200 space-y-2 animate-in fade-in">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  AI Quality Certified: <strong>{inspectionResult.grade || 'Grade A'}</strong>
-                </span>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                  Confidence: {inspectionResult.confidence ?? 94}%
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                <div className="p-2 bg-slate-50 rounded-lg">
-                  <span className="text-[10px] font-bold text-slate-400 block">Ripeness</span>
-                  <strong className="text-slate-800">{inspectionResult.ripeness_pct ?? 88}%</strong>
+            <div className="space-y-2 animate-in fade-in">
+              {inspectionResult.verification_status === 'CROP_MISMATCH' && (
+                <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-300 text-xs space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-900 flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                      Crop Mismatch Detected
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-200 text-amber-900">
+                      Rejected
+                    </span>
+                  </div>
+                  <p className="text-amber-800 text-[11px] leading-relaxed">
+                    Listing specifies <strong>{inspectionResult.expected_crop}</strong>, but optical inspection detected <strong>{inspectionResult.detected_crop}</strong> features ({inspectionResult.crop_confidence}% confidence).
+                  </p>
+                  <p className="text-amber-700 text-[11px] italic">
+                    {inspectionResult.assessment_notes}
+                  </p>
+                  <div className="text-[10px] text-amber-900 bg-amber-100/70 p-2 rounded-lg font-medium">
+                    ⚠️ AI verification grade cannot be assigned. Please upload a photo of your actual {crop === 'Other' ? customCrop : crop} harvest.
+                  </div>
                 </div>
-                <div className="p-2 bg-slate-50 rounded-lg">
-                  <span className="text-[10px] font-bold text-slate-400 block">Uniformity</span>
-                  <strong className="text-slate-800">{inspectionResult.uniformity_pct ?? 92}%</strong>
+              )}
+
+              {inspectionResult.verification_status === 'IMAGE_UNSUITABLE' && (
+                <div className="p-3.5 bg-rose-50 rounded-xl border border-rose-300 text-xs space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-rose-900 flex items-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      Image Unsuitable for Verification ({inspectionResult.image_quality_status || 'BLURRY'})
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-200 text-rose-900">
+                      Unverified
+                    </span>
+                  </div>
+                  <p className="text-rose-800 text-[11px] leading-relaxed">
+                    {inspectionResult.assessment_notes || 'Image clarity or lighting is insufficient to perform optical defect analysis.'}
+                  </p>
+                  <div className="text-[10px] text-rose-900 bg-rose-100/70 p-2 rounded-lg font-medium">
+                    💡 Tip: Capture produce in bright natural light, hold camera steady, and place produce centrally.
+                  </div>
                 </div>
-                <div className="p-2 bg-slate-50 rounded-lg">
-                  <span className="text-[10px] font-bold text-slate-400 block">Defects</span>
-                  <strong className="text-slate-800">{inspectionResult.defects_pct ?? 3}%</strong>
+              )}
+
+              {inspectionResult.verification_status === 'VISIBLE_DEFECTS' && (
+                <div className="p-3.5 bg-rose-50 rounded-xl border border-rose-300 text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-rose-900 flex items-center gap-1.5">
+                      <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+                      Visible Defects Detected: AI Grade {inspectionResult.ai_assessed_grade}
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-200 text-rose-900">
+                      Defect Area: {inspectionResult.defect_detected_pct}%
+                    </span>
+                  </div>
+                  <p className="text-rose-800 text-[11px] leading-relaxed">
+                    {inspectionResult.assessment_notes}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 text-center text-xs pt-1">
+                    <div className="p-2 bg-white rounded-lg border border-rose-200">
+                      <span className="text-[10px] font-bold text-slate-400 block">Farmer Declared</span>
+                      <strong className="text-slate-800">{qualityGrade}</strong>
+                    </div>
+                    <div className="p-2 bg-white rounded-lg border border-rose-200">
+                      <span className="text-[10px] font-bold text-rose-600 block">AI Verified Grade</span>
+                      <strong className="text-rose-700">{inspectionResult.ai_assessed_grade}</strong>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {inspectionResult.verification_status === 'REVIEW_REQUIRED' && (
+                <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-300 text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-900 flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                      Quality Grade Divergence
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-200 text-amber-900">
+                      AI: {inspectionResult.ai_assessed_grade}
+                    </span>
+                  </div>
+                  <p className="text-amber-800 text-[11px]">
+                    {inspectionResult.assessment_notes}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                    <div className="p-2 bg-white rounded-lg border border-amber-200">
+                      <span className="text-[10px] font-bold text-slate-400 block">Declared Grade</span>
+                      <strong className="text-slate-800">{qualityGrade}</strong>
+                    </div>
+                    <div className="p-2 bg-white rounded-lg border border-amber-200">
+                      <span className="text-[10px] font-bold text-amber-700 block">AI Suggestion</span>
+                      <strong className="text-amber-800">{inspectionResult.ai_assessed_grade}</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(inspectionResult.verification_status === 'VERIFIED_ALIGNED' || inspectionResult.verification_status === 'VERIFIED_SUPERIOR') && (
+                <div className="p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-300 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      AI Quality Certified: <strong>{inspectionResult.ai_assessed_grade}</strong>
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">
+                      Confidence: {inspectionResult.confidence_score}%
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-800">
+                    {inspectionResult.assessment_notes}
+                  </p>
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
+                    <div className="p-2 bg-white rounded-lg border border-emerald-100">
+                      <span className="text-[10px] font-bold text-slate-400 block">Ripeness</span>
+                      <strong className="text-slate-800">{inspectionResult.ripeness_pct}%</strong>
+                    </div>
+                    <div className="p-2 bg-white rounded-lg border border-emerald-100">
+                      <span className="text-[10px] font-bold text-slate-400 block">Uniformity</span>
+                      <strong className="text-slate-800">{inspectionResult.uniformity_score}%</strong>
+                    </div>
+                    <div className="p-2 bg-white rounded-lg border border-emerald-100">
+                      <span className="text-[10px] font-bold text-slate-400 block">Defects</span>
+                      <strong className="text-slate-800">{inspectionResult.defect_detected_pct}%</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-[11px] text-slate-500">

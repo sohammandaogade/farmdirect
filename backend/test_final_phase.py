@@ -225,15 +225,28 @@ def run_final_phase_tests():
 
     # 20. Computer-Vision Quality Upload
     print("--- Test 20: Computer-Vision Produce Quality Assessment ---")
-    fake_image = (io.BytesIO(b"fake-image-bytes-jpeg-format-12345"), 'tomato_sample.jpg')
+    import numpy as np
+    from PIL import Image
+    w, h = 200, 200
+    arr = np.ones((h, w, 3), dtype=np.uint8) * 240
+    y, x = np.ogrid[:h, :w]
+    produce_mask = (x - 100)**2 + (y - 100)**2 <= 60**2
+    arr[produce_mask] = [220, 35, 30]
+    img = Image.fromarray(arr)
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format='JPEG')
+    img_byte_arr.seek(0)
+    real_image = (img_byte_arr, 'tomato_sample.jpg')
     res = client.post('/api/quality/upload-inspect', data={
-        'image': fake_image,
+        'image': real_image,
         'declared_grade': 'Grade A',
         'crop': 'Tomato'
     }, content_type='multipart/form-data')
     assert res.status_code == 200
     qi = res.get_json()
     assert qi['success'] is True
+    assert qi['verification_status'] == 'VERIFIED_ALIGNED'
+    assert qi['ai_assessed_grade'] == 'Grade A'
     print(f"[PASS] Vision Assessment: AI Grade = {qi['ai_assessed_grade']} (Ripeness: {qi['ripeness_pct']}%, Uniformity: {qi['uniformity_score']}%, Status: {qi['verification_status']})")
 
     print("\n=======================================================")

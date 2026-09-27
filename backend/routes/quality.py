@@ -34,21 +34,29 @@ def upload_and_inspect():
     if not result.get('success'):
         return jsonify(result), 400
 
-    # If listing_id provided or farmer_id present, record in database
+    # Persist inspection in database
     try:
         insp = QualityInspection(
-            listing_id=int(listing_id) if listing_id and listing_id.isdigit() else None,
+            listing_id=int(listing_id) if listing_id and str(listing_id).isdigit() else None,
             farmer_id=int(farmer_id) if farmer_id and str(farmer_id).isdigit() else 1,
-            image_url=result['image_url'],
+            image_url=result.get('image_url', ''),
             declared_grade=declared_grade,
-            ai_assessed_grade=result['ai_assessed_grade'],
-            ripeness_pct=result['ripeness_pct'],
-            uniformity_score=result['uniformity_score'],
-            defect_detected_pct=result['defect_detected_pct'],
-            confidence_score=result['confidence_score'],
-            verification_status=result['verification_status'],
-            assessment_notes=result['assessment_notes'],
-            disclaimer=result['disclaimer']
+            ai_assessed_grade=result.get('ai_assessed_grade', 'Unverified'),
+            expected_crop=result.get('expected_crop', crop),
+            detected_crop=result.get('detected_crop'),
+            crop_confidence=result.get('crop_confidence', 0.0),
+            image_quality_status=result.get('image_quality_status', 'VALID'),
+            visible_defect_level=result.get('visible_defect_level', 'LOW'),
+            defect_confidence=result.get('defect_confidence', 0.0),
+            model_name=result.get('model_name', 'FarmDirect-AgriVision-ColorTextureEngine'),
+            model_version=result.get('model_version', '2.0.0'),
+            ripeness_pct=result.get('ripeness_pct', 0.0),
+            uniformity_score=result.get('uniformity_score', 0.0),
+            defect_detected_pct=result.get('defect_detected_pct', 0.0),
+            confidence_score=result.get('confidence_score', 0.0),
+            verification_status=result.get('verification_status', 'UNVERIFIED'),
+            assessment_notes=result.get('assessment_notes', ''),
+            disclaimer=result.get('disclaimer', '')
         )
         db.session.add(insp)
         db.session.commit()
@@ -58,3 +66,14 @@ def upload_and_inspect():
         # Non-fatal if standalone test without valid FK
 
     return jsonify(result), 200
+
+@quality_bp.route('/listing/<int:listing_id>', methods=['GET'])
+def get_listing_inspection(listing_id):
+    """Retrieve the latest quality inspection report for a given produce listing."""
+    insp = QualityInspection.query.filter_by(listing_id=listing_id).order_by(QualityInspection.created_at.desc()).first()
+    if not insp:
+        return jsonify({'success': False, 'message': 'No quality inspection found for this listing.'}), 404
+    return jsonify({
+        'success': True,
+        'data': insp.to_dict()
+    }), 200
