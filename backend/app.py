@@ -115,16 +115,16 @@ def create_app(config_class=Config):
                     ('expected_crop', 'VARCHAR(100)'),
                     ('detected_crop', 'VARCHAR(100)'),
                     ('crop_confidence', 'FLOAT DEFAULT 0.0'),
-                    ('image_quality_status', 'VARCHAR(50) DEFAULT "VALID"'),
-                    ('visible_defect_level', 'VARCHAR(50) DEFAULT "LOW"'),
+                    ('image_quality_status', "VARCHAR(50) DEFAULT 'VALID'"),
+                    ('visible_defect_level', "VARCHAR(50) DEFAULT 'LOW'"),
                     ('defect_confidence', 'FLOAT DEFAULT 0.0'),
-                    ('model_name', 'VARCHAR(100) DEFAULT "FarmDirect-AgriVision-ColorTextureEngine"'),
-                    ('model_version', 'VARCHAR(50) DEFAULT "2.0.0"')
+                    ('model_name', "VARCHAR(100) DEFAULT 'FarmDirect-AgriVision-ColorTextureEngine'"),
+                    ('model_version', "VARCHAR(50) DEFAULT '2.0.0'")
                 ]
                 with db.engine.connect() as conn:
                     for col_name, col_type in new_cols:
                         if col_name not in existing_cols:
-                            conn.execute(text(f'ALTER TABLE quality_inspections ADD COLUMN {col_name} {col_type}'))
+                            conn.execute(text(f"ALTER TABLE quality_inspections ADD COLUMN {col_name} {col_type}"))
                     conn.commit()
         except Exception as e:
             app.logger.warning(f"Schema column verification warning: {e}")

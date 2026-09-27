@@ -13,24 +13,27 @@ from sqlalchemy import text, inspect
 app = create_app()
 
 def ensure_schema_columns():
-    inspector = inspect(db.engine)
-    if 'quality_inspections' in inspector.get_table_names():
-        existing_cols = {c['name'] for c in inspector.get_columns('quality_inspections')}
-        new_cols = [
-            ('expected_crop', 'VARCHAR(100)'),
-            ('detected_crop', 'VARCHAR(100)'),
-            ('crop_confidence', 'FLOAT DEFAULT 0.0'),
-            ('image_quality_status', 'VARCHAR(50) DEFAULT "VALID"'),
-            ('visible_defect_level', 'VARCHAR(50) DEFAULT "LOW"'),
-            ('defect_confidence', 'FLOAT DEFAULT 0.0'),
-            ('model_name', 'VARCHAR(100) DEFAULT "FarmDirect-AgriVision-ColorTextureEngine"'),
-            ('model_version', 'VARCHAR(50) DEFAULT "2.0.0"')
-        ]
-        with db.engine.connect() as conn:
-            for col_name, col_type in new_cols:
-                if col_name not in existing_cols:
-                    conn.execute(text(f'ALTER TABLE quality_inspections ADD COLUMN {col_name} {col_type}'))
-            conn.commit()
+    try:
+        inspector = inspect(db.engine)
+        if 'quality_inspections' in inspector.get_table_names():
+            existing_cols = {c['name'] for c in inspector.get_columns('quality_inspections')}
+            new_cols = [
+                ('expected_crop', 'VARCHAR(100)'),
+                ('detected_crop', 'VARCHAR(100)'),
+                ('crop_confidence', 'FLOAT DEFAULT 0.0'),
+                ('image_quality_status', "VARCHAR(50) DEFAULT 'VALID'"),
+                ('visible_defect_level', "VARCHAR(50) DEFAULT 'LOW'"),
+                ('defect_confidence', 'FLOAT DEFAULT 0.0'),
+                ('model_name', "VARCHAR(100) DEFAULT 'FarmDirect-AgriVision-ColorTextureEngine'"),
+                ('model_version', "VARCHAR(50) DEFAULT '2.0.0'")
+            ]
+            with db.engine.connect() as conn:
+                for col_name, col_type in new_cols:
+                    if col_name not in existing_cols:
+                        conn.execute(text(f"ALTER TABLE quality_inspections ADD COLUMN {col_name} {col_type}"))
+                conn.commit()
+    except Exception as e:
+        print(f"Schema verification note: {e}")
 
 def seed_database():
     with app.app_context():

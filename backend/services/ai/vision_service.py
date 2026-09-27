@@ -10,10 +10,26 @@ Analyzes actual pixel data using PIL, NumPy, and SciPy to:
 
 import os
 import uuid
-import numpy as np
-from PIL import Image
-from scipy.ndimage import laplace
+import logging
 from werkzeug.utils import secure_filename
+
+logger = logging.getLogger('farmdirect.vision')
+
+try:
+    import numpy as np
+    from PIL import Image
+    HAS_CORE_VISION_LIBS = True
+except ImportError as e:
+    logger.warning(f"Core vision libraries missing: {e}")
+    HAS_CORE_VISION_LIBS = False
+
+try:
+    from scipy.ndimage import laplace
+except ImportError:
+    # Deterministic discrete 2D Laplacian operator via NumPy
+    def laplace(gray):
+        padded = np.pad(gray, 1, mode='edge')
+        return (padded[:-2, 1:-1] + padded[2:, 1:-1] + padded[1:-1, :-2] + padded[1:-1, 2:]) - 4.0 * gray
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
