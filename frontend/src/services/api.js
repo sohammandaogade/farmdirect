@@ -134,7 +134,7 @@ export const aiAPI = {
 export const copilotAPI = {
   askFarmer: (query, language = 'en') => api.post('/copilot/farmer', { query, language }),
   askBuyer: (query, language = 'en') => api.post('/copilot/buyer', { query, language }),
-  voiceAssistant: (transcript) => api.post('/copilot/voice-command', { transcript }),
+  voiceAssistant: (transcript, language = 'en') => api.post('/copilot/voice-command', { transcript, language }),
   generateListing: (prompt) => api.post('/copilot/generate-listing', { prompt }),
 };
 

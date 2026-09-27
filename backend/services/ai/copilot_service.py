@@ -74,13 +74,17 @@ MARATHI_KEYWORDS = {
     'आहेत', 'आहे', 'करावे', 'रोखावा', 'बाजारभाव', 'कांद्याचे', 'टोमॅटोवरील', 'गव्हाचा',
     'पाचट', 'काडीकचरा', 'थांबवून', 'शेतीतील', 'या', 'कोणती', 'किती', 'कसे', 'नाही',
     'विकायचा', 'काढणी', 'शेतकरी', 'जिल्ह्यांत', 'वाहतूक', 'मर्यादा', 'महिन्यात', 'खरेदीसाठी',
-    'योग्य', 'वेळ', 'कशी', 'द्यावी', 'मुबलक', 'आवक', 'सध्या'
+    'योग्य', 'वेळ', 'कशी', 'द्यावी', 'मुबलक', 'आवक', 'सध्या', 'कांदा', 'बटाटा', 'टोमॅटो',
+    'गहू', 'द्राक्षे', 'ऊस', 'विकायचे', 'विकणे', 'विकण्याची', 'करावी', 'करावा', 'हवामान',
+    'पाऊस', 'कीड', 'खत', 'माती', 'ठिबक', 'सिंचन', 'सांगा', 'पाहिजे', 'होते', 'होती'
 }
 
 HINDI_KEYWORDS = {
     'हैं', 'है', 'कैसे', 'बचें', 'रोकना', 'चाहिए', 'अवशेषों', 'बेचें', 'मंडी', 'भाव',
     'क्या', 'इस', 'महीने', 'किन', 'जिलों', 'खरीदने', 'खरीद', 'समय', 'अच्छा', 'सबसे',
-    'थोक', 'वर्तमान', 'अधिशेष', 'परिवहन', 'सीमा', 'कहाँ', 'किसे', 'करें', 'तय', 'उपलब्ध'
+    'थोक', 'वर्तमान', 'अधिशेष', 'परिवहन', 'सीमा', 'कहाँ', 'किसे', 'करें', 'तय', 'उपलब्ध',
+    'प्याज', 'आलू', 'टमाटर', 'गेहूं', 'अंगूर', 'गन्ना', 'बेचने', 'बेचना', 'रोकें', 'मौसम',
+    'बारिश', 'रोग', 'खाद', 'उर्वरक', 'मिट्टी', 'सिंचाई', 'बताएं', 'सकते', 'सकता', 'सकती'
 }
 
 
@@ -97,18 +101,23 @@ class CopilotService:
             hi_hits = len(tokens & HINDI_KEYWORDS)
             mr_hits = len(tokens & MARATHI_KEYWORDS)
 
+            # If user explicitly selected Hindi or Marathi, strongly respect it
+            if explicit_lang == 'hi' and mr_hits <= (hi_hits + 1):
+                return 'hi'
+            if explicit_lang == 'mr' and hi_hits <= (mr_hits + 1):
+                return 'mr'
+
             if hi_hits > mr_hits:
                 return 'hi'
             if mr_hits > hi_hits:
                 return 'mr'
 
-            # If equal, respect explicit_lang if provided
             if explicit_lang in ['hi', 'mr']:
                 return explicit_lang
 
-            # Devanagari default: Marathi if mentions specific MH mandis/terms, else Hindi
+            # Devanagari default: Marathi if mentions specific MH dialect terms, else Hindi
             t = text.lower()
-            if any(w in t for w in ['कांदा', 'गहू', 'नाशिक', 'पुणे', 'द्राक्षे', 'करपा', 'बाजारभाव']):
+            if any(w in t for w in ['कांदा', 'गहू', 'द्राक्षे', 'करपा', 'बाजारभाव', 'आहेत', 'करावे']):
                 return 'mr'
             return 'hi'
 
@@ -349,17 +358,85 @@ class CopilotService:
                 )
             return {'reply': reply, 'category': 'SOIL_NUTRITION'}
 
-        # 6. GENERAL SELL NOW / HARVEST TIMING
-        elif any(w in q for w in ['sell now', 'what to sell', 'when to sell', 'selling time', 'recommendation', 'विक्री', 'बेचना']):
-            if not listings:
-                no_list = (
-                    "आपल्याकडे सध्या कोणतीही सक्रिय पीक नोंदणी नाही. आगामी काढणी नोंदवा जेणेकरून एआय योग्य वेळ ठरवू शकेल."
-                    if lang == 'mr' else
-                    "आपके पास वर्तमान में कोई सक्रिय फसल लिस्टिंग नहीं है। आगामी फसल जोड़ें ताकि एआई सेलिंग टाइम बता सके।"
-                    if lang == 'hi' else
-                    "You currently have no active produce listings. Start by adding your upcoming harvest so our AI can analyze market timing for you."
+        # 6. WEATHER & HARVEST DISRUPTION RISK
+        elif any(w in q for w in ['weather', 'climate', 'rain', 'disruption', 'temperature', 'frost', 'storm', 'मौसम', 'हवामान', 'बारिश', 'पाऊस', 'जोखिम', 'तापमान', 'अवकाळी', 'गारपीट', 'धुके']):
+            if lang == 'mr':
+                reply = (
+                    f"**{region_mr} परिसरात {crop_mr} पिकासाठी हवामान व काढणी जोखीम अहवाल ⛅🌧️**\n\n"
+                    f"• **चालू हवामान जोखीम स्तर:** **कमी ते मध्यम (२८/१००)** — आगामी २-३ दिवसांत हलक्या पावसाची शक्यता.\n"
+                    f"• **काढणी सुरक्षितता:** काढणीयोग्य {crop_mr} पिकाची तोडणी कोरड्या वेळेत पूर्ण करा आणि मुळाशी पाण्याचा निचरा योग्य ठेवा.\n"
+                    f"• **संरक्षण उपाय:** तोडणी केलेला शेतीमाल तात्काळ सुरक्षित शेड किंवा प्लास्टिक ताडपत्री खाली साठवा, जेणेकरून ओलाव्यामुळे बुरशीचा प्रादुर्भाव होणार नाही.\n"
+                    f"• आपल्या शेतातील रिअल-टाइम आर्द्रता व पर्जन्यमान तपासण्यासाठी **Farm Digital Twin** डॅशबोर्ड पहा."
                 )
-                return {'reply': no_list, 'action_suggestion': '/farmer/listings/new'}
+            elif lang == 'hi':
+                reply = (
+                    f"**{region_hi} क्षेत्र में {crop_hi} की फसल हेतु मौसम व कटाई जोखिम विश्लेषण ⛅🌧️**\n\n"
+                    f"• **वर्तमान मौसम जोखिम स्तर:** **सामान्य से मध्यम (28/100)** — अगले 72 घंटों में छिटपुट बादलों व हल्की वर्षा का अनुमान।\n"
+                    f"• **कटाई व तुड़ाई प्रोटोकॉल:** पकी हुई फसल की तुड़ाई सूखे समय में ही करें ताकि नमी से फफूंद न लगे।\n"
+                    f"• **फसल सुरक्षा:** खेत में कटी हुई उपज को तिरपाल से ढकें और जमीन से ऊपर क्रेट्स में रखें। जलभराव रोकने के लिए नालियां साफ रखें।\n"
+                    f"• लाइव माइक्रो-क्लाइमेट और मिट्टी की नमी का सटीक डेटा देखने के लिए **Farm Digital Twin** डॅशबोर्ड का उपयोग करें।"
+                )
+            else:
+                reply = (
+                    f"**Weather Disruption & Harvest Risk Outlook for {detected_crop} ({detected_region}) ⛅🌧️**\n\n"
+                    f"• **Active Risk Score:** **Low to Moderate (28/100)** — Isolated localized precipitation possible over next 48–72 hours.\n"
+                    f"• **Harvest Timing:** Accelerate field harvest during dry daylight windows; avoid picking while dew or surface wetness is present.\n"
+                    f"• **Post-Harvest Protection:** Store harvested crates under ventilated sheltered sheds to prevent moisture stagnation and microbial rot.\n"
+                    f"• Check your farm's live micro-climate and soil moisture levels directly on the **Farm Digital Twin** page."
+                )
+            return {'reply': reply, 'category': 'WEATHER_RISK', 'action_suggestion': '/farmer/digital-twin'}
+
+        # 7. IRRIGATION & WATER MANAGEMENT
+        elif any(w in q for w in ['water', 'irrigation', 'drip', 'पानी', 'सिंचाई', 'ड्रिप', 'ठिबक', 'सिंचन', 'पाणी']):
+            if lang == 'mr':
+                reply = (
+                    f"**{crop_mr} पिकासाठी ठिबक सिंचन व पाणी व्यवस्थापन 💧🌱**\n\n"
+                    f"• **पाण्याची गरज:** जमिनीतील वाफसा टिकवून ठेवण्यासाठी दर २ ते ३ दिवसांनी सकाळी ठिबकद्वारे २-३ तास पाणी द्या.\n"
+                    f"• **फुलधारणा व फळधारणा टप्पा:** या काळात पाण्याचा ताण पडू देऊ नका; अन्यथा फळगळ किंवा तडकण्याचा धोका असतो.\n"
+                    f"• **पाणी बचत:** प्लास्टिक मल्चिंगचा वापर केल्यास पाण्याचे बाष्पीभवन ४०% कमी होते."
+                )
+            elif lang == 'hi':
+                reply = (
+                    f"**{crop_hi} के लिए ड्रिप सिंचाई व जल प्रबंधन परामर्श 💧🌱**\n\n"
+                    f"• **सिंचाई अंतराल:** खेत में उचित नमी बनाए रखने के लिए ड्रिप द्वारा 2 से 3 दिन के अंतराल पर सुबह के समय पानी दें।\n"
+                    f"• **फूल व फल अवस्था:** इस संवेदनशील समय में न तो जलभराव होने दें और न ही सूखा पड़ने दें।\n"
+                    f"• **जल संरक्षण:** ड्रिप फर्टिगेशन से 30-40% पानी और उर्वरक दोनों की बचत होती है।"
+                )
+            else:
+                reply = (
+                    f"**Precision Water & Drip Irrigation Advisory for {detected_crop} 💧🌱**\n\n"
+                    f"• **Optimal Irrigation Cycle:** Deliver scheduled morning drip irrigations every 2–3 days to sustain root-zone aerobic moisture.\n"
+                    f"• **Critical Growth Stages:** Maintain steady moisture during flowering and fruit setting; avoid sudden moisture swings.\n"
+                    f"• **Telemetry Integration:** Review soil moisture sensors on your **Farm Digital Twin** to automate watering triggers."
+                )
+            return {'reply': reply, 'category': 'IRRIGATION'}
+
+        # 8. GENERAL SELL NOW / HARVEST TIMING
+        elif any(w in q for w in ['sell now', 'what to sell', 'when to sell', 'selling time', 'best time', 'best time to sell', 'timing', 'recommendation', 'विक्री', 'विकण्याची', 'विकायची', 'विकणे', 'केव्हा विकावे', 'बेचना', 'बेचने', 'बेचें', 'सही समय', 'सबसे सही समय', 'कब बेचें', 'समय']):
+            p_fair = PriceForecasterService.get_predictive_fair_price(detected_crop, detected_region, 'Grade A', 1000)
+            if not listings:
+                if lang == 'mr':
+                    no_list = (
+                        f"**{detected_region} {crop_mr} विक्री वेळ व भाव विश्लेषण 📅📈**\n\n"
+                        f"• **चालू संदर्भ भाव:** ₹{p_fair['predicted_price']:.2f}/किलो (अपेक्षित पट्टा: ₹{p_fair['lower_bound']:.2f} ते ₹{p_fair['upper_bound']:.2f}/किलो)\n"
+                        f"• **विक्रीसाठी योग्य वेळ:** पुढील १० ते १४ दिवसांत आवक संतुलित झाल्यावर विक्री करणे अधिक फायदेशीर ठरेल.\n"
+                        f"• आगामी काढणीची नोंदणी करण्यासाठी **'Add Listing'** वर क्लिक करा."
+                    )
+                elif lang == 'hi':
+                    no_list = (
+                        f"**{detected_region} {crop_hi} बेचने का सबसे सही समय व भाव विश्लेषण 📅📈**\n\n"
+                        f"• **वर्तमान संदर्भ भाव:** ₹{p_fair['predicted_price']:.2f}/किग्रा (दायरा: ₹{p_fair['lower_bound']:.2f} – ₹{p_fair['upper_bound']:.2f}/किग्रा)\n"
+                        f"• **बेचने का सबसे अनुकूल समय:** अगले 10 से 14 दिनों के भीतर जब मंडी आवक स्थिर होगी, बेहतर लाभ मिलेगा।\n"
+                        f"• आगामी फसल को सीधे खरीदारों तक पहुंचाने हेतु **'Add Listing'** का उपयोग करें।"
+                    )
+                else:
+                    no_list = (
+                        f"**Market Timing & Selling Opportunity for {detected_crop} ({detected_region}) 📅📈**\n\n"
+                        f"• **Current Benchmark:** ₹{p_fair['predicted_price']:.2f}/kg (Corridor: ₹{p_fair['lower_bound']:.2f} – ₹{p_fair['upper_bound']:.2f}/kg)\n"
+                        f"• **Optimal Selling Window:** Over the next 10–14 days as peak post-harvest arrival pressure stabilizes.\n"
+                        f"• Create a new active listing to receive direct buyer offers at zero commission."
+                    )
+                return {'reply': no_list, 'action_suggestion': '/farmer/listings/new', 'category': 'MARKET_TIMING'}
 
             top_listing = listings[0]
             intel = SmartSellingService.evaluate_selling_time(
@@ -368,17 +445,36 @@ class CopilotService:
                 top_listing.available_quantity,
                 top_listing.location
             )
-            reply = (
-                f"**Strategic Selling Recommendation for {intel['crop']}: {intel['decision']}**\n\n"
-                f"{intel['headline']}\n\n"
-                f"• Current Price: ₹{intel['current_price']:.2f}/kg | Projected 7-day Price: ₹{intel['predicted_future_price']:.2f}/kg\n"
-                f"• Demand Pressure: {intel['demand_summary']['index']}/100 ({intel['demand_summary']['trend']})\n"
-                f"• Perishability: {intel['perishability']['level']} ({intel['perishability']['shelf_life_days']} days shelf life)\n\n"
-                f"**Reasoning:** {intel['reasoning']}"
-            )
-            return {'reply': reply, 'data': intel}
+            if lang == 'mr':
+                reply = (
+                    f"**{intel['crop']} धोरणात्मक विक्री शिफारस: {intel['decision']} ({top_listing.location}) 🌾📊**\n\n"
+                    f"{intel['headline']}\n\n"
+                    f"• **चालू दर:** ₹{intel['current_price']:.2f}/किलो | **७ दिवसांचा अंदाजित दर:** ₹{intel['predicted_future_price']:.2f}/किलो\n"
+                    f"• **मागणी निर्देशांक:** {intel['demand_summary']['index']}/१०० ({intel['demand_summary']['trend']})\n"
+                    f"• **टिकाऊ क्षमता:** {intel['perishability']['level']} ({intel['perishability']['shelf_life_days']} दिवस)\n\n"
+                    f"**विश्लेषण:** {intel['reasoning']}"
+                )
+            elif lang == 'hi':
+                reply = (
+                    f"**{intel['crop']} रणनीतिक बिक्री सिफारिश: {intel['decision']} ({top_listing.location}) 🌾📊**\n\n"
+                    f"{intel['headline']}\n\n"
+                    f"• **वर्तमान मूल्य:** ₹{intel['current_price']:.2f}/किग्रा | **7-दिवसीय अनुमानित मूल्य:** ₹{intel['predicted_future_price']:.2f}/किग्रा\n"
+                    f"• **डिमांड इंडेक्स:** {intel['demand_summary']['index']}/100 ({intel['demand_summary']['trend']})\n"
+                    f"• **शेल्फ लाइफ:** {intel['perishability']['level']} ({intel['perishability']['shelf_life_days']} दिन)\n\n"
+                    f"**मुख्य कारण:** {intel['reasoning']}"
+                )
+            else:
+                reply = (
+                    f"**Strategic Selling Recommendation for {intel['crop']}: {intel['decision']}**\n\n"
+                    f"{intel['headline']}\n\n"
+                    f"• Current Price: ₹{intel['current_price']:.2f}/kg | Projected 7-day Price: ₹{intel['predicted_future_price']:.2f}/kg\n"
+                    f"• Demand Pressure: {intel['demand_summary']['index']}/100 ({intel['demand_summary']['trend']})\n"
+                    f"• Perishability: {intel['perishability']['level']} ({intel['perishability']['shelf_life_days']} days shelf life)\n\n"
+                    f"**Reasoning:** {intel['reasoning']}"
+                )
+            return {'reply': reply, 'data': intel, 'category': 'MARKET_TIMING'}
 
-        # 7. REGIONAL DEMAND
+        # 9. REGIONAL DEMAND
         elif any(w in q for w in ['demand', 'market demand', 'highest demand', 'trending', 'मागणी', 'मांग']):
             d = DemandForecastService.get_demand_forecast(detected_crop, detected_region)
             if lang == 'mr':
@@ -402,48 +498,35 @@ class CopilotService:
                     f"• **7-Day Demand Forecast:** **{d['forecast_7d_pct']:+}%**\n"
                     f"• **Market Dynamics:** {d['explanation']}"
                 )
-            return {'reply': reply, 'data': d}
+            return {'reply': reply, 'data': d, 'category': 'DEMAND_OUTLOOK'}
 
-        # 8. DEFAULT GREETING & GUIDANCE
+        # 10. INTELLIGENT CONTEXTUAL ADVISORY FALLBACK
         else:
-            trust_info = TrustEngine.get_farmer_trust(farmer_id)
-            total_vol = sum(l.available_quantity for l in listings)
-
+            p_fallback = PriceForecasterService.get_predictive_fair_price(detected_crop, detected_region, 'Grade A', 1000)
             if lang == 'mr':
                 reply = (
-                    f"नमस्कार {farmer.name}! मी आपला फार्मडायरेक्ट एआय कृषी सल्लागार (AI Copilot) आहे.\n\n"
-                    f"• **आपला विश्वासू विक्रेता स्कोअर:** **{trust_info['trust_score']}% ({trust_info['reliability_tier']})**\n"
-                    f"• **शेतमालाचा एकूण साठा:** **{total_vol:,.0f} किलो**\n\n"
-                    f"आपण मला खालीलप्रमाणे प्रश्न विचारू शकता:\n"
-                    f"• _'नाशिक बाजार समितीमध्ये कांद्याचे चालू बाजारभाव काय आहेत?'_\n"
-                    f"• _'अवकाळी पावसानंतर टोमॅटोवरील करपा रोगाचे नियंत्रण कसे करावे?'_\n"
-                    f"• _'गव्हाचा साठा २ आठवडे थांबवून विकावा की आत्ताच विकावा?'_\n"
-                    f"• _'शेतीतील उरलेले पाचट/काडीकचरा कसा विकावा?'_"
+                    f"**फार्मडायरेक्ट कृषी सल्लागार: {crop_mr} ({region_mr}) 🌾🤖**\n\n"
+                    f"आपल्या प्रश्नाबाबत शेती विषयक विश्लेषण:\n\n"
+                    f"• **बाजार दर अंदाज:** सध्या {region_mr} मध्ये {crop_mr} चा शिफारस केलेला दर **₹{p_fallback['predicted_price']:.2f}/किलो** आहे.\n"
+                    f"• **पीक नियोजन:** योग्य खत व्यवस्थापन, कीड नियंत्रण आणि वेळेवर काढणी करून फार्मडायरेक्टवर थेट खरेदीदारांशी सौदा करा.\n\n"
+                    f"💡 _आपण मला हवामान जोखीम, करपा/रोग नियंत्रण, मंडी भाव, किंवा शेती कचरा विक्रीबाबत विचारू शकता._"
                 )
             elif lang == 'hi':
                 reply = (
-                    f"नमस्ते {farmer.name}! मैं आपका फार्मडायरेक्ट एआई कृषि सलाहकार (AI Copilot) हूँ।\n\n"
-                    f"• **आपका सप्लायर ट्रस्ट स्कोर:** **{trust_info['trust_score']}% ({trust_info['reliability_tier']})**\n"
-                    f"• **सक्रिय फसल भंडार:** **{total_vol:,.0f} किग्रा**\n\n"
-                    f"आप मुझसे इस प्रकार के प्रश्न पूछ सकते हैं:\n"
-                    f"• _'नासिक में प्याज के वर्तमान मंडी भाव क्या हैं?'_\n"
-                    f"• _'असमय बारिश के बाद टमाटर में झुलसा रोग से कैसे बचें?'_\n"
-                    f"• _'क्या गेहूं का स्टॉक 2 हफ्ते रोकना चाहिए या अभी बेचना सही है?'_\n"
-                    f"• _'कृषि अवशेषों को वेस्ट मार्केटप्लेस पर कैसे बेचें?'_"
+                    f"**फार्मडायरेक्ट कृषि सलाहकार: {crop_hi} ({region_hi}) 🌾🤖**\n\n"
+                    f"आपकी पूछताछ के संदर्भ में मुख्य कृषि अंतर्दृष्टि:\n\n"
+                    f"• **बाजार संदर्भ भाव:** वर्तमान में {region_hi} में {crop_hi} का अनुमानित उचित मूल्य **₹{p_fallback['predicted_price']:.2f}/किग्रा** है।\n"
+                    f"• **कृषि कार्य योजना:** संतुलित पोषक तत्व प्रबंधन, नियमित फसल निगरानी तथा सही समय पर तुड़ाई करके फार्मडायरेक्ट पर सीधे खरीदारों से जुड़ें।\n\n"
+                    f"💡 _आप मुझसे मौसम का जोखिम, झुलसा/कीट नियंत्रण, मंडी भाव, या पराली/बायोमास बेचने के बारे में भी पूछ सकते हैं।_"
                 )
             else:
                 reply = (
-                    f"Hello {farmer.name}! I am your FarmDirect AI Agricultural Copilot.\n\n"
-                    f"• **Your Trust Score:** **{trust_info['trust_score']}% ({trust_info['reliability_tier']})**\n"
-                    f"• **Active Produce Volume:** **{total_vol:,.0f} kg** in your farm inventory\n\n"
-                    f"You can ask me questions like:\n"
-                    f"• _'What are current APMC price benchmarks for onions in Nashik?'_\n"
-                    f"• _'How to prevent blight in tomato crops after unseasonal rain?'_\n"
-                    f"• _'Is it optimal to hold wheat stock for 2 weeks or sell now?'_\n"
-                    f"• _'How do I list agricultural stubble on the waste marketplace?'_\n"
-                    f"• _'What is the optimal NPK balance for my tomatoes?'_"
+                    f"**FarmDirect Agronomic AI Advisory: {detected_crop} ({detected_region}) 🌾🤖**\n\n"
+                    f"• **Current Market Benchmark:** Fair predictive price in {detected_region} is **₹{p_fallback['predicted_price']:.2f}/kg**.\n"
+                    f"• **Field Guidance:** Maintain balanced crop nutrition, monitor canopy health, and leverage FarmDirect for direct buyer sales.\n\n"
+                    f"💡 _You can ask specific questions about weather disruption risk, disease/blight prevention, market holding strategy, or farm waste listing._"
                 )
-            return {'reply': reply, 'context': {'farmer_name': farmer.name}}
+            return {'reply': reply, 'category': 'GENERAL_ADVISORY', 'context': {'crop': detected_crop, 'region': detected_region}}
 
     # -------------------------------------------------------------------------
     # BUYER PROCUREMENT COPILOT
@@ -589,8 +672,62 @@ class CopilotService:
                 )
             return {'reply': reply, 'category': 'COLD_CHAIN'}
 
-        # 5. Natural Language Procurement Intent (e.g. "I need 5 tonnes of Grade A tomatoes near Pune below Rs 30/kg")
-        elif any(w in q for w in ['buy', 'need', 'procure', 'tonnes', 'kg', 'looking for', 'खरेदी', 'खरीदना', 'चाहिए']):
+        # 5. Price Benchmarks & Wholesale Mandi Intelligence for Buyers
+        elif any(w in q for w in ['price', 'rate', 'benchmark', 'wholesale', 'भाव', 'दर', 'दाम', 'रेट', 'किंमत', 'लागत', 'थोक भाव', 'बाजारभाव', 'cost']):
+            p = PriceForecasterService.get_predictive_fair_price(crop, region, 'Grade A', 1000)
+            if lang == 'mr':
+                reply = (
+                    f"**{region_mr} घाऊक {crop_mr} खरेदी दर व बाजार विश्लेषण 📊💼**\n\n"
+                    f"• **घाऊक खरेदी संदर्भ दर:** **₹{p['predicted_price']:.2f}/किलो**\n"
+                    f"• **वाजवी दर पट्टा (Corridor):** **₹{p['lower_bound']:.2f} ते ₹{p['upper_bound']:.2f}/किलो**\n"
+                    f"• **थेट खरेदी बचत:** फार्मडायरेक्टवरून शेतकऱ्यांकडून थेट खरेदी केल्यास APMC अडत, सेस व दलालीचे **६% ते ९%** निव्वळ बचत होते.\n"
+                    f"• **घाऊक सवलत शिफारस:** २ टन पेक्षा जास्त खरेदीवर ₹१.५० ते ₹२.००/किलो सवलतीचा प्रस्ताव (Counter-Offer) द्या."
+                )
+            elif lang == 'hi':
+                reply = (
+                    f"**{region_hi} थोक {crop_hi} खरीद मूल्य व मंडी विश्लेषण 📊💼**\n\n"
+                    f"• **थोक खरीद संदर्भ भाव:** **₹{p['predicted_price']:.2f}/किग्रा**\n"
+                    f"• **उचित मूल्य दायरा:** **₹{p['lower_bound']:.2f} – ₹{p['upper_bound']:.2f}/किग्रा**\n"
+                    f"• **डायरेक्ट प्रोक्योरमेंट मार्जिन:** फार्मडायरेक्ट पर किसानों से सीधे सौदे करने से मंडी टैक्स व बिचौलियों का 6% से 9% कमीशन बचता है।\n"
+                    f"• **वॉल्यूम डिस्काउंट रणनीति:** 2,000 किग्रा से अधिक के ऑर्डर पर लिस्टिंग मूल्य से ₹1.50 - ₹2.50/किग्रा कम का काउंटर-ऑफर दें।"
+                )
+            else:
+                reply = (
+                    f"**Wholesale Price Benchmark for {crop} in {region} 📊💼**\n\n"
+                    f"• **Predictive Fair Wholesale Price:** **₹{p['predicted_price']:.2f}/kg**\n"
+                    f"• **Target Procurement Corridor:** **₹{p['lower_bound']:.2f} – ₹{p['upper_bound']:.2f}/kg**\n"
+                    f"• **Direct Sourcing Margin:** Procuring directly via FarmDirect bypasses 6–9% APMC commission and intermediary spreads.\n"
+                    f"• **Volume Playbook:** High-volume orders (>2 tonnes) qualify for ₹1.50–₹2.50/kg concessions through our automated negotiation copilot."
+                )
+            return {'reply': reply, 'category': 'PRICE_INTELLIGENCE', 'data': p}
+
+        # 6. Logistics & Weather Disruption Risk for Supply Chains
+        elif any(w in q for w in ['weather', 'climate', 'rain', 'logistics', 'transit', 'delay', 'disruption', 'मौसम', 'हवामान', 'बारिश', 'पाऊस', 'जोखिम', 'वाहतूक', 'परिवहन']):
+            if lang == 'mr':
+                reply = (
+                    f"**{region_mr} कॉरिडॉर {crop_mr} वाहतूक व हवामान जोखीम अहवाल 🚚⛅**\n\n"
+                    f"• **वाहतूक जोखीम निर्देशांक:** **कमी ते मध्यम (२६/१००)** — मुख्य राष्ट्रीय महामार्गांवर वाहतूक सुरळीत आहे.\n"
+                    f"• **हवामान प्रभाव:** स्थानिक भागात हलक्या सरींचा अंदाज; नाशवंत माल झाकलेल्या वाहनांमधून (Closed Body/Reefer) पाठवावा.\n"
+                    f"• **शिफारस:** मालाची प्रत टिकवून ठेवण्यासाठी फार्मडायरेक्टच्या सत्यापित कोल्ड-चेन वाहतूकदारांची निवड करा."
+                )
+            elif lang == 'hi':
+                reply = (
+                    f"**{region_hi} लॉजिस्टिक्स व मौसम व्यवधान जोखिम मूल्यांकन 🚚⛅**\n\n"
+                    f"• **ट्रांजिट रिस्क स्कोर:** **निम्न से मध्यम (26/100)** — मुख्य कृषि परिवहन कॉरिडोर पर आवागमन सामान्य।\n"
+                    f"• **मौसम प्रभाव:** अगले 48 घंटों में हल्की वर्षा का अनुमान; फल व सब्जी को वॉटरप्रूफ व हवादार पैकिंग में ही डिस्पैच कराएं।\n"
+                    f"• **परिवहन सलाह:** दूरस्थ शहरों के लिए रेफ्रिजरेटेड वाहन का प्रयोग करें जिससे इन-ट्रांजिट सड़न से बचा जा सके।"
+                )
+            else:
+                reply = (
+                    f"**Logistics & Weather Disruption Assessment for {crop} ({region}) 🚚⛅**\n\n"
+                    f"• **Active Corridor Transit Risk:** **Low to Moderate (26/100)** — Clear transit along primary agricultural expressways.\n"
+                    f"• **Precipitation Warning:** Scattered showers predicted; ensure tarpaulin coverage or containerized reefers for perishable produce.\n"
+                    f"• **Action Suggestion:** Check regional supplier clusters and delivery schedules directly in your Buyer Dashboard."
+                )
+            return {'reply': reply, 'category': 'LOGISTICS_RISK'}
+
+        # 7. Natural Language Procurement Intent & Supplier Sourcing
+        elif any(w in q for w in ['buy', 'need', 'procure', 'tonnes', 'kg', 'looking for', 'supplier', 'suppliers', 'find', 'under', 'खरेदी', 'खरीदना', 'चाहिए', 'खोजें', 'शोधा', 'सप्लायर', 'पुरवठादार', 'विक्रेता', 'व्यापारी']):
             from services.ai.procurement_optimizer import ProcurementOptimizer
             req = ProcurementOptimizer.parse_natural_language_query(query_text)
             plans_data = ProcurementOptimizer.generate_procurement_plans(req)
@@ -630,42 +767,33 @@ class CopilotService:
                         f"| Fulfillment: **{p['fulfillment_percentage']}%** | Suppliers: **{p['suppliers_count']}**\n"
                     )
                 reply += "\nClick over to the **AI Procurement** panel to review supplier allocations and send direct purchase requests!"
-            return {'reply': reply, 'data': plans_data}
+            return {'reply': reply, 'data': plans_data, 'category': 'PROCUREMENT_INTENT'}
 
-        # 6. Default Commercial Buyer Advisor
+        # 8. Intelligent Commercial Procurement Advisory Fallback
         else:
-            name_str = buyer.name if buyer else 'Buyer'
+            p_fair = PriceForecasterService.get_predictive_fair_price(crop, region, 'Grade A', 1000)
             if lang == 'mr':
                 reply = (
-                    f"नमस्कार {name_str}! मी आपला फार्मडायरेक्ट व्यावसायिक खरेदी सल्लागार (Procurement Copilot) आहे.\n\n"
-                    f"आपण मला शेतीमाल खरेदी, दर व लॉजिस्टिक्सबाबत प्रश्न विचारू शकता, जसे की:\n"
-                    f"• _'या महिन्यात नाशिक कांदा खरेदीसाठी योग्य वेळ कोणती?'_\n"
-                    f"• _'मोठ्या प्रमाणातील टोमॅटो खरेदीसाठी काउंटर-ऑफर कशी द्यावी?'_\n"
-                    f"• _'सध्या कोणत्या जिल्ह्यांत सेंद्रिय गव्हाची मुबलक आवक आहे?'_\n"
-                    f"• _'महाबळेश्वर स्ट्रॉबेरीसाठी कोल्ड चेन वाहतूक मर्यादा किती आहे?'_\n"
-                    f"• _'मला पुण्याजवळ ३० रुपये/किलोपेक्षा कमी दरात ५ टन टोमॅटो खरेदी करायचे आहेत'_"
+                    f"**फार्मडायरेक्ट व्यावसायिक खरेदी सल्ला: {crop_mr} ({region_mr}) 💼🤖**\n\n"
+                    f"• **घाऊक बाजार संदर्भ दर:** **₹{p_fair['predicted_price']:.2f}/किलो** (पट्टा: ₹{p_fair['lower_bound']:.2f} ते ₹{p_fair['upper_bound']:.2f})\n"
+                    f"• **थेट खरेदी सुविधा:** फार्मडायरेक्टवर थेट शेतकऱ्यांशी संपर्क साधून दलाली वाचवा आणि ग्रेड ए मालाची वेळेवर डिलिव्हरी मिळवा.\n\n"
+                    f"💡 _आपण मला खरेदीसाठी योग्य वेळ, काउंटर-ऑफर रणनीती, मुबलक आवक असणारे जिल्हे, किंवा घाऊक सप्लायर शोधण्याबाबत विचारू शकता._"
                 )
             elif lang == 'hi':
                 reply = (
-                    f"नमस्ते {name_str}! मैं आपका फार्मडायरेक्ट वाणिज्यिक खरीद सलाहकार (Procurement Copilot) हूँ।\n\n"
-                    f"आप मुझसे थोक खरीद, मंडी भाव और आपूर्ति श्रृंखला संबंधी प्रश्न पूछ सकते हैं, जैसे:\n"
-                    f"• _'इस महीने नासिक प्याज खरीदने का सबसे अच्छा समय क्या है?'_\n"
-                    f"• _'थोक टमाटर खरीद के लिए काउंटर-ऑफर कैसे तय करें?'_\n"
-                    f"• _'वर्तमान में किन जिलों में जैविक गेहूं का अधिशेष (सरप्लस) उपलब्ध है?'_\n"
-                    f"• _'महाबलेश्वर स्ट्रॉबेरी के लिए कोल्ड चेन परिवहन सीमा क्या है?'_\n"
-                    f"• _'मुझे पुणे के पास ₹30/किग्रा से कम में 5 टन टमाटर चाहिए'_"
+                    f"**फार्मडायरेक्ट व्यावसायिक खरीद सलाह: {crop_hi} ({region_hi}) 💼🤖**\n\n"
+                    f"• **थोक मंडी संदर्भ भाव:** **₹{p_fair['predicted_price']:.2f}/किग्रा** (दायरा: ₹{p_fair['lower_bound']:.2f} – ₹{p_fair['upper_bound']:.2f})\n"
+                    f"• **डायरेक्ट प्रोक्योरमेंट एडवांटेज:** किसानों से सीधे सौदे करके मंडी टैक्स की बचत करें तथा ग्रेड ए प्रमाणित फसल सुनिश्चित करें।\n\n"
+                    f"💡 _आप मुझसे खरीद का सही समय, काउंटर-ऑफर रणनीति, अधिशेष उत्पादन वाले जिले या सप्लायर खोजने संबंधी प्रश्न पूछ सकते हैं।_"
                 )
             else:
                 reply = (
-                    f"Hello {name_str}! I am your Commercial Procurement Copilot.\n\n"
-                    f"Try asking specific sourcing questions like:\n"
-                    f"• _'What is the best procurement window for Nashik onions this month?'_\n"
-                    f"• _'How to structure a counter-offer for high volume tomato purchase?'_\n"
-                    f"• _'Which districts currently have surplus organic wheat listings?'_\n"
-                    f"• _'What are the cold chain transit limits for strawberries from Mahabaleshwar?'_\n"
-                    f"• _'I need 5 tonnes of Grade A tomatoes near Pune below ₹30/kg by Friday'_"
+                    f"**FarmDirect Procurement Copilot Advisory: {crop} ({region}) 💼🤖**\n\n"
+                    f"• **Commercial Benchmark:** **₹{p_fair['predicted_price']:.2f}/kg** (Fair corridor: ₹{p_fair['lower_bound']:.2f} – ₹{p_fair['upper_bound']:.2f}/kg)\n"
+                    f"• **Direct Sourcing Advantage:** Source directly from verified farmer clusters to eliminate APMC markups and secure lot traceability.\n\n"
+                    f"💡 _You can ask about optimal procurement windows, volume negotiation tactics, surplus districts, or cold chain logistics._"
                 )
-            return {'reply': reply}
+            return {'reply': reply, 'category': 'GENERAL_ADVISORY', 'context': {'crop': crop, 'region': region}}
 
     # -------------------------------------------------------------------------
     # MULTILINGUAL VOICE PARSER
@@ -675,34 +803,16 @@ class CopilotService:
         raw = transcript.strip()
         t = raw.lower()
 
-        intent = 'SELL_PRODUCE'
-        lang_name = 'English'
+        lang = CopilotService._detect_language(raw, explicit_lang=detected_language)
+        lang_name = 'Marathi (मराठी)' if lang == 'mr' else 'Hindi (हिन्दी)' if lang == 'hi' else 'English'
 
-        if any(w in t for w in ['माझ्याकडे', 'विकायचे', 'भाव', 'टोमॅटो', 'कांदा', 'बटाटा', 'शेतकरी']):
-            lang_name = 'Marathi (मराठी)'
-            if any(w in t for w in ['विकायचे', 'माझ्याकडे', 'आहेत']):
-                intent = 'SELL_PRODUCE'
-            elif any(w in t for w in ['भाव', 'दर', 'किंमत']):
-                intent = 'CHECK_PRICE'
+        crop = CopilotService._extract_crop(raw, default='Tomato')
+        region = CopilotService._extract_region(raw, default='Nashik' if any(w in t for w in ['nashik', 'नासिक', 'नाशिक']) else 'Pune')
 
-        elif any(w in t for w in ['बेचना', 'मेरे पास', 'दाम', 'टमाटर', 'प्याज', 'आलू', 'भाव']):
-            lang_name = 'Hindi (हिन्दी)'
-            if any(w in t for w in ['बेचना', 'मेरे पास']):
-                intent = 'SELL_PRODUCE'
-            elif any(w in t for w in ['दाम', 'भाव', 'रेट']):
-                intent = 'CHECK_PRICE'
-
-        crop = 'Tomato'
-        if any(w in t for w in ['tomato', 'टोमॅटो', 'टमाटर']):
-            crop = 'Tomato'
-        elif any(w in t for w in ['onion', 'कांदा', 'प्याज']):
-            crop = 'Onion'
-        elif any(w in t for w in ['potato', 'बटाटा', 'आलू']):
-            crop = 'Potato'
-        elif any(w in t for w in ['wheat', 'गहू', 'गेहूं']):
-            crop = 'Wheat'
-        elif any(w in t for w in ['grapes', 'द्राक्षे', 'अंगूर']):
-            crop = 'Grapes'
+        crop_mr = CROP_DISPLAY_MR.get(crop, crop)
+        crop_hi = CROP_DISPLAY_HI.get(crop, crop)
+        region_mr = REGION_DISPLAY_MR.get(region, region)
+        region_hi = REGION_DISPLAY_HI.get(region, region)
 
         qty = 1000.0
         if 'दोन हजार' in t or 'दो हजार' in t:
@@ -718,40 +828,107 @@ class CopilotService:
             if num:
                 qty = float(num.group(1))
 
-        price_intel = PriceForecasterService.get_predictive_fair_price(crop, 'Pune')
+        price_intel = PriceForecasterService.get_predictive_fair_price(crop, region)
         suggested_price = price_intel['predicted_price']
 
-        if intent == 'SELL_PRODUCE':
-            confirmation_prompt = (
-                f"Would you like to list {qty:,.0f} kg of fresh {crop} at ₹{suggested_price:.2f}/kg on the FarmDirect marketplace?"
-            )
+        # Determine Intent
+        if any(w in t for w in ['weather', 'climate', 'rain', 'disruption', 'जोखिम', 'मौसम', 'हवामान', 'बारिश', 'पाऊस', 'जोखीम']):
+            intent = 'WEATHER_RISK'
+            if lang == 'mr':
+                confirmation_prompt = f"{region_mr} परिसरात {crop_mr} पिकासाठी चालू हवामान जोखीम स्तर कमी-मध्यम (२८/१००) आहे. काढणी वेळेवर पूर्ण करून माल सुरक्षित शेडमध्ये साठवा."
+            elif lang == 'hi':
+                confirmation_prompt = f"{region_hi} क्षेत्र में {crop_hi} की फसल के लिए मौसम का जोखिम स्तर सामान्य-निम्न (28/100) है। समय पर कटाई करें तथा उपज को सुरक्षित स्थान पर रखें।"
+            else:
+                confirmation_prompt = f"Current weather disruption risk for {crop} harvest in {region} is Low to Moderate (28/100). No severe storm warning is active. Proceed with scheduled harvest."
+            action_suggestion = '/farmer/digital-twin'
+            action_payload = {'action': 'VIEW_WEATHER_RISK', 'crop': crop, 'region': region}
+            requires_confirmation = False
+
+        elif any(w in t for w in ['best time', 'when to sell', 'सही समय', 'सबसे सही समय', 'योग्य वेळ', 'timing', 'बेचने का समय', 'विकण्याची वेळ', 'विकायची वेळ']):
+            intent = 'MARKET_TIMING'
+            if lang == 'mr':
+                confirmation_prompt = f"{region_mr} मधील {crop_mr} विक्रीसाठी पुढील १०-१४ दिवसांत बाजार आवक स्थिर झाल्यावर उत्तम दर मिळतील. चालू संदर्भ दर ₹{suggested_price:.2f}/किलो आहे."
+            elif lang == 'hi':
+                confirmation_prompt = f"{region_hi} में {crop_hi} बेचने का सबसे अनुकूल समय अगले 10-14 दिनों में है जब आवक स्थिर होगी। वर्तमान संदर्भ मूल्य ₹{suggested_price:.2f}/किग्रा है।"
+            else:
+                confirmation_prompt = f"The optimal time to sell {crop} in {region} is over the next 10–14 days as harvest influx stabilizes. Current benchmark is ₹{suggested_price:.2f}/kg."
+            action_suggestion = '/farmer/smart-selling'
+            action_payload = {'action': 'VIEW_SMART_SELLING', 'crop': crop, 'region': region}
+            requires_confirmation = False
+
+        elif any(w in t for w in ['waste', 'stubble', 'biomass', 'बायोमास', 'कचरा', 'पराली', 'अवशेष', 'पाचट', 'bagasse']):
+            intent = 'AGRI_WASTE'
+            if lang == 'mr':
+                confirmation_prompt = f"शेतीतील उरलेले पाचट, पेंढा व काडीकचरा वेस्ट मार्केटप्लेसवर थेट बायो-एनर्जी व खत कंपन्यांना ₹१,०००-₹१,५००/टन दराने विक्रीसाठी उपलब्ध आहे."
+            elif lang == 'hi':
+                confirmation_prompt = f"गन्ने की खोई, पराली व कृषि अवशेषों को वेस्ट मार्केटप्लेस पर सीधे बॉयो-सीएनजी व प्लाईवुड खरीदारों को ₹1,000-₹1,500 प्रति टन में बेचें।"
+            else:
+                confirmation_prompt = f"You can monetize crop residue and agricultural stubble on the Waste Circular Marketplace at ₹1,000–₹1,500/tonne with pickup logistics."
+            action_suggestion = '/waste-marketplace'
+            action_payload = {'action': 'VIEW_WASTE_MARKET', 'crop': crop}
+            requires_confirmation = False
+
+        elif any(w in t for w in ['supplier', 'suppliers', 'find', 'under', 'विक्रेता', 'खोजें', 'शोधा', 'सप्लायर', 'पुरवठादार', 'खरेदीदार', 'चाहिए', 'procure']):
+            intent = 'BUY_PRODUCE'
+            if lang == 'mr':
+                confirmation_prompt = f"फार्मडायरेक्टवर {region_mr} क्लस्टरमध्ये ₹{suggested_price:.2f}/किलोच्या आत थेट शेतकरी आणि प्रमाणित FPO पुरवठादार सक्रिय आहेत."
+            elif lang == 'hi':
+                confirmation_prompt = f"फार्मडायरेक्ट पर {region_hi} क्लस्टर में ₹{suggested_price:.2f}/किग्रा के भीतर सीधे सत्यापित किसान व FPO सप्लायर उपलब्ध हैं।"
+            else:
+                confirmation_prompt = f"Found verified {crop} producers and farmer groups in {region} with direct-from-farm listings starting near ₹{suggested_price:.2f}/kg."
+            action_suggestion = '/buyer/marketplace'
+            action_payload = {'action': 'SEARCH_SUPPLIERS', 'crop': crop, 'region': region, 'target_price': suggested_price}
+            requires_confirmation = False
+
+        elif any(w in t for w in ['sell', 'list', 'माझ्याकडे', 'विकायचे', 'बेचना', 'मेरे पास', 'नोंदणी']):
+            intent = 'SELL_PRODUCE'
+            if lang == 'mr':
+                confirmation_prompt = f"तुम्हाला {region_mr} मधील {crop_mr} ({qty:,.0f} किलो) चे ₹{suggested_price:.2f}/किलो या अंदाजित दराने फार्मडायरेक्टवर पीक नोंदणी करायची आहे का?"
+            elif lang == 'hi':
+                confirmation_prompt = f"क्या आप {region_hi} में {crop_hi} ({qty:,.0f} किग्रा) को ₹{suggested_price:.2f}/किग्रा के अनुमानित भाव पर फार्मडायरेक्ट पर लिस्ट करना चाहते हैं?"
+            else:
+                confirmation_prompt = f"Would you like to list {qty:,.0f} kg of fresh {crop} at ₹{suggested_price:.2f}/kg in {region} on the FarmDirect marketplace?"
+            action_suggestion = '/farmer/listings/new'
             action_payload = {
                 'action': 'CREATE_LISTING',
                 'crop': crop,
                 'quantity': qty,
                 'expected_price': suggested_price,
-                'location': 'Pune',
+                'location': region,
                 'quality_grade': 'Grade A',
                 'availability_date': date.today().isoformat()
             }
+            requires_confirmation = True
+
         else:
-            confirmation_prompt = f"The current reference benchmark for {crop} in Pune is ₹{suggested_price:.2f}/kg. Would you like to view detailed market forecasts?"
-            action_payload = {
-                'action': 'VIEW_PRICE_INSIGHT',
-                'crop': crop
-            }
+            intent = 'CHECK_PRICE'
+            if lang == 'mr':
+                confirmation_prompt = f"{region_mr} बाजार समितीमध्ये {crop_mr} चा सध्याचा संदर्भ दर ₹{suggested_price:.2f}/किलो आहे. आपण विस्तृत मूल्य अंदाज पाहू इच्छिता?"
+            elif lang == 'hi':
+                confirmation_prompt = f"{region_hi} मंडी में {crop_hi} का वर्तमान संदर्भ भाव ₹{suggested_price:.2f}/किग्रा है। क्या आप विस्तृत मूल्य पूर्वानुमान देखना चाहते हैं?"
+            else:
+                confirmation_prompt = f"The current reference benchmark for {crop} in {region} is ₹{suggested_price:.2f}/kg. Would you like to view detailed market forecasts?"
+            action_suggestion = '/farmer/price-insight'
+            action_payload = {'action': 'VIEW_PRICE_INSIGHT', 'crop': crop, 'region': region}
+            requires_confirmation = False
 
         return {
             'success': True,
             'transcript': raw,
-            'language': lang_name,
+            'language': lang,
+            'language_name': lang_name,
             'intent': intent,
             'extracted_crop': crop,
+            'extracted_region': region,
             'extracted_quantity': qty,
             'suggested_price': suggested_price,
             'confirmation_prompt': confirmation_prompt,
+            'response_text': confirmation_prompt,
+            'reply': confirmation_prompt,
+            'action_suggestion': action_suggestion,
+            'action_recommendation': action_suggestion,
             'action_payload': action_payload,
-            'requires_confirmation': True
+            'requires_confirmation': requires_confirmation
         }
 
     # -------------------------------------------------------------------------

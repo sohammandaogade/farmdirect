@@ -30,9 +30,10 @@ def buyer_copilot(current_user):
 def voice_command():
     data = request.get_json() or {}
     transcript = data.get('transcript', '')
+    lang = data.get('language') or data.get('lang')
     if not transcript:
         return jsonify({'success': False, 'message': 'Transcript text is required.'}), 400
-    res = CopilotService.parse_multilingual_voice(transcript)
+    res = CopilotService.parse_multilingual_voice(transcript, detected_language=lang or 'en')
     return jsonify({'success': True, 'data': res}), 200
 
 @copilot_bp.route('/generate-listing', methods=['POST'])
