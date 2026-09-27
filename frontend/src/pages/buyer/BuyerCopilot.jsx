@@ -18,10 +18,16 @@ export const BuyerCopilot = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const greetings = {
+    en: `Hello ${user?.name || 'Buyer'}! I am your AI Sourcing & Procurement Copilot. Ask me about seasonal crop availability, fair price benchmarks, multi-farm logistics optimization, or supplier trust verification.`,
+    hi: `नमस्ते ${user?.name || 'व्यापारी साथी'}! मैं आपका फार्मडायरेक्ट वाणिज्यिक खरीद सलाहकार (Procurement Copilot) हूँ। थोक फसल उपलब्धता, मंडी भाव, सप्लाई चेन लॉजिस्टिक्स या मोलभाव रणनीति के बारे में पूछें।`,
+    mr: `नमस्कार ${user?.name || 'खरेदीदार मित्र'}! मी आपला फार्मडायरेक्ट व्यावसायिक खरेदी सल्लागार (Procurement Copilot) आहे. शेतीमालाची उपलब्धता, घाऊक दर किंवा लॉजिस्टिक्सबाबत काहीही विचारा.`,
+  };
+
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: `Hello ${user?.name || 'Buyer'}! I am your AI Sourcing & Procurement Copilot. Ask me about seasonal crop availability, fair price benchmarks, multi-farm logistics optimization, or supplier trust verification.`,
+      text: greetings.en,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -68,7 +74,7 @@ export const BuyerCopilot = () => {
         business_type: user?.buyer_profile?.business_type || 'Wholesaler / Retailer',
       };
 
-      const res = await copilotAPI.askBuyer(query);
+      const res = await copilotAPI.askBuyer(query, language);
       if (res.data.success) {
         const botReply = {
           sender: 'bot',
@@ -124,7 +130,15 @@ export const BuyerCopilot = () => {
           ].map((lang) => (
             <button
               key={lang.id}
-              onClick={() => setLanguage(lang.id)}
+              onClick={() => {
+                setLanguage(lang.id);
+                setMessages((prev) => {
+                  if (prev.length === 1 && prev[0].sender === 'bot') {
+                    return [{ ...prev[0], text: greetings[lang.id] || greetings.en }];
+                  }
+                  return prev;
+                });
+              }}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 language === lang.id
                   ? 'bg-slate-900 text-white shadow-xs'

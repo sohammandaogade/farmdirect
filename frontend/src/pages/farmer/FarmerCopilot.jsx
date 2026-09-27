@@ -20,10 +20,16 @@ export const FarmerCopilot = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const greetings = {
+    en: `Hello ${user?.name || 'Farmer'}! I am your FarmDirect AI Agricultural Copilot. How can I assist with your crops, current mandi prices, harvest scheduling, or disease prevention today?`,
+    hi: `नमस्ते ${user?.name || 'किसान साथी'}! मैं आपका फार्मडायरेक्ट एआई कृषि सलाहकार (Copilot) हूँ। आज मैं आपकी फसलों, मंडी भाव, फसल सुरक्षा या रोग नियंत्रण में कैसे सहायता कर सकता हूँ?`,
+    mr: `नमस्कार ${user?.name || 'शेतकरी मित्र'}! मी आपला फार्मडायरेक्ट एआय कृषी सल्लागार (Copilot) आहे. आज मी आपल्या पिकांचे नियोजन, चालू बाजारभाव किंवा रोग व्यवस्थापनात कशी मदत करू शकतो?`,
+  };
+
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: `Hello ${user?.name || 'Farmer'}! I am your FarmDirect AI Agricultural Copilot. How can I assist with your crops, current mandi prices, harvest scheduling, or disease prevention today?`,
+      text: greetings.en,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -70,7 +76,7 @@ export const FarmerCopilot = () => {
         location: user?.farmer_profile?.location || 'Maharashtra',
       };
 
-      const res = await copilotAPI.askFarmer(query);
+      const res = await copilotAPI.askFarmer(query, language);
       if (res.data.success) {
         const botReply = {
           sender: 'bot',
@@ -126,7 +132,15 @@ export const FarmerCopilot = () => {
           ].map((lang) => (
             <button
               key={lang.id}
-              onClick={() => setLanguage(lang.id)}
+              onClick={() => {
+                setLanguage(lang.id);
+                setMessages((prev) => {
+                  if (prev.length === 1 && prev[0].sender === 'bot') {
+                    return [{ ...prev[0], text: greetings[lang.id] || greetings.en }];
+                  }
+                  return prev;
+                });
+              }}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 language === lang.id
                   ? 'bg-emerald-600 text-white shadow-xs'

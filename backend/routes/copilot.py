@@ -13,7 +13,8 @@ copilot_bp = Blueprint('copilot', __name__, url_prefix='/api/copilot')
 def farmer_copilot(current_user):
     data = request.get_json() or {}
     query = data.get('query', '')
-    res = CopilotService.get_farmer_copilot_response(current_user.id, query)
+    lang = data.get('language') or data.get('lang')
+    res = CopilotService.get_farmer_copilot_response(current_user.id, query, explicit_lang=lang)
     return jsonify({'success': True, 'data': res}), 200
 
 @copilot_bp.route('/buyer', methods=['POST'])
@@ -21,7 +22,8 @@ def farmer_copilot(current_user):
 def buyer_copilot(current_user):
     data = request.get_json() or {}
     query = data.get('query', '')
-    res = CopilotService.get_buyer_copilot_response(current_user.id, query)
+    lang = data.get('language') or data.get('lang')
+    res = CopilotService.get_buyer_copilot_response(current_user.id, query, explicit_lang=lang)
     return jsonify({'success': True, 'data': res}), 200
 
 @copilot_bp.route('/voice-command', methods=['POST'])
