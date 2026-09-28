@@ -295,6 +295,42 @@ class GeminiClient:
             logger.warning(f"Gemini multimodal analysis error: {e}")
             return {'success': False, 'error': str(e), 'fallback': True}
 
+    def test_connection(self):
+        """Tests whether GEMINI_API_KEY is configured and can reach the Gemini API."""
+        if not self.is_available():
+            return {
+                'configured': False,
+                'status': 'KEY_NOT_FOUND',
+                'message': 'GEMINI_API_KEY environment variable is not detected in the running process.'
+            }
+        try:
+            import requests
+            url = f"{self.base_url}/{self.model}:generateContent?key={self.current_api_key}"
+            payload = {
+                "contents": [{"parts": [{"text": "Hello, respond with OK"}]}],
+                "generationConfig": {"maxOutputTokens": 10}
+            }
+            resp = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=10)
+            if resp.status_code == 200:
+                return {
+                    'configured': True,
+                    'status': 'CONNECTED',
+                    'model': self.model,
+                    'message': 'Gemini API is connected and responding successfully.'
+                }
+            else:
+                return {
+                    'configured': True,
+                    'status': f'HTTP_{resp.status_code}',
+                    'message': f'Gemini API returned HTTP {resp.status_code}: {resp.text[:150]}'
+                }
+        except Exception as e:
+            return {
+                'configured': True,
+                'status': 'CONNECTION_ERROR',
+                'message': f'Failed to reach Gemini API: {str(e)}'
+            }
+
 
 # Global singleton instance
 gemini_client = GeminiClient()

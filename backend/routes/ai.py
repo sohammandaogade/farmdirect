@@ -273,3 +273,14 @@ def get_analytics_summary():
     summary = AnalyticsService.generate_executive_marketplace_summary()
     return jsonify({'success': True, 'data': summary}), 200
 
+@ai_bp.route('/status', methods=['GET'])
+def get_ai_status():
+    from services.ai.gemini_client import gemini_client
+    status_report = gemini_client.test_connection()
+    return jsonify({
+        'success': True,
+        'ai_layer': 'active',
+        'gemini': status_report
+    }), 200
+
+
