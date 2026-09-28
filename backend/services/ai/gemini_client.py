@@ -305,24 +305,51 @@ class GeminiClient:
             }
         try:
             import requests
-            url = f"{self.base_url}/{self.model}:generateContent?key={self.current_api_key}"
+            # 1. Fetch available models for this API key
+            list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={self.current_api_key}"
+            list_resp = requests.get(list_url, timeout=10)
+            available_models = []
+            if list_resp.status_code == 200:
+                models_data = list_resp.json().get('models', [])
+                available_models = [
+                    m['name'].replace('models/', '') for m in models_data 
+                    if 'generateContent' in m.get('supportedGenerationMethods', [])
+                ]
+            
+            # 2. Test generation with current model or best available
+            target_model = self.model
+            if available_models and target_model not in available_models:
+                # Pick best available
+                for candidate in ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-pro']:
+                    if candidate in available_models:
+                        target_model = candidate
+                        break
+                else:
+                    target_model = available_models[0]
+
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{target_model}:generateContent?key={self.current_api_key}"
             payload = {
                 "contents": [{"parts": [{"text": "Hello, respond with OK"}]}],
                 "generationConfig": {"maxOutputTokens": 10}
             }
             resp = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=10)
             if resp.status_code == 200:
+                # Update self.model to working model if different
+                self.model = target_model
                 return {
                     'configured': True,
                     'status': 'CONNECTED',
-                    'model': self.model,
-                    'message': 'Gemini API is connected and responding successfully.'
+                    'active_model': target_model,
+                    'available_models': available_models[:10],
+                    'message': f'Gemini API is connected and responding successfully using {target_model}.'
                 }
             else:
                 return {
                     'configured': True,
                     'status': f'HTTP_{resp.status_code}',
-                    'message': f'Gemini API returned HTTP {resp.status_code}: {resp.text[:150]}'
+                    'attempted_model': target_model,
+                    'available_models': available_models[:10],
+                    'message': f'Gemini API returned HTTP {resp.status_code}: {resp.text[:200]}'
                 }
         except Exception as e:
             return {
