@@ -283,4 +283,32 @@ def get_ai_status():
         'gemini': status_report
     }), 200
 
+@ai_bp.route('/diagnose', methods=['GET'])
+def get_ai_diagnose():
+    import os, requests
+    from services.ai.gemini_client import gemini_client
+    results = {}
+    results['gemini_model_env'] = os.environ.get('GEMINI_MODEL')
+    results['has_api_key'] = gemini_client.is_available()
+    results['api_key_prefix'] = (gemini_client.current_api_key[:6] + '...') if gemini_client.is_available() else None
+    results['active_model'] = gemini_client.get_active_model()
+    
+    test_models = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-pro-latest']
+    model_tests = {}
+    if gemini_client.is_available():
+        for m in test_models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={gemini_client.current_api_key}"
+            payload = {
+                "contents": [{"parts": [{"text": "Respond OK"}]}],
+                "generationConfig": {"maxOutputTokens": 5}
+            }
+            try:
+                r = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=8)
+                model_tests[m] = {'status': r.status_code, 'body': r.text[:150]}
+            except Exception as e:
+                model_tests[m] = {'error': str(e)}
+    results['model_tests'] = model_tests
+    return jsonify({'success': True, 'diagnostics': results}), 200
+
+
 

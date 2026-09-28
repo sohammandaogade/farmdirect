@@ -366,12 +366,18 @@ class VisionQualityService:
         dark_necrosis = (p_v < 0.28) & ((p_r < 0.28) & (p_g < 0.28) & (p_b < 0.28))
         # 2. Black mold / fungal spots on alliums & vegetables
         fungal_spots = (p_v < 0.35) & (p_s < 0.28) & ((p_r < 0.32) | (p_g < 0.30))
-        # 3. White / gray fuzzy mycelium fungal mold (high luminance, low saturation gray patches)
-        gray_mold = (p_s < 0.22) & (p_v > 0.38) & (p_v < 0.94) & (abs(p_r - p_g) < 0.14) & (abs(p_g - p_b) < 0.14)
+        # 3. White / gray fuzzy mycelium fungal mold (high luminance, low-to-moderate saturation patches on produce)
+        gray_mold = (p_s < 0.35) & (p_v > 0.38) & (p_r > 0.26) & (p_g > 0.26) & (p_b > 0.20) & (abs(p_r - p_g) < 0.20) & (abs(p_g - p_b) < 0.20)
+        # 4. Green penicillium mold
+        green_mold = (p_g > p_r * 0.85) & (p_g > p_b) & (p_s > 0.10) & (p_s < 0.55) & (p_v < 0.70)
+        # 5. Soft brown watery rot / decay
+        brown_rot = (p_r > p_g) & (p_g > p_b) & (p_v < 0.48) & (p_s > 0.15) & (p_r < 0.58) & (p_b < 0.30)
 
-        defect_mask = dark_necrosis | fungal_spots | gray_mold
+        defect_mask = dark_necrosis | fungal_spots | gray_mold | green_mold | brown_rot
         defect_count = int(defect_mask.sum())
         defect_detected_pct = round((defect_count / float(produce_pixel_count)) * 100.0, 1)
+        mold_count = int((gray_mold | green_mold).sum())
+        mold_pct = round((mold_count / float(produce_pixel_count)) * 100.0, 1)
 
         # Healthy produce pixels used for crop chromatic profiling
         healthy_mask = ~defect_mask & (p_s > 0.08)
@@ -390,12 +396,26 @@ class VisionQualityService:
         # -------------------------------------------------------------
         # STAGE 4: Crop Verification & Feature Matching
         # -------------------------------------------------------------
-        if 'onion' in exp_lower and (redness > 1.05 or (mean_lum > 115.0 and p_s.mean() < 0.38) or (yellowness > 1.05 and redness > 0.60)):
-            # Accurately recognizes Red/Purple Onion (high anthocyanin redness), White Onion (pale luster), and Yellow Onion
+        # Morphological and chromatic features discriminating Red Onion from Tomato:
+        # Red/purple onion: high anthocyanin gives elevated red + significant blue (B > 0.14, R/B < 2.2)
+        # Tomato: lycopene is pure carotenoid red (R/B >= 2.2, typically 2.6 - 4.5+)
+        magenta_purple_bulb = (p_r > p_g * 1.10) & (p_b > p_g * 0.70) & (p_b > 0.14) & ((p_r / (p_b + 1e-5)) < 2.2)
+        purple_ratio = float(magenta_purple_bulb.mean())
+        pure_tomato_red = (p_r > p_g * 1.50) & ((p_r / (p_b + 1e-5)) >= 2.2) & (p_r > 0.50)
+        tomato_ratio = float(pure_tomato_red.mean())
+
+        if purple_ratio > 0.22 or (purple_ratio > tomato_ratio and purple_ratio > 0.15):
+            detected_crop = 'Onion' # Red / Purple Onion
+            crop_confidence = 94.5
+        elif tomato_ratio > 0.30 and purple_ratio < 0.15 and redness > 1.20:
+            detected_crop = 'Tomato' # Pure Lycopene Scarlet Tomato
+            crop_confidence = min(98.5, round(75.0 + (redness - 1.25) * 20.0, 1))
+        elif 'onion' in exp_lower and (purple_ratio > 0.12 or (mean_lum > 115.0 and p_s.mean() < 0.38) or (yellowness > 1.05 and redness > 0.60)):
+            # Accurately recognizes White Onion and Yellow Onion
             detected_crop = 'Onion'
             crop_confidence = 94.5
         elif redness > 1.25 and greenness < 0.70:
-            if 'onion' in exp_lower:
+            if purple_ratio > 0.18:
                 detected_crop = 'Onion' # Red Onion
                 crop_confidence = 93.0
             else:
@@ -490,7 +510,7 @@ class VisionQualityService:
         uniformity_score = min(98.0, max(60.0, round(100.0 - color_std * 48.0, 1)))
 
         # Determine visible defect level and grade
-        if defect_detected_pct >= 20.0 or (gray_mold.sum() / float(produce_pixel_count) > 0.10):
+        if defect_detected_pct >= 15.0 or mold_pct >= 8.0:
             visible_defect_level = 'CRITICAL_SPOILAGE'
             defect_confidence = 96.0
             ai_assessed_grade = 'Sub-standard / Rotten'
@@ -499,7 +519,7 @@ class VisionQualityService:
             confidence_score = 95.0
             assessment_notes = (
                 f"Severe fungal mold, rot, or decomposition detected across {defect_detected_pct:.1f}% "
-                f"of produce surface area. Produce is unfit for sale and strictly blocked from the marketplace."
+                f"of produce surface area (mold index: {mold_pct:.1f}%). Produce is unfit for sale and strictly blocked from the marketplace."
             )
             status_desc = "Listing Blocked: Produce verified as rotten or severely spoiled."
 

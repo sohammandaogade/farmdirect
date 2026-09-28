@@ -369,8 +369,23 @@ class GeminiVisionService:
                 validated, 'IMAGE_UNSUITABLE', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine", image_hash=image_hash
             )
 
-        # 2. Critical Spoilage / High defect ratio / Mold
-        if (defect_pct >= 20.0 or 
+        # 2. Crop Mismatch (User declared one crop, but optical CV detected another)
+        is_compat, mismatch_reason = are_crops_compatible(user_crop, detected)
+        if (legacy_cv.get('verification_status') == 'CROP_MISMATCH') or (user_crop and detected != 'unknown' and not is_compat):
+            validated = {
+                "is_agricultural_produce": True,
+                "image_suitability": {"is_usable": True, "issue_detected": "NONE"},
+                "multiple_crops_detected": False,
+                "crop_identification": {"name": detected, "confidence": 0.88},
+                "quality_assessment": {"status": "ACCEPTABLE", "confidence": 0.80, "issues": []},
+                "listing_decision": {"status": "REVIEW", "reason": mismatch_reason or legacy_cv.get('assessment_notes')}
+            }
+            return GeminiVisionService._format_final_response(
+                validated, 'CROP_MISMATCH', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine", image_hash=image_hash
+            )
+
+        # 3. Critical Spoilage / High defect ratio / Mold
+        if (defect_pct >= 15.0 or 
             legacy_cv.get('verification_status') == 'REJECTED' or
             legacy_cv.get('visible_defect_level') in ['CRITICAL_SPOILAGE', 'ROTTEN'] or
             legacy_cv.get('ai_assessed_grade') in ['Grade C / Sub-standard', 'Sub-standard / Rotten']):
@@ -384,21 +399,6 @@ class GeminiVisionService:
             }
             return GeminiVisionService._format_final_response(
                 validated, 'REJECTED', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine", image_hash=image_hash
-            )
-
-        # 3. Crop Mismatch
-        is_compat, mismatch_reason = are_crops_compatible(user_crop, detected)
-        if user_crop and detected != 'unknown' and not is_compat:
-            validated = {
-                "is_agricultural_produce": True,
-                "image_suitability": {"is_usable": True, "issue_detected": "NONE"},
-                "multiple_crops_detected": False,
-                "crop_identification": {"name": detected, "confidence": 0.82},
-                "quality_assessment": {"status": "ACCEPTABLE", "confidence": 0.80, "issues": []},
-                "listing_decision": {"status": "REVIEW", "reason": mismatch_reason}
-            }
-            return GeminiVisionService._format_final_response(
-                validated, 'CROP_MISMATCH', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine", image_hash=image_hash
             )
 
         # 4. Standard Optical Scan Passed (Multimodal Gemini Unavailable)

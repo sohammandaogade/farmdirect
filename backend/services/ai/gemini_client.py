@@ -51,25 +51,29 @@ class GeminiClient:
         if self._active_model:
             return self._active_model
 
-        env_model = os.environ.get('GEMINI_MODEL')
-        if env_model:
-            self._active_model = env_model
-            return self._active_model
-
         if not self.is_available():
             return self.model
 
         try:
             import requests
             list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={self.current_api_key}"
-            resp = requests.get(list_url, timeout=5)
+            resp = requests.get(list_url, timeout=7)
             if resp.status_code == 200:
                 models_data = resp.json().get('models', [])
                 supported = [
                     m['name'].replace('models/', '') for m in models_data 
                     if 'generateContent' in m.get('supportedGenerationMethods', [])
                 ]
-                for candidate in ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-3.8-flash', 'gemini-pro-latest', 'gemini-2.5-flash-lite']:
+                
+                # Check env_model ONLY IF it is actually in supported models
+                env_model = os.environ.get('GEMINI_MODEL')
+                if env_model and env_model in supported:
+                    self._active_model = env_model
+                    self.model = env_model
+                    return self._active_model
+
+                # Try modern verified production candidates in order
+                for candidate in ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-pro', 'gemini-pro-latest']:
                     if candidate in supported:
                         self._active_model = candidate
                         self.model = candidate
@@ -81,7 +85,8 @@ class GeminiClient:
         except Exception as e:
             logger.warning(f"Could not query ListModels: {e}")
 
-        self._active_model = self.model
+        # Fallback to gemini-2.5-flash or self.model
+        self._active_model = 'gemini-2.5-flash'
         return self._active_model
 
     def _get_cache_key(self, prompt, system_instruction, schema_str=""):
@@ -308,31 +313,53 @@ class GeminiClient:
                 payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
 
             start_t = time.time()
-            resp = requests.post(url, headers=headers, json=payload, timeout=self.timeout + 5)
-            elapsed = time.time() - start_t
+            
+            # Robust model fallback list: try active_model, then other known supported vision models
+            models_to_try = [active_model]
+            for candidate in ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-pro', 'gemini-pro-latest']:
+                if candidate not in models_to_try:
+                    models_to_try.append(candidate)
 
-            if resp.status_code == 200:
-                data = resp.json()
-                candidates = data.get('candidates', [])
-                if candidates and 'content' in candidates[0]:
-                    parts = candidates[0]['content'].get('parts', [])
-                    raw_text = parts[0].get('text', '').strip() if parts else ''
-                    
-                    if schema:
-                        if raw_text.startswith("```json"):
-                            raw_text = raw_text[7:]
-                        elif raw_text.startswith("```"):
-                            raw_text = raw_text[3:]
-                        if raw_text.endswith("```"):
-                            raw_text = raw_text[:-3]
-                        raw_text = raw_text.strip()
-                        parsed = json.loads(raw_text)
-                        logger.info(f"Gemini multimodal vision succeeded in {elapsed:.2f}s")
-                        return {'success': True, 'data': parsed, 'latency_s': elapsed}
-                    return {'success': True, 'content': raw_text, 'latency_s': elapsed}
+            last_err_status = None
+            last_err_body = None
 
-            logger.warning(f"Gemini multimodal call failed HTTP {resp.status_code}: {resp.text[:200]}")
-            return {'success': False, 'error': f"Model returned HTTP {resp.status_code}", 'fallback': True}
+            for try_model in models_to_try:
+                url = f"{self.base_url}/{try_model}:generateContent?key={self.current_api_key}"
+                try:
+                    resp = requests.post(url, headers=headers, json=payload, timeout=self.timeout + 10)
+                    elapsed = time.time() - start_t
+
+                    if resp.status_code == 200:
+                        self._active_model = try_model
+                        self.model = try_model
+                        data = resp.json()
+                        candidates = data.get('candidates', [])
+                        if candidates and 'content' in candidates[0]:
+                            parts = candidates[0]['content'].get('parts', [])
+                            raw_text = parts[0].get('text', '').strip() if parts else ''
+                            
+                            if schema:
+                                if raw_text.startswith("```json"):
+                                    raw_text = raw_text[7:]
+                                elif raw_text.startswith("```"):
+                                    raw_text = raw_text[3:]
+                                if raw_text.endswith("```"):
+                                    raw_text = raw_text[:-3]
+                                raw_text = raw_text.strip()
+                                parsed = json.loads(raw_text)
+                                logger.info(f"Gemini multimodal vision succeeded with {try_model} in {elapsed:.2f}s")
+                                return {'success': True, 'data': parsed, 'latency_s': elapsed, 'model': try_model}
+                            return {'success': True, 'content': raw_text, 'latency_s': elapsed, 'model': try_model}
+
+                    last_err_status = resp.status_code
+                    last_err_body = resp.text[:200]
+                    logger.warning(f"Gemini model {try_model} returned HTTP {resp.status_code}: {last_err_body}")
+
+                except Exception as req_err:
+                    logger.warning(f"Gemini call to {try_model} failed: {req_err}")
+                    continue
+
+            return {'success': False, 'error': f"All Gemini vision models failed (last HTTP {last_err_status}: {last_err_body})", 'fallback': True}
 
         except Exception as e:
             logger.warning(f"Gemini multimodal analysis error: {e}")
@@ -368,26 +395,31 @@ class GeminiClient:
                 ]
             
             # 2. Test generation through candidates until verified
-            preferred_order = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-3.8-flash', 'gemini-pro-latest', 'gemini-2.5-flash-lite']
+            preferred_order = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-pro', 'gemini-pro-latest']
             candidates_to_try = [m for m in preferred_order if m in available_models]
             if not candidates_to_try:
-                candidates_to_try = available_models or ['gemini-flash-latest']
+                candidates_to_try = [m for m in available_models if 'flash' in m or 'pro' in m] or available_models or ['gemini-2.5-flash', 'gemini-flash-latest']
 
             working_model = None
             last_resp = None
+            last_error = None
             for candidate in candidates_to_try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{candidate}:generateContent?key={self.current_api_key}"
-                payload = {
-                    "contents": [{"parts": [{"text": "Hello, respond with OK"}]}],
-                    "generationConfig": {"maxOutputTokens": 10}
-                }
-                resp = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=10)
-                last_resp = resp
-                if resp.status_code == 200:
-                    working_model = candidate
-                    self._active_model = candidate
-                    self.model = candidate
-                    break
+                try:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{candidate}:generateContent?key={self.current_api_key}"
+                    payload = {
+                        "contents": [{"parts": [{"text": "Hello, respond with OK"}]}],
+                        "generationConfig": {"maxOutputTokens": 10}
+                    }
+                    resp = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=10)
+                    last_resp = resp
+                    if resp.status_code == 200:
+                        working_model = candidate
+                        self._active_model = candidate
+                        self.model = candidate
+                        break
+                except Exception as ex:
+                    last_error = str(ex)
+                    continue
 
             if working_model:
                 res = {
@@ -398,8 +430,8 @@ class GeminiClient:
                     'message': f'Gemini API is connected and responding successfully using {working_model}.'
                 }
             else:
-                status_str = f'HTTP_{last_resp.status_code}' if last_resp else 'HTTP_ERR'
-                msg = f'Gemini API returned {status_str}: {last_resp.text[:200]}' if last_resp else 'No model response'
+                status_str = f'HTTP_{last_resp.status_code}' if last_resp else ('ERR_' + str(last_error)[:20] if last_error else 'HTTP_ERR')
+                msg = f'Gemini API returned {status_str}: {last_resp.text[:200]}' if last_resp else (f'Failed to connect: {last_error}' if last_error else 'No model response')
                 res = {
                     'configured': True,
                     'status': status_str,
