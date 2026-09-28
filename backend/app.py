@@ -105,7 +105,11 @@ def create_app(config_class=Config):
         return jsonify({'success': False, 'message': 'Internal server error'}), 500
 
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+            app.logger.info("Database tables verified/created successfully.")
+        except Exception as e:
+            app.logger.error(f"Database initialization warning on startup: {e}")
         try:
             from sqlalchemy import text, inspect
             inspector = inspect(db.engine)
