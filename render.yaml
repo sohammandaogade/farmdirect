@@ -9,7 +9,12 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.8
+      - key: NODE_VERSION
+        value: 20.11.0
       - key: FLASK_ENV
         value: production
       - key: SECRET_KEY
         generateValue: true
+      - key: DATABASE_URL
+        sync: false
+

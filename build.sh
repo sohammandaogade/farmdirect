@@ -13,9 +13,4 @@ echo "--- Installing Python dependencies ---"
 pip install --upgrade pip
 pip install -r backend/requirements.txt
 
-echo "--- Initializing & Seeding Database ---"
-cd backend
-python seed.py
-cd ..
-
 echo "--- Build Completed Successfully! ---"
