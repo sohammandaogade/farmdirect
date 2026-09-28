@@ -28,5 +28,6 @@ EXPOSE 5000
 
 WORKDIR /app/backend
 
-# Run gunicorn directly without destructive database recreation
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 app:app"]
+# Run gunicorn directly with 1 worker and 4 threads for optimal memory and concurrency
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} --workers 1 --threads 4 --timeout 120 app:app"]
+
