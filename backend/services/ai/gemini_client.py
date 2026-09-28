@@ -44,6 +44,46 @@ class GeminiClient:
         key = self.current_api_key
         return bool(key and len(key.strip()) > 10)
 
+    _active_model = None
+
+    def get_active_model(self):
+        """Returns the working model identifier, dynamically discovering supported models from Gemini API."""
+        if self._active_model:
+            return self._active_model
+
+        env_model = os.environ.get('GEMINI_MODEL')
+        if env_model:
+            self._active_model = env_model
+            return self._active_model
+
+        if not self.is_available():
+            return self.model
+
+        try:
+            import requests
+            list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={self.current_api_key}"
+            resp = requests.get(list_url, timeout=5)
+            if resp.status_code == 200:
+                models_data = resp.json().get('models', [])
+                supported = [
+                    m['name'].replace('models/', '') for m in models_data 
+                    if 'generateContent' in m.get('supportedGenerationMethods', [])
+                ]
+                for candidate in ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-8b', 'gemini-1.5-pro', 'gemini-pro']:
+                    if candidate in supported:
+                        self._active_model = candidate
+                        self.model = candidate
+                        return candidate
+                if supported:
+                    self._active_model = supported[0]
+                    self.model = supported[0]
+                    return supported[0]
+        except Exception as e:
+            logger.warning(f"Could not query ListModels: {e}")
+
+        self._active_model = self.model
+        return self._active_model
+
     def _get_cache_key(self, prompt, system_instruction, schema_str=""):
         raw = f"{prompt}|{system_instruction}|{schema_str}"
         return hashlib.sha256(raw.encode('utf-8')).hexdigest()
@@ -85,7 +125,8 @@ class GeminiClient:
         try:
             import requests
 
-            url = f"{self.base_url}/{self.model}:generateContent?key={self.current_api_key}"
+            active_model = self.get_active_model()
+            url = f"{self.base_url}/{active_model}:generateContent?key={self.current_api_key}"
             headers = {'Content-Type': 'application/json'}
 
             payload = {
@@ -156,7 +197,8 @@ class GeminiClient:
         try:
             import requests
 
-            url = f"{self.base_url}/{self.model}:generateContent?key={self.current_api_key}"
+            active_model = self.get_active_model()
+            url = f"{self.base_url}/{active_model}:generateContent?key={self.current_api_key}"
             headers = {'Content-Type': 'application/json'}
 
             # Append explicit schema reminder to system instruction
@@ -231,7 +273,8 @@ class GeminiClient:
         try:
             import requests
 
-            url = f"{self.base_url}/{self.model}:generateContent?key={self.current_api_key}"
+            active_model = self.get_active_model()
+            url = f"{self.base_url}/{active_model}:generateContent?key={self.current_api_key}"
             headers = {'Content-Type': 'application/json'}
 
             b64_image = base64.b64encode(image_bytes).decode('utf-8')
