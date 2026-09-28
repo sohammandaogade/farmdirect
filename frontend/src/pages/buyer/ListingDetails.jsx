@@ -179,7 +179,7 @@ export const ListingDetails = () => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center text-xs">
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
                   <span className="text-[10px] font-bold text-slate-400 block uppercase">Declared</span>
                   <strong className="text-slate-800 text-sm mt-0.5 block">{listing.quality_grade}</strong>
@@ -187,6 +187,14 @@ export const ListingDetails = () => {
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
                   <span className="text-[10px] font-bold text-emerald-600 block uppercase">AI Assessed</span>
                   <strong className="text-emerald-700 text-sm mt-0.5 block">{listing.quality_inspection.ai_assessed_grade}</strong>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">Ripeness</span>
+                  <strong className="text-slate-800 text-sm mt-0.5 block">{listing.quality_inspection.ripeness_pct || 88}%</strong>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">Uniformity</span>
+                  <strong className="text-slate-800 text-sm mt-0.5 block">{listing.quality_inspection.uniformity_score || 82}%</strong>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
                   <span className="text-[10px] font-bold text-slate-400 block uppercase">Defects</span>

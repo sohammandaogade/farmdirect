@@ -272,14 +272,26 @@ class GeminiVisionService:
             assessed_grade = 'Under Review'
             defect_level = 'UNCERTAIN'
 
-        # Defect percentage telemetry
+        # Defect percentage, Ripeness, and Uniformity telemetry
         defect_pct = 0.0
-        if legacy_cv and 'defect_detected_pct' in legacy_cv:
-            defect_pct = legacy_cv['defect_detected_pct']
+        ripeness_val = 85.0
+        uniformity_val = 80.0
+
+        if legacy_cv and isinstance(legacy_cv, dict):
+            if 'defect_detected_pct' in legacy_cv and legacy_cv['defect_detected_pct'] is not None:
+                defect_pct = float(legacy_cv['defect_detected_pct'])
+            if 'ripeness_pct' in legacy_cv and legacy_cv['ripeness_pct'] is not None:
+                ripeness_val = float(legacy_cv['ripeness_pct'])
+            if 'uniformity_score' in legacy_cv and legacy_cv['uniformity_score'] is not None:
+                uniformity_val = float(legacy_cv['uniformity_score'])
         elif quality_status == 'ROTTEN':
             defect_pct = 45.0
+            ripeness_val = 30.0
+            uniformity_val = 25.0
         elif quality_status == 'ACCEPTABLE':
             defect_pct = 2.5
+            ripeness_val = 88.0
+            uniformity_val = 82.0
 
         return {
             'success': True,
@@ -292,7 +304,9 @@ class GeminiVisionService:
             'detected_crop': crop_name,
             'crop_confidence': round(crop_conf * 100.0, 1),
             'confidence_score': round(quality_conf * 100.0, 1),
-            'defect_detected_pct': defect_pct,
+            'defect_detected_pct': round(defect_pct, 1),
+            'ripeness_pct': round(ripeness_val, 1),
+            'uniformity_score': round(uniformity_val, 1),
             'visible_defect_level': defect_level,
             'image_quality_status': validated_data['image_suitability']['issue_detected'],
             'model_name': model_used,
