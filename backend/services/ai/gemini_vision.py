@@ -10,6 +10,7 @@ Handles:
 
 import os
 import uuid
+import hashlib
 import logging
 from PIL import Image
 import numpy as np
@@ -100,6 +101,8 @@ class GeminiVisionService:
                 'listing_decision': {'status': 'REVIEW', 'reason': 'Failed to read image stream.'},
                 'can_publish': False
             }
+
+        image_hash = hashlib.sha256(image_bytes).hexdigest()
 
         # Save to disk if upload folder specified
         saved_path = None
@@ -213,6 +216,7 @@ class GeminiVisionService:
                 can_publish = False
 
             # Compile unified response
+            active_m = gemini_client.get_active_model() or 'gemini-flash-latest'
             return GeminiVisionService._format_final_response(
                 validated_data=validated_data,
                 verification_status=verification_status,
@@ -221,7 +225,8 @@ class GeminiVisionService:
                 user_crop=user_crop,
                 declared_grade=declared_grade,
                 legacy_cv=legacy_cv_telemetry,
-                model_used=f"Gemini-1.5-Flash-Vision (Primary) + {VisionQualityService.__name__} (Audit)"
+                model_used=f"{active_m} (Primary Vision) + {VisionQualityService.__name__} (Audit)",
+                image_hash=image_hash
             )
 
         # ---------------------------------------------------------------------
@@ -232,11 +237,12 @@ class GeminiVisionService:
             legacy_cv=legacy_cv_telemetry,
             user_crop=user_crop,
             declared_grade=declared_grade,
-            file_url=file_url
+            file_url=file_url,
+            image_hash=image_hash
         )
 
     @staticmethod
-    def _format_final_response(validated_data, verification_status, can_publish, file_url, user_crop, declared_grade, legacy_cv=None, model_used="Gemini-Vision"):
+    def _format_final_response(validated_data, verification_status, can_publish, file_url, user_crop, declared_grade, legacy_cv=None, model_used="Gemini-Vision", image_hash=None):
         """Formats the unified response payload for the backend and frontend."""
         crop_name = validated_data['crop_identification']['name'].title()
         crop_conf = validated_data['crop_identification']['confidence']
@@ -296,6 +302,7 @@ class GeminiVisionService:
         return {
             'success': True,
             'image_url': file_url,
+            'image_hash': image_hash,
             'can_publish': can_publish,
             'verification_status': verification_status,
             'declared_grade': declared_grade,
@@ -324,7 +331,7 @@ class GeminiVisionService:
         }
 
     @staticmethod
-    def _fallback_vision_assessment(legacy_cv, user_crop, declared_grade, file_url):
+    def _fallback_vision_assessment(legacy_cv, user_crop, declared_grade, file_url, image_hash=None):
         """
         Safe fallback using the preserved deterministic optical CV pipeline
         when Gemini Multimodal API is unavailable.
@@ -340,7 +347,7 @@ class GeminiVisionService:
                 "listing_decision": {"status": "REVIEW", "reason": "Image verification service is temporarily unavailable."}
             }
             return GeminiVisionService._format_final_response(
-                validated, 'REVIEW_REQUIRED', False, file_url, user_crop, declared_grade, None, "FarmDirect-Fallback-SafeEngine"
+                validated, 'REVIEW_REQUIRED', False, file_url, user_crop, declared_grade, None, "FarmDirect-Fallback-SafeEngine", image_hash=image_hash
             )
 
         # Check existing CV result
@@ -359,7 +366,7 @@ class GeminiVisionService:
                 "listing_decision": {"status": "REVIEW", "reason": legacy_cv.get('assessment_notes', 'Image quality unsuitable.')}
             }
             return GeminiVisionService._format_final_response(
-                validated, 'IMAGE_UNSUITABLE', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine"
+                validated, 'IMAGE_UNSUITABLE', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine", image_hash=image_hash
             )
 
         # 2. Critical Spoilage / High defect ratio / Mold
@@ -376,7 +383,7 @@ class GeminiVisionService:
                 "listing_decision": {"status": "REJECT", "reason": legacy_cv.get('assessment_notes') or f"Severe produce defects detected ({defect_pct}% surface blemishes)."}
             }
             return GeminiVisionService._format_final_response(
-                validated, 'REJECTED', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine"
+                validated, 'REJECTED', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine", image_hash=image_hash
             )
 
         # 3. Crop Mismatch
@@ -391,20 +398,22 @@ class GeminiVisionService:
                 "listing_decision": {"status": "REVIEW", "reason": mismatch_reason}
             }
             return GeminiVisionService._format_final_response(
-                validated, 'CROP_MISMATCH', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine"
+                validated, 'CROP_MISMATCH', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine", image_hash=image_hash
             )
 
-        # 4. Standard Acceptable Produce via optical engine
+        # 4. Standard Optical Scan Passed (Multimodal Gemini Unavailable)
+        # SECTION 14 MANDATE: NEVER auto-approve when Gemini fails/unavailable!
+        # Always hold for REVIEW so produce is not auto-approved without multimodal verification.
         validated = {
             "is_agricultural_produce": True,
             "image_suitability": {"is_usable": True, "issue_detected": "NONE"},
             "multiple_crops_detected": False,
-            "crop_identification": {"name": detected, "confidence": 0.88},
-            "quality_assessment": {"status": "ACCEPTABLE", "confidence": 0.88, "issues": []},
-            "listing_decision": {"status": "APPROVE", "reason": "Optical quality verification passed."}
+            "crop_identification": {"name": detected, "confidence": 0.70},
+            "quality_assessment": {"status": "UNCERTAIN", "confidence": 0.65, "issues": ["Multimodal vision offline; optical telemetry recorded."]},
+            "listing_decision": {"status": "REVIEW", "reason": "Produce held for secondary review: multimodal vision verification was offline."}
         }
         return GeminiVisionService._format_final_response(
-            validated, 'VERIFIED_ALIGNED', True, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine"
+            validated, 'REVIEW_REQUIRED', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine (Fallback-Review)", image_hash=image_hash
         )
 
     @staticmethod

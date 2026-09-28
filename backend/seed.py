@@ -23,7 +23,8 @@ def ensure_schema_columns():
                 ('visible_defect_level', "VARCHAR(50) DEFAULT 'LOW'"),
                 ('defect_confidence', 'FLOAT DEFAULT 0.0'),
                 ('model_name', "VARCHAR(100) DEFAULT 'FarmDirect-AgriVision-ColorTextureEngine'"),
-                ('model_version', "VARCHAR(50) DEFAULT '2.0.0'")
+                ('model_version', "VARCHAR(50) DEFAULT '2.0.0'"),
+                ('image_hash', "VARCHAR(64)")
             ]
             with db.engine.connect() as conn:
                 for col_name, col_type in new_cols:
@@ -604,11 +605,13 @@ def _execute_seed_logic():
 
 def seed_database():
     if current_app:
+        ensure_schema_columns()
         _execute_seed_logic()
     else:
         from app import create_app
         local_app = create_app()
         with local_app.app_context():
+            ensure_schema_columns()
             from models import User
             if User.query.filter_by(email="admin@farmdirect.demo").first() is None:
                 _execute_seed_logic()

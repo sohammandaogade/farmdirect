@@ -4,6 +4,15 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 def get_database_uri():
     raw_url = os.environ.get('DATABASE_URL')
+    env = os.environ.get('FLASK_ENV') or os.environ.get('ENVIRONMENT')
+    is_prod = (env == 'production' or os.environ.get('RENDER') == 'true')
+
+    if is_prod and not raw_url:
+        raise RuntimeError(
+            "FATAL: DATABASE_URL must be configured in production environments. "
+            "Silent SQLite fallback is disabled in production to protect against data loss on container restarts."
+        )
+
     if raw_url:
         # Standardize PostgreSQL URI to explicitly use psycopg2
         if raw_url.startswith('postgres://'):
@@ -26,5 +35,5 @@ class Config:
     UPLOAD_FOLDER = os.path.join(basedir, 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-    GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-1.5-flash')
+    GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-flash-latest')
 

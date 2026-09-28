@@ -338,14 +338,22 @@ class GeminiClient:
             logger.warning(f"Gemini multimodal analysis error: {e}")
             return {'success': False, 'error': str(e), 'fallback': True}
 
+    _last_test_result = None
+    _last_test_time = 0.0
+
     def test_connection(self):
-        """Tests whether GEMINI_API_KEY is configured and can reach the Gemini API."""
+        """Tests whether GEMINI_API_KEY is configured and can reach the Gemini API (cached for 60s)."""
         if not self.is_available():
             return {
                 'configured': False,
                 'status': 'KEY_NOT_FOUND',
                 'message': 'GEMINI_API_KEY environment variable is not detected in the running process.'
             }
+
+        now = time.time()
+        if self._last_test_result and (now - self._last_test_time < 60.0):
+            return self._last_test_result
+
         try:
             import requests
             # 1. Fetch available models for this API key
@@ -382,7 +390,7 @@ class GeminiClient:
                     break
 
             if working_model:
-                return {
+                res = {
                     'configured': True,
                     'status': 'CONNECTED',
                     'active_model': working_model,
@@ -392,18 +400,22 @@ class GeminiClient:
             else:
                 status_str = f'HTTP_{last_resp.status_code}' if last_resp else 'HTTP_ERR'
                 msg = f'Gemini API returned {status_str}: {last_resp.text[:200]}' if last_resp else 'No model response'
-                return {
+                res = {
                     'configured': True,
                     'status': status_str,
                     'available_models': available_models[:10],
                     'message': msg
                 }
         except Exception as e:
-            return {
+            res = {
                 'configured': True,
                 'status': 'CONNECTION_ERROR',
                 'message': f'Failed to reach Gemini API: {str(e)}'
             }
+
+        self._last_test_result = res
+        self._last_test_time = time.time()
+        return res
 
 
 # Global singleton instance

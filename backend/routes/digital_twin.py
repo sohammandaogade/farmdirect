@@ -14,7 +14,7 @@ digital_twin_bp = Blueprint('digital_twin', __name__, url_prefix='/api/digital-t
 
 @digital_twin_bp.route('/farmer/<int:farmer_id>', methods=['GET'])
 def get_farmer_digital_twin(farmer_id):
-    farmer = User.query.get(farmer_id)
+    farmer = db.session.get(User, farmer_id)
     if not farmer:
         return jsonify({'success': False, 'message': 'Farmer not found.'}), 404
 
@@ -42,8 +42,7 @@ def get_farmer_digital_twin(farmer_id):
             'demand_trend': intel['demand_summary']['trend']
         })
 
-    return jsonify({
-        'success': True,
+    payload = {
         'farmer_id': farmer_id,
         'farmer_name': farmer.name,
         'farm_name': farmer.farmer_profile.farm_name if farmer.farmer_profile else farmer.name,
@@ -59,6 +58,12 @@ def get_farmer_digital_twin(farmer_id):
             'overall_margin_pct': round((total_hist_margin / total_hist_revenue * 100), 1) if total_hist_revenue > 0 else 0
         },
         'current_projections': current_projections
+    }
+
+    return jsonify({
+        'success': True,
+        'data': payload,
+        **payload
     }), 200
 
 @digital_twin_bp.route('/inventory-intelligence', methods=['GET'])

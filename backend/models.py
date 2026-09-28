@@ -540,6 +540,7 @@ class QualityInspection(db.Model):
     listing_id = db.Column(db.Integer, db.ForeignKey('produce_listings.id'), nullable=True)
     farmer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     image_url = db.Column(db.String(500), nullable=False)
+    image_hash = db.Column(db.String(64), nullable=True, index=True)
     declared_grade = db.Column(db.String(50), nullable=False)
     ai_assessed_grade = db.Column(db.String(50), nullable=False)
     ripeness_pct = db.Column(db.Float, default=85.0, nullable=False)
@@ -568,6 +569,7 @@ class QualityInspection(db.Model):
             'listing_id': self.listing_id,
             'farmer_id': self.farmer_id,
             'image_url': self.image_url,
+            'image_hash': self.image_hash,
             'declared_grade': self.declared_grade,
             'ai_assessed_grade': self.ai_assessed_grade,
             'expected_crop': self.expected_crop,

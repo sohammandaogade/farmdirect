@@ -62,6 +62,9 @@ class TestGeminiVisionLayer(unittest.TestCase):
         cls.client = app.test_client()
 
         with app.app_context():
+            from seed import ensure_schema_columns
+            db.create_all()
+            ensure_schema_columns()
             farmer = User.query.filter_by(role='farmer').first()
             if not farmer:
                 import uuid
@@ -431,19 +434,34 @@ class TestGeminiVisionLayer(unittest.TestCase):
             print("  [PASS] TEST 9: Validator safety guardrails and logical consistency enforced.")
 
     # -------------------------------------------------------------------------
-    # TEST 10: Multipart Upload Endpoint Integration
+    # TEST 10: Multipart Upload Endpoint Integration with Auth
     # -------------------------------------------------------------------------
     def test_10_upload_inspect_endpoint(self):
         with self.app.app_context():
             img_bytes = make_test_image_bytes(color=(210, 35, 30))
-            data = {
+            data_unauth = {
+                'image': (io.BytesIO(img_bytes), 'tomato_field.jpg'),
+                'crop': 'Tomato',
+                'declared_grade': 'Grade A'
+            }
+            # 1. Unauthenticated request must return 401
+            resp_unauth = self.client.post(
+                '/api/quality/upload-inspect',
+                data=data_unauth,
+                content_type='multipart/form-data'
+            )
+            self.assertEqual(resp_unauth.status_code, 401)
+
+            # 2. Authenticated farmer request must succeed
+            data_auth = {
                 'image': (io.BytesIO(img_bytes), 'tomato_field.jpg'),
                 'crop': 'Tomato',
                 'declared_grade': 'Grade A'
             }
             resp = self.client.post(
                 '/api/quality/upload-inspect',
-                data=data,
+                data=data_auth,
+                headers=self.auth_headers,
                 content_type='multipart/form-data'
             )
             self.assertEqual(resp.status_code, 200)
@@ -453,7 +471,8 @@ class TestGeminiVisionLayer(unittest.TestCase):
             self.assertIn('crop_identification', body)
             self.assertIn('quality_assessment', body)
             self.assertIn('user_facing_message', body)
-            print("  [PASS] TEST 10: /api/quality/upload-inspect endpoint returns full structured schema.")
+            self.assertEqual(body.get('farmer_id'), self.farmer_id)
+            print("  [PASS] TEST 10: /api/quality/upload-inspect endpoint enforces farmer auth and returns full structured schema.")
 
 
 if __name__ == '__main__':

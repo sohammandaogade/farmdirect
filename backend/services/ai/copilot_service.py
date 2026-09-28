@@ -165,9 +165,34 @@ class CopilotService:
         region_mr = REGION_DISPLAY_MR.get(detected_region, detected_region)
         region_hi = REGION_DISPLAY_HI.get(detected_region, detected_region)
 
-        # Grounded Gemini Farmer Copilot
+        # Grounded Gemini Farmer Copilot with Live Market Data (Section 17 & 18)
         from services.ai.gemini_client import gemini_client
         from services.ai.prompts import SYSTEM_FARMER_COPILOT
+        from services.market_data_service import MarketDataService
+
+        market_summary = MarketDataService.get_market_summary(detected_crop, detected_region)
+        price_trend = MarketDataService.get_price_trend(detected_crop)
+
+        # Internal platform buyer demand signals
+        internal_buyer_inquiries = 0
+        avg_offered_price = None
+        try:
+            from models import PurchaseRequest
+            matching_reqs = PurchaseRequest.query.join(ProduceListing).filter(
+                ProduceListing.crop.ilike(f'%{detected_crop}%'),
+                PurchaseRequest.status.in_(['PENDING', 'ACCEPTED', 'NEGOTIATING'])
+            ).all()
+            internal_buyer_inquiries = len(matching_reqs)
+            if matching_reqs:
+                avg_offered_price = round(sum(r.offered_price for r in matching_reqs) / len(matching_reqs), 2)
+        except Exception as e:
+            logger.warning(f"Error querying buyer demand signals: {e}")
+
+        platform_demand_signals = {
+            "crop": detected_crop,
+            "active_buyer_inquiries_count": internal_buyer_inquiries,
+            "average_buyer_offered_price_inr_kg": avg_offered_price
+        }
 
         if gemini_client.is_available() and len(q) > 4:
             farmer_context = {
@@ -181,19 +206,36 @@ class CopilotService:
                 ],
                 "queried_crop": detected_crop,
                 "region": detected_region,
+                "verified_live_apmc_market_data": market_summary,
+                "verified_price_trend": price_trend,
+                "farmdirect_buyer_demand_signals": platform_demand_signals,
                 "preferred_language": "Marathi" if lang == 'mr' else ("Hindi" if lang == 'hi' else "English")
             }
             prompt = (
                 f"Farmer inquiry: \"{query_text}\"\n\n"
-                f"Verified farmer context:\n{farmer_context}\n\n"
-                f"Respond in {farmer_context['preferred_language']}. Keep it practical, supportive, and grounded."
+                f"Ground Truth Market & Farmer Context:\n"
+                f"1. Farmer Account: {farmer_context['farmer_name']} ({farmer_context['farm_name']}) in {farmer_context['farm_location']}\n"
+                f"2. Farmer Listings: {farmer_context['active_listings_summary']}\n"
+                f"3. Verified Live APMC Market Data (Official Agmarknet Source): {market_summary}\n"
+                f"4. Verified Mandi Price Trend: {price_trend}\n"
+                f"5. FarmDirect Direct Buyer Inquiries: {platform_demand_signals}\n\n"
+                f"Instructions:\n"
+                f"- Respond in {farmer_context['preferred_language']}.\n"
+                f"- MANDATORY ZERO-HALLUCINATION RULE: Quote ONLY the exact verified APMC rates and trends provided above. Do NOT invent prices or trends.\n"
+                f"- If asked for mandi rates or where to sell, highlight the best paying market and latest modal price from the data.\n"
+                f"- Keep your guidance supportive, practical, and grounded in real farm economics."
             )
-            gemini_res = gemini_client.generate_text(prompt, system_instruction=SYSTEM_FARMER_COPILOT, temperature=0.3)
+            gemini_res = gemini_client.generate_text(prompt, system_instruction=SYSTEM_FARMER_COPILOT, temperature=0.2)
             if gemini_res.get('success') and gemini_res.get('content'):
                 return {
                     'reply': gemini_res['content'],
                     'category': 'AI_ASSISTANT',
                     'source': 'gemini_grounded',
+                    'market_grounding': {
+                        'verified_data': market_summary.get('has_data', False),
+                        'source': market_summary.get('source'),
+                        'trend': price_trend.get('direction', 'STABLE')
+                    },
                     'action_suggestion': '/farmer/listings' if listings else '/farmer/listings/new'
                 }
 
@@ -288,6 +330,20 @@ class CopilotService:
         # 3. APMC & MANDI PRICE BENCHMARKS (e.g. Onion prices in Nashik)
         elif any(w in q for w in ['price', 'rate', 'benchmark', 'apmc', 'mandi', 'भाव', 'बाजारभाव', 'दर', 'दाम', 'bhav', 'cost', 'list at', 'fair price']):
             p = PriceForecasterService.get_predictive_fair_price(detected_crop, detected_region, 'Grade A', 1000)
+            quotes = market_summary.get('verified_quotes', [])
+            quotes_mr = ""
+            quotes_hi = ""
+            quotes_en = ""
+            if quotes:
+                quotes_mr = "\n\n**🏛️ अधिकृत APMC कृषी बाजार समिती दर (Agmarknet):**\n" + "\n".join(
+                    [f"• **{q['market']} ({q['district']}):** सरासरी दर ₹{q['modal_per_kg']}/किलो (किमान-कमाल: {q['range_per_kg']}, आवक: {q['arrivals']})" for q in quotes[:3]]
+                )
+                quotes_hi = "\n\n**🏛️ अधिकृत APMC मंडी भाव (Agmarknet):**\n" + "\n".join(
+                    [f"• **{q['market']} ({q['district']}):** मॉडल भाव ₹{q['modal_per_kg']}/किग्रा (दायरा: {q['range_per_kg']}, आवक: {q['arrivals']})" for q in quotes[:3]]
+                )
+                quotes_en = "\n\n**🏛️ Verified APMC Mandi Bulletin (Agmarknet/Official):**\n" + "\n".join(
+                    [f"• **{q['market']} ({q['district']}):** Modal ₹{q['modal_per_kg']}/kg (Range: {q['range_per_kg']}, Arrivals: {q['arrivals']})" for q in quotes[:3]]
+                )
 
             if lang == 'mr':
                 reply = (
@@ -295,7 +351,7 @@ class CopilotService:
                     f"• **शिफारस केलेला थेट विक्री दर:** **₹{p['predicted_price']:.2f}/किलो**\n"
                     f"• **किफायतशीर बाजारभाव पट्टा:** **₹{p['lower_bound']:.2f} ते ₹{p['upper_bound']:.2f}/किलो**\n"
                     f"• **१,००० किलो (१ टन) अपेक्षित उत्पन्न:** **₹{p['expected_revenue']:,.2f}**\n\n"
-                    f"_{p['factors'][0]} ({p['factors'][1]})._\n\n"
+                    f"_{p['factors'][0]} ({p['factors'][1]})._{quotes_mr}\n\n"
                     f"💡 **शेतकरी सल्ला:** फार्मडायरेक्टवर थेट विक्री केल्यास हमाली व दलालीचे ६-८% वाचून थेट खरेदीदारांकडून उत्तम नफा मिळवता येतो."
                 )
             elif lang == 'hi':
@@ -304,7 +360,7 @@ class CopilotService:
                     f"• **सुझाया गया लिस्टिंग मूल्य:** **₹{p['predicted_price']:.2f}/किग्रा**\n"
                     f"• **उचित संदर्भ मूल्य दायरा:** **₹{p['lower_bound']:.2f} – ₹{p['upper_bound']:.2f}/किग्रा**\n"
                     f"• **1,000 किग्रा पर संभावित आय:** **₹{p['expected_revenue']:,.2f}**\n\n"
-                    f"_{p['factors'][0]} ({p['factors'][1]})._\n\n"
+                    f"_{p['factors'][0]} ({p['factors'][1]})._{quotes_hi}\n\n"
                     f"💡 **बिक्री सलाह:** बिना किसी बिचौलिए के फार्मडायरेक्ट पर होटल व रिटेल खरीदारों को सीधे बेचकर बेहतर मुनाफा कमाएं।"
                 )
             else:
@@ -316,7 +372,7 @@ class CopilotService:
                     f"**Key Pricing Drivers:**\n"
                     f"• {p['factors'][0]}\n"
                     f"• {p['factors'][1]}\n"
-                    f"• {p['factors'][2]}\n\n"
+                    f"• {p['factors'][2]}{quotes_en}\n\n"
                     f"💡 **Commercial Advice:** In {detected_region}, Grade A sorting commands a 5-10% quality premium. Listing directly on FarmDirect bypasses 6–8% APMC commission and intermediary transit cuts."
                 )
             return {'reply': reply, 'data': p, 'category': 'PRICE_INTELLIGENCE'}

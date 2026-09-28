@@ -101,6 +101,9 @@ def create_listing(current_user):
     # -------------------------------------------------------------
     # SERVER-SIDE AI QUALITY & CROP VERIFICATION ENFORCEMENT
     # -------------------------------------------------------------
+    # -------------------------------------------------------------
+    # SERVER-SIDE AI QUALITY & CROP VERIFICATION ENFORCEMENT
+    # -------------------------------------------------------------
     inspection = None
     if inspection_id:
         try:
@@ -108,12 +111,30 @@ def create_listing(current_user):
         except (ValueError, TypeError):
             inspection = None
 
+        # Ownership check: Farmers can only bind their OWN inspections (Section 11)
+        if inspection and inspection.farmer_id != current_user.id:
+            return jsonify({
+                'success': False,
+                'message': 'Unauthorized inspection: This quality inspection record belongs to a different farmer.'
+            }), 403
+
+        # Anti-stale reuse check: An inspection cannot be attached to multiple listings
+        if inspection and inspection.listing_id is not None:
+            return jsonify({
+                'success': False,
+                'message': 'Inspection already attached: This quality inspection record is already linked to another listing. Stale inspection reuse is prohibited. Please perform a fresh produce scan.'
+            }), 409
+
     if not inspection and image_url:
         norm_url = image_url.lstrip('/')
         inspection = QualityInspection.query.filter(
-            (QualityInspection.image_url == image_url) | 
-            (QualityInspection.image_url == f"/{norm_url}") |
-            (QualityInspection.image_url == norm_url)
+            QualityInspection.farmer_id == current_user.id,
+            QualityInspection.listing_id.is_(None),
+            (
+                (QualityInspection.image_url == image_url) | 
+                (QualityInspection.image_url == f"/{norm_url}") |
+                (QualityInspection.image_url == norm_url)
+            )
         ).order_by(QualityInspection.created_at.desc()).first()
 
     initial_status = 'ACTIVE'
@@ -197,6 +218,57 @@ def update_listing(current_user, listing_id):
         return jsonify({'success': False, 'message': 'You can only edit your own listings.'}), 403
 
     data = request.get_json() or {}
+
+    # Anti-Bypass Protection: Detect produce or image alterations (Section 12)
+    old_crop = listing.crop
+    old_image = listing.image_url
+    crop_changed = ('crop' in data and data['crop'] and data['crop'].strip().lower() != old_crop.lower())
+    image_changed = ('image_url' in data and data['image_url'] and data['image_url'].strip() != old_image)
+
+    new_inspection_id = data.get('inspection_id')
+    new_inspection = None
+
+    if crop_changed or image_changed:
+        if new_inspection_id:
+            try:
+                new_inspection = db.session.get(QualityInspection, int(new_inspection_id))
+            except (ValueError, TypeError):
+                new_inspection = None
+
+            if not new_inspection or new_inspection.farmer_id != current_user.id:
+                return jsonify({
+                    'success': False,
+                    'message': 'Unauthorized inspection: The specified inspection record does not belong to your account.'
+                }), 403
+
+            # Verify updated produce is not rotten
+            if (new_inspection.verification_status in ['REJECTED', 'ROTTEN', 'REJECT'] or
+                new_inspection.visible_defect_level in ['CRITICAL_SPOILAGE', 'ROTTEN'] or
+                getattr(new_inspection, 'ai_assessed_grade', '') in ['Sub-standard / Rotten', 'ROTTEN', 'REJECTED']):
+                return jsonify({
+                    'success': False,
+                    'status': 'REJECTED',
+                    'message': 'Cannot update listing: The updated produce photo was verified as rotten or unfit for sale.',
+                    'listing_decision': {'status': 'REJECT', 'reason': new_inspection.assessment_notes or 'Produce verified as rotten.'}
+                }), 422
+
+            # Verify updated crop compatibility
+            target_crop = data.get('crop', listing.crop).strip()
+            is_compat, mismatch_reason = are_crops_compatible(target_crop, new_inspection.detected_crop)
+            if not is_compat or new_inspection.verification_status == 'CROP_MISMATCH':
+                return jsonify({
+                    'success': False,
+                    'status': 'CROP_MISMATCH',
+                    'message': f'Cannot update listing: Crop mismatch detected. The updated photo was identified as "{new_inspection.detected_crop}".'
+                }), 422
+
+            new_inspection.listing_id = listing.id
+            if new_inspection.verification_status in ['REVIEW_REQUIRED', 'REVIEW', 'IMAGE_UNSUITABLE', 'UNVERIFIED']:
+                listing.status = 'PAUSED'
+        else:
+            # Produce crop or image changed without fresh inspection -> hold under review
+            listing.status = 'PAUSED'
+
     if 'crop' in data and data['crop']:
         listing.crop = data['crop'].strip()
     if 'quantity' in data:
@@ -222,12 +294,20 @@ def update_listing(current_user, listing_id):
     if 'image_url' in data:
         listing.image_url = data['image_url'].strip()
     if 'status' in data and data['status'] in ['ACTIVE', 'PAUSED', 'SOLD']:
-        listing.status = data['status']
+        # If crop or image was modified without inspection, force PAUSED
+        if (crop_changed or image_changed) and not new_inspection:
+            listing.status = 'PAUSED'
+        else:
+            listing.status = data['status']
 
     db.session.commit()
+    msg = 'Listing updated successfully.'
+    if (crop_changed or image_changed) and not new_inspection:
+        msg = 'Produce details updated. Listing held under PAUSED status pending AI quality re-inspection.'
+
     return jsonify({
         'success': True,
-        'message': 'Listing updated successfully.',
+        'message': msg,
         'data': listing.to_dict(include_farmer=False)
     }), 200
 

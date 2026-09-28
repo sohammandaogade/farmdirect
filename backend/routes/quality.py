@@ -5,7 +5,7 @@ Handles safe multipart image uploads, visual inspection inference, and audit rec
 
 import os
 from flask import Blueprint, request, jsonify, current_app
-from utils.auth import token_required
+from utils.auth import token_required, role_required
 from models import QualityInspection, ProduceListing, db
 from services.ai.vision_service import VisionQualityService
 from services.ai.gemini_vision import GeminiVisionService
@@ -13,7 +13,9 @@ from services.ai.gemini_vision import GeminiVisionService
 quality_bp = Blueprint('quality', __name__, url_prefix='/api/quality')
 
 @quality_bp.route('/upload-inspect', methods=['POST'])
-def upload_and_inspect():
+@token_required
+@role_required('farmer')
+def upload_and_inspect(current_user):
     if 'image' not in request.files:
         return jsonify({'success': False, 'message': 'No image file found in multipart upload.'}), 400
 
@@ -21,7 +23,10 @@ def upload_and_inspect():
     declared_grade = request.form.get('declared_grade', 'Grade A')
     crop = request.form.get('crop', 'Tomato')
     listing_id = request.form.get('listing_id')
-    farmer_id = request.form.get('farmer_id', 1)
+
+    # Security: Authenticated farmer ownership enforcement (Section 11)
+    # Reject client-supplied farmer_id tampering; always bind to current_user.id
+    authenticated_farmer_id = current_user.id
 
     upload_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads')
     
@@ -35,12 +40,20 @@ def upload_and_inspect():
     if not result.get('success'):
         return jsonify(result), 400
 
+    # Validate listing_id ownership if provided
+    listing_id_val = None
+    if listing_id and str(listing_id).isdigit():
+        chk_listing = db.session.get(ProduceListing, int(listing_id))
+        if chk_listing and chk_listing.farmer_id == authenticated_farmer_id:
+            listing_id_val = chk_listing.id
+
     # Persist inspection in database
     try:
         insp = QualityInspection(
-            listing_id=int(listing_id) if listing_id and str(listing_id).isdigit() else None,
-            farmer_id=int(farmer_id) if farmer_id and str(farmer_id).isdigit() else 1,
+            listing_id=listing_id_val,
+            farmer_id=authenticated_farmer_id,
             image_url=result.get('image_url', ''),
+            image_hash=result.get('image_hash'),
             declared_grade=declared_grade,
             ai_assessed_grade=result.get('ai_assessed_grade', 'Unverified'),
             expected_crop=result.get('expected_crop', crop),
@@ -62,6 +75,7 @@ def upload_and_inspect():
         db.session.commit()
         result['inspection_id'] = insp.id
         result['id'] = insp.id
+        result['farmer_id'] = authenticated_farmer_id
     except Exception as e:
         db.session.rollback()
         # Non-fatal if standalone test without valid FK
