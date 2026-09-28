@@ -282,3 +282,91 @@ MARKETPLACE_ANALYTICS_SCHEMA = {
     },
     "required": ["executive_summary", "key_demand_trends", "regional_observations", "actionable_recommendations"]
 }
+
+# 9. Primary Multimodal Produce Vision & Listing Suitability Schema
+GEMINI_PRIMARY_VISION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "is_agricultural_produce": {
+            "type": "boolean",
+            "description": "True if the image clearly shows raw or harvested agricultural produce (vegetable, fruit, grain, cereal, pulse, spice, root, tuber, etc.). False if it shows non-agricultural subjects (e.g. vehicle, person, laptop, building, animal, processed packaged food, random object)."
+        },
+        "image_suitability": {
+            "type": "object",
+            "properties": {
+                "is_usable": {
+                    "type": "boolean",
+                    "description": "True if image optical quality is sufficient to evaluate crop and condition. False if extremely blurry, pitch black, severe glare, completely obscured, or unreadable."
+                },
+                "issue_detected": {
+                    "type": "string",
+                    "enum": ["NONE", "BLURRY", "POOR_LIGHTING", "OBSCURED", "NON_AGRICULTURAL", "CORRUPTED"],
+                    "description": "Optical or semantic issue detected in the photo"
+                }
+            },
+            "required": ["is_usable", "issue_detected"]
+        },
+        "multiple_crops_detected": {
+            "type": "boolean",
+            "description": "True if two or more distinctly different types of produce crops are visible mixed together in the image."
+        },
+        "crop_identification": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Specific agricultural commodity name in lowercase singular form (e.g. onion, tomato, potato, mango, wheat, rice, ginger, apple, carrot, cabbage, capsicum, chili, etc.) or 'non_produce' if not agricultural produce."
+                },
+                "confidence": {
+                    "type": "number",
+                    "description": "Confidence score between 0.00 and 1.00 indicating certainty of crop identification."
+                }
+            },
+            "required": ["name", "confidence"]
+        },
+        "quality_assessment": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": ["ACCEPTABLE", "ROTTEN", "UNCERTAIN"],
+                    "description": "ACCEPTABLE if fresh or only minor cosmetic marks. ROTTEN if visible mold, rot, extensive decay, leaking fluid, collapsed sunken necrotic tissue, severe decomposition, or unfit for sale. UNCERTAIN if quality cannot be reliably assessed."
+                },
+                "confidence": {
+                    "type": "number",
+                    "description": "Confidence score between 0.00 and 1.00 indicating certainty of quality assessment."
+                },
+                "issues": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of visible physical defects observed (e.g. 'visible mold', 'fungal growth', 'severe rot', 'collapsed tissue', 'deep decay', 'minor surface scar', 'none')."
+                }
+            },
+            "required": ["status", "confidence", "issues"]
+        },
+        "listing_decision": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": ["APPROVE", "REJECT", "REVIEW"],
+                    "description": "APPROVE if genuine agricultural produce in acceptable condition. REJECT if rotten/spoiled or non-agricultural. REVIEW if ambiguous, blurry, multiple crops, or uncertain quality."
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "Clear explanation of the listing decision and condition observations."
+                }
+            },
+            "required": ["status", "reason"]
+        }
+    },
+    "required": [
+        "is_agricultural_produce",
+        "image_suitability",
+        "multiple_crops_detected",
+        "crop_identification",
+        "quality_assessment",
+        "listing_decision"
+    ]
+}
+

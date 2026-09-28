@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 from database import db
-from models import User, FarmerProfile, ProduceListing, Order
+from models import User, FarmerProfile, ProduceListing, Order, QualityInspection
 from utils.auth import token_required, role_required
 from utils.validation import validate_positive_number, validate_date
+from services.ai.validators import are_crops_compatible
 
 farmers_bp = Blueprint('farmers', __name__, url_prefix='/api/farmers')
 
@@ -73,6 +74,7 @@ def create_listing(current_user):
     availability_date_str = data.get('availability_date')
     description = data.get('description', '').strip()
     image_url = data.get('image_url', '').strip()
+    inspection_id = data.get('inspection_id')
 
     if not crop:
         return jsonify({'success': False, 'message': 'Crop name is required.'}), 400
@@ -90,6 +92,49 @@ def create_listing(current_user):
     if not avail_date:
         return jsonify({'success': False, 'message': 'Valid availability date (YYYY-MM-DD) is required.'}), 400
 
+    # -------------------------------------------------------------
+    # SERVER-SIDE AI QUALITY & CROP VERIFICATION ENFORCEMENT
+    # -------------------------------------------------------------
+    inspection = None
+    if inspection_id:
+        try:
+            inspection = db.session.get(QualityInspection, int(inspection_id))
+        except (ValueError, TypeError):
+            inspection = None
+
+    if not inspection and image_url:
+        inspection = QualityInspection.query.filter_by(image_url=image_url).order_by(QualityInspection.created_at.desc()).first()
+
+    initial_status = 'ACTIVE'
+
+    if inspection:
+        # 1. ROTTEN PRODUCE MUST BE BLOCKED SERVER-SIDE (Requirement 6)
+        if (inspection.verification_status in ['REJECTED', 'ROTTEN', 'REJECT'] or
+            inspection.visible_defect_level in ['CRITICAL_SPOILAGE', 'ROTTEN']):
+            return jsonify({
+                'success': False,
+                'status': 'REJECTED',
+                'message': 'Cannot create listing: The uploaded produce was verified as rotten, spoiled, or unfit for sale. Rotten produce is strictly blocked from the marketplace.',
+                'listing_decision': {'status': 'REJECT', 'reason': inspection.assessment_notes or 'Produce verified as rotten.'},
+                'quality_assessment': {'status': 'ROTTEN'}
+            }), 422
+
+        # 2. CROP MISMATCH MUST BE BLOCKED SERVER-SIDE (Requirement 2)
+        is_compat, mismatch_reason = are_crops_compatible(crop, inspection.detected_crop)
+        if not is_compat or inspection.verification_status == 'CROP_MISMATCH':
+            return jsonify({
+                'success': False,
+                'status': 'CROP_MISMATCH',
+                'message': f'Cannot create listing: Crop mismatch detected. You selected "{crop}", but the uploaded produce was identified as "{inspection.detected_crop or "different produce"}". Please correct the crop name or upload matching photos.',
+                'listing_decision': {'status': 'REVIEW', 'reason': 'Crop mismatch detected.'},
+                'detected_crop': inspection.detected_crop,
+                'selected_crop': crop
+            }), 422
+
+        # 3. IF REVIEW: DO NOT PUBLISH AUTOMATICALLY AS ACTIVE (Requirement 6)
+        if inspection.verification_status in ['REVIEW_REQUIRED', 'REVIEW', 'IMAGE_UNSUITABLE', 'UNVERIFIED']:
+            initial_status = 'PAUSED'
+
     listing = ProduceListing(
         farmer_id=current_user.id,
         crop=crop,
@@ -102,14 +147,19 @@ def create_listing(current_user):
         availability_date=avail_date,
         description=description,
         image_url=image_url,
-        status='ACTIVE'
+        status=initial_status
     )
     db.session.add(listing)
+    db.session.flush()
+
+    if inspection:
+        inspection.listing_id = listing.id
+
     db.session.commit()
 
     return jsonify({
         'success': True,
-        'message': 'Produce listing created successfully.',
+        'message': 'Produce listing created successfully.' if initial_status == 'ACTIVE' else 'Listing created and held under review.',
         'data': listing.to_dict(include_farmer=True)
     }), 201
 

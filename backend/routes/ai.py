@@ -157,7 +157,7 @@ def analyze_listing_completeness():
 @ai_bp.route('/listing/from-image', methods=['POST'])
 def generate_listing_from_image():
     from flask import current_app
-    from services.ai.vision_service import VisionQualityService
+    from services.ai.gemini_vision import GeminiVisionService
     from services.ai.copilot_service import CopilotService
 
     file_obj = request.files.get('image')
@@ -169,15 +169,24 @@ def generate_listing_from_image():
         return jsonify({'success': False, 'message': 'Produce image file is required.'}), 400
 
     upload_folder = current_app.config.get('UPLOAD_FOLDER')
-    inspection = VisionQualityService.process_and_inspect_image(
+    inspection = GeminiVisionService.analyze_produce_image(
         file_obj,
+        user_crop=crop_hint,
         declared_grade=declared_grade,
-        crop=crop_hint,
         upload_folder=upload_folder
     )
 
     if not inspection.get('success'):
         return jsonify(inspection), 400
+
+    # Server-side blocking: Do NOT generate listing for rotten/unfit produce
+    if inspection.get('verification_status') == 'REJECTED' or inspection.get('listing_decision', {}).get('status') == 'REJECT':
+        return jsonify({
+            'success': False,
+            'status': 'REJECTED',
+            'message': 'Cannot create listing: Uploaded produce was verified as rotten, spoiled, or unfit for sale.',
+            'inspection': inspection
+        }), 422
 
     detected_crop = inspection.get('detected_crop') or crop_hint
     assessed_grade = inspection.get('ai_assessed_grade') or declared_grade
@@ -196,6 +205,32 @@ def generate_listing_from_image():
             'suggested_listing': listing_draft
         }
     }), 200
+
+@ai_bp.route('/vision/analyze-produce', methods=['POST'])
+def analyze_produce_vision():
+    """
+    Primary Multimodal Vision Analysis Endpoint.
+    Universal crop identification, quality assessment (rot/spoilage detection),
+    crop mismatch checking, and three-state listing decision (APPROVE, REJECT, REVIEW).
+    """
+    from flask import current_app
+    from services.ai.gemini_vision import GeminiVisionService
+
+    file_obj = request.files.get('image')
+    if not file_obj:
+        return jsonify({'success': False, 'message': 'Produce image file is required in multipart upload.'}), 400
+
+    crop = request.form.get('crop')
+    declared_grade = request.form.get('declared_grade', 'Grade A')
+    upload_folder = current_app.config.get('UPLOAD_FOLDER')
+
+    result = GeminiVisionService.analyze_produce_image(
+        file_obj,
+        user_crop=crop,
+        declared_grade=declared_grade,
+        upload_folder=upload_folder
+    )
+    return jsonify(result), 200 if result.get('success') else 400
 
 @ai_bp.route('/match/explain', methods=['POST'])
 def explain_match():

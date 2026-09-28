@@ -2,6 +2,7 @@ import jwt
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import request, jsonify, current_app
+from database import db
 from models import User
 
 def generate_token(user):
@@ -38,7 +39,7 @@ def token_required(f):
         if not payload:
             return jsonify({'success': False, 'message': 'Invalid or expired token.'}), 401
 
-        current_user = User.query.get(payload['user_id'])
+        current_user = db.session.get(User, payload['user_id'])
         if not current_user or not current_user.is_active:
             return jsonify({'success': False, 'message': 'User not found or account deactivated.'}), 401
 

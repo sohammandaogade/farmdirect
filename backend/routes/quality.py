@@ -8,6 +8,7 @@ from flask import Blueprint, request, jsonify, current_app
 from utils.auth import token_required
 from models import QualityInspection, ProduceListing, db
 from services.ai.vision_service import VisionQualityService
+from services.ai.gemini_vision import GeminiVisionService
 
 quality_bp = Blueprint('quality', __name__, url_prefix='/api/quality')
 
@@ -24,10 +25,10 @@ def upload_and_inspect():
 
     upload_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads')
     
-    result = VisionQualityService.process_and_inspect_image(
+    result = GeminiVisionService.analyze_produce_image(
         file,
+        user_crop=crop,
         declared_grade=declared_grade,
-        crop=crop,
         upload_folder=upload_dir
     )
 
@@ -61,6 +62,7 @@ def upload_and_inspect():
         db.session.add(insp)
         db.session.commit()
         result['inspection_id'] = insp.id
+        result['id'] = insp.id
     except Exception as e:
         db.session.rollback()
         # Non-fatal if standalone test without valid FK
