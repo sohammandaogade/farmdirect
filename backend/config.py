@@ -5,9 +5,11 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 def get_database_uri():
     raw_url = os.environ.get('DATABASE_URL')
     if raw_url:
-        # Standardize PostgreSQL URI for SQLAlchemy 1.4+
+        # Standardize PostgreSQL URI to explicitly use psycopg2
         if raw_url.startswith('postgres://'):
-            return raw_url.replace('postgres://', 'postgresql://', 1)
+            return raw_url.replace('postgres://', 'postgresql+psycopg2://', 1)
+        if raw_url.startswith('postgresql://'):
+            return raw_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
         return raw_url
     # Stable SQLite database file path with forward slashes
     sqlite_path = os.path.join(basedir, 'farmdirect.db').replace('\\', '/')
