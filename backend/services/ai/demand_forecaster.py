@@ -44,14 +44,31 @@ class DemandForecastService:
             f14 = record.forecast_14d_pct
             reg = record.region
             explanation = record.explanation or f"Procurement request volume increased while available wholesale supply remains firm."
+        elif req_count == 0 and recent_orders_volume == 0:
+            # Explicitly return Insufficient historical data per mandate
+            return {
+                'crop': crop_clean,
+                'region': region_clean or "Maharashtra Central Belt",
+                'current_demand_index': 50.0,
+                'market_state': 'Insufficient historical data',
+                'trend': 'INSUFFICIENT_DATA',
+                'forecast_7d_pct': 0.0,
+                'forecast_14d_pct': 0.0,
+                'confidence': 'Low (Insufficient historical data)',
+                'active_purchase_requests': 0,
+                'recent_30d_volume_kg': 0.0,
+                'explanation': 'Insufficient historical data available to compute forward demand projections for this crop/region.',
+                'disclaimer': 'Platform demand forecasts require historical transactions or recorded market snapshots.'
+            }
         else:
-            # Baseline dynamic heuristic if no specific crop record exists
+            # Dynamic estimate based strictly on active requests & trade volume
             demand_index = min(92.0, max(50.0, 70.0 + (req_count * 4.0)))
             trend = 'INCREASING' if demand_index >= 75 else ('STABLE' if demand_index >= 60 else 'DECREASING')
             f7 = 8.5 if trend == 'INCREASING' else (1.5 if trend == 'STABLE' else -3.5)
             f14 = 14.0 if trend == 'INCREASING' else (3.0 if trend == 'STABLE' else -6.0)
             reg = region_clean or "Maharashtra Central Belt"
             explanation = f"Calculated from {req_count} active procurement bids and {recent_orders_volume:,.0f} kg recent trade volume."
+
 
         # Compute recommendation flag
         if demand_index >= 80:

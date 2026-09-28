@@ -6,6 +6,7 @@ Supports English, Hindi, and Marathi commands with contextual domain knowledge.
 
 import re
 from datetime import date, timedelta
+from database import db
 from models import ProduceListing, Order, User, CropMarketHistory, PriceReference
 from services.ai.demand_forecaster import DemandForecastService
 from services.ai.price_forecaster import PriceForecasterService
@@ -147,7 +148,7 @@ class CopilotService:
     @staticmethod
     def get_farmer_copilot_response(farmer_id, query_text, explicit_lang=None):
         q = query_text.strip().lower() if query_text else ''
-        farmer = User.query.get(farmer_id)
+        farmer = db.session.get(User, farmer_id)
         if not farmer:
             return {'reply': "Farmer account not found.", 'context': {}}
 
@@ -163,6 +164,38 @@ class CopilotService:
         crop_hi = CROP_DISPLAY_HI.get(detected_crop, detected_crop)
         region_mr = REGION_DISPLAY_MR.get(detected_region, detected_region)
         region_hi = REGION_DISPLAY_HI.get(detected_region, detected_region)
+
+        # Grounded Gemini Farmer Copilot
+        from services.ai.gemini_client import gemini_client
+        from services.ai.prompts import SYSTEM_FARMER_COPILOT
+
+        if gemini_client.is_available() and len(q) > 4:
+            farmer_context = {
+                "farmer_name": farmer.name,
+                "farm_name": farmer.farmer_profile.farm_name if farmer.farmer_profile else farmer.name,
+                "farm_location": default_region,
+                "active_listings_count": len(listings),
+                "active_listings_summary": [
+                    {"crop": l.crop, "qty_kg": l.available_quantity, "price_inr": l.expected_price, "grade": l.quality_grade}
+                    for l in listings[:4]
+                ],
+                "queried_crop": detected_crop,
+                "region": detected_region,
+                "preferred_language": "Marathi" if lang == 'mr' else ("Hindi" if lang == 'hi' else "English")
+            }
+            prompt = (
+                f"Farmer inquiry: \"{query_text}\"\n\n"
+                f"Verified farmer context:\n{farmer_context}\n\n"
+                f"Respond in {farmer_context['preferred_language']}. Keep it practical, supportive, and grounded."
+            )
+            gemini_res = gemini_client.generate_text(prompt, system_instruction=SYSTEM_FARMER_COPILOT, temperature=0.3)
+            if gemini_res.get('success') and gemini_res.get('content'):
+                return {
+                    'reply': gemini_res['content'],
+                    'category': 'AI_ASSISTANT',
+                    'source': 'gemini_grounded',
+                    'action_suggestion': '/farmer/listings' if listings else '/farmer/listings/new'
+                }
 
         # 1. PEST / BLIGHT / DISEASE (e.g. Blight after rain)
         if any(w in q for w in ['blight', 'करपा', 'झुलसा', 'pest', 'disease', 'रोग', 'कीड', 'फवारणी', 'औषध', 'fungus', 'fungicide', 'rot', 'caterpillar', 'spray', 'असमय बारिश', 'अवकाळी']):
@@ -534,7 +567,7 @@ class CopilotService:
     @staticmethod
     def get_buyer_copilot_response(buyer_id, query_text, explicit_lang=None):
         q = query_text.strip().lower() if query_text else ''
-        buyer = User.query.get(buyer_id)
+        buyer = db.session.get(User, buyer_id)
 
         lang = CopilotService._detect_language(query_text, explicit_lang)
         crop = CopilotService._extract_crop(query_text, default='Onion')
@@ -544,6 +577,35 @@ class CopilotService:
         crop_hi = CROP_DISPLAY_HI.get(crop, crop)
         region_mr = REGION_DISPLAY_MR.get(region, region)
         region_hi = REGION_DISPLAY_HI.get(region, region)
+
+        # Grounded Gemini Buyer Copilot
+        from services.ai.gemini_client import gemini_client
+        from services.ai.prompts import SYSTEM_BUYER_COPILOT
+
+        if gemini_client.is_available() and len(q) > 4:
+            active_listings = ProduceListing.query.filter_by(status='ACTIVE').limit(5).all()
+            buyer_context = {
+                "buyer_name": buyer.name if buyer else "Buyer",
+                "buyer_type": buyer.buyer_profile.buyer_type if (buyer and buyer.buyer_profile) else "Commercial Buyer",
+                "location": buyer.buyer_profile.location if (buyer and buyer.buyer_profile) else "Pune",
+                "queried_crop": crop,
+                "region": region,
+                "marketplace_available_crops": list({l.crop for l in active_listings}),
+                "preferred_language": "Marathi" if lang == 'mr' else ("Hindi" if lang == 'hi' else "English")
+            }
+            prompt = (
+                f"Buyer inquiry: \"{query_text}\"\n\n"
+                f"Verified marketplace context:\n{buyer_context}\n\n"
+                f"Respond in {buyer_context['preferred_language']}. Guide the procurement process concisely."
+            )
+            gemini_res = gemini_client.generate_text(prompt, system_instruction=SYSTEM_BUYER_COPILOT, temperature=0.3)
+            if gemini_res.get('success') and gemini_res.get('content'):
+                return {
+                    'reply': gemini_res['content'],
+                    'category': 'AI_PROCUREMENT_COPILOT',
+                    'source': 'gemini_grounded',
+                    'action_suggestion': '/buyer/marketplace'
+                }
 
         # 1. Procurement Window (e.g. "What is the best procurement window for Nashik onions this month?")
         # Match flexible combinations of buy/procure/window/timing
@@ -932,13 +994,52 @@ class CopilotService:
         }
 
     # -------------------------------------------------------------------------
-    # AI LISTING GENERATOR
+    # AI LISTING GENERATOR & QUALITY AUDITOR
     # -------------------------------------------------------------------------
     @staticmethod
     def generate_listing_attributes(prompt_text):
         clean = prompt_text.strip()
-        lower = clean.lower()
+        
+        from services.ai.gemini_client import gemini_client
+        from services.ai.schemas import LISTING_ATTRIBUTES_SCHEMA
+        from services.ai.prompts import SYSTEM_LISTING_GENERATOR
 
+        # 1. Attempt Gemini Structured Listing Construction
+        if gemini_client.is_available():
+            res = gemini_client.generate_structured(
+                prompt=f"Generate marketplace produce listing attributes from farmer prompt:\n\"{clean}\"",
+                schema=LISTING_ATTRIBUTES_SCHEMA,
+                system_instruction=SYSTEM_LISTING_GENERATOR
+            )
+            if res.get('success') and res.get('data'):
+                gdata = res['data']
+                crop = gdata.get('crop', 'Tomato')
+                loc = gdata.get('location', 'Pune')
+                qty = float(gdata.get('quantity', 1000.0))
+                p_data = PriceForecasterService.get_predictive_fair_price(crop, loc)
+                
+                return {
+                    'crop': crop,
+                    'quantity': qty,
+                    'unit': gdata.get('unit', 'kg'),
+                    'expected_price': float(gdata.get('expected_price') or p_data['predicted_price']),
+                    'location': loc,
+                    'quality_grade': gdata.get('quality_grade', 'Grade A'),
+                    'availability_date': gdata.get('availability_date', (date.today() + timedelta(days=1)).isoformat()),
+                    'suggested_title': gdata.get('title') or f"Fresh Harvest {crop} ({qty:,.0f} kg)",
+                    'suggested_description': gdata.get('description'),
+                    'tags': gdata.get('suggested_tags', [crop, f"{loc} Harvest", "Grade A"]),
+                    'suggested_buyer_categories': ["Wholesale Distributors", "Supermarket Chains", "Food Processors"],
+                    'price_benchmark': {
+                        'min': p_data['lower_bound'],
+                        'max': p_data['upper_bound'],
+                        'recommended': p_data['predicted_price']
+                    },
+                    'generated_by': 'gemini_listing_copilot'
+                }
+
+        # 2. Deterministic Rule-Based Fallback Generator
+        lower = clean.lower()
         known_crops = ['Tomato', 'Onion', 'Potato', 'Grapes', 'Carrot', 'Cabbage', 'Cauliflower', 'Wheat']
         crop = 'Tomato'
         for c in known_crops:
@@ -973,9 +1074,11 @@ class CopilotService:
         return {
             'crop': crop,
             'quantity': qty,
+            'unit': 'kg',
             'expected_price': price,
             'location': loc,
             'quality_grade': 'Grade A',
+            'availability_date': (date.today() + timedelta(days=1)).isoformat(),
             'suggested_title': title,
             'suggested_description': description,
             'tags': tags,
@@ -984,5 +1087,71 @@ class CopilotService:
                 'min': p_data['lower_bound'],
                 'max': p_data['upper_bound'],
                 'recommended': price
-            }
+            },
+            'generated_by': 'deterministic_rule_based'
         }
+
+    @staticmethod
+    def analyze_listing_quality(listing_dict):
+        """
+        Evaluates listing completeness and generates actionable improvement tips
+        for farmers to increase buyer inquiry conversion.
+        """
+        from services.ai.gemini_client import gemini_client
+        from services.ai.schemas import LISTING_QUALITY_AUDIT_SCHEMA
+        from services.ai.prompts import SYSTEM_LISTING_QUALITY_AUDITOR
+
+        # 1. Attempt Gemini Quality Assessment
+        if gemini_client.is_available():
+            prompt = (
+                f"Analyze this produce listing for completeness and buyer appeal:\n"
+                f"{listing_dict}"
+            )
+            res = gemini_client.generate_structured(
+                prompt=prompt,
+                schema=LISTING_QUALITY_AUDIT_SCHEMA,
+                system_instruction=SYSTEM_LISTING_QUALITY_AUDITOR
+            )
+            if res.get('success') and res.get('data'):
+                gdata = res['data']
+                gdata['source'] = 'gemini_quality_assistant'
+                return gdata
+
+        # 2. Deterministic Quality Audit Fallback
+        missing = []
+        score = 100
+
+        if not listing_dict.get('description') or len(listing_dict.get('description', '')) < 25:
+            missing.append("Detailed produce description (harvest technique, packaging)")
+            score -= 20
+        if not listing_dict.get('image_url'):
+            missing.append("Produce verification photo")
+            score -= 30
+        if not listing_dict.get('quality_grade'):
+            missing.append("Quality grade designation")
+            score -= 15
+        if not listing_dict.get('availability_date'):
+            missing.append("Pickup / dispatch readiness date")
+            score -= 15
+        if not listing_dict.get('unit'):
+            missing.append("Standard weight unit (kg/quintals)")
+            score -= 10
+
+        recommendations = []
+        if "Produce verification photo" in missing:
+            recommendations.append("Upload a clear daylight photo of your harvest to unlock AI visual grade verification.")
+        if "Detailed produce description" in missing:
+            recommendations.append("Mention whether produce is crate-packed, washed, or field-sorted to attract commercial buyers.")
+        if score >= 85:
+            recommendations.append("Your listing has strong details! Keeping pricing aligned with regional mandi reference ranges will maximize inquiries.")
+        else:
+            recommendations.append("Completing the missing details typically increases buyer contact rates by over 40%.")
+
+        return {
+            'completeness_score': max(20, score),
+            'missing_attributes': missing,
+            'recommendations': recommendations,
+            'quality_summary': f"Listing is {score}% complete. {'Well specified and ready for marketplace publication.' if score >= 80 else 'Additional harvest specifics recommended before publishing.'}",
+            'source': 'deterministic_audit_fallback'
+        }
+

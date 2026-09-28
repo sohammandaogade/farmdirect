@@ -99,17 +99,86 @@ class VisionQualityService:
             }
 
         try:
-            return VisionQualityService.analyze_image_array(
+            cv_result = VisionQualityService.analyze_image_array(
                 pil_img,
                 file_url=file_url,
                 declared_grade=declared_grade,
                 expected_crop=crop
+            )
+            # Enhance with multimodal Gemini observations if available
+            return VisionQualityService._enrich_with_gemini_multimodal(
+                cv_result,
+                save_path if upload_folder else None,
+                file_obj if not upload_folder else None,
+                ext
             )
         except Exception as e:
             return {
                 'success': False,
                 'message': f'Error analyzing image: {str(e)}'
             }
+
+    @staticmethod
+    def _enrich_with_gemini_multimodal(cv_result, file_path=None, file_obj=None, ext='jpg'):
+        """
+        Gently enriches the deterministic pixel-level inspection result with Gemini Multimodal
+        visual observations (ripening stages, bruising, packaging) without altering the deterministic grade.
+        """
+        if not cv_result or not cv_result.get('success'):
+            return cv_result
+
+        from services.ai.gemini_client import gemini_client
+        from services.ai.schemas import PRODUCE_VISION_SCHEMA
+        from services.ai.prompts import SYSTEM_PRODUCE_VISION
+
+        if not gemini_client.is_available():
+            cv_result['multimodal_insights'] = None
+            return cv_result
+
+        try:
+            # Read image bytes
+            img_bytes = None
+            if file_path and os.path.exists(file_path):
+                with open(file_path, 'rb') as f:
+                    img_bytes = f.read()
+            elif file_obj:
+                file_obj.seek(0)
+                img_bytes = file_obj.read()
+                file_obj.seek(0)
+
+            if not img_bytes:
+                cv_result['multimodal_insights'] = None
+                return cv_result
+
+            mime_type = f"image/{'jpeg' if ext in ['jpg', 'jpeg'] else ext}"
+            prompt = (
+                f"Analyze this produce photo. The deterministic computer vision pipeline analyzed this image and found:\n"
+                f"- Declared Grade: {cv_result.get('declared_grade')}\n"
+                f"- Evaluated Grade: {cv_result.get('ai_assessed_grade')}\n"
+                f"- Detected Crop: {cv_result.get('detected_crop')} ({cv_result.get('crop_confidence')}% confidence)\n"
+                f"- Defect Surface Area: {cv_result.get('defect_detected_pct')}%\n\n"
+                f"Provide visual observations on ripening, color appearance, visible bruising/lesions, and packaging."
+            )
+
+            res = gemini_client.analyze_image(
+                image_bytes=img_bytes,
+                mime_type=mime_type,
+                prompt=prompt,
+                schema=PRODUCE_VISION_SCHEMA,
+                system_instruction=SYSTEM_PRODUCE_VISION
+            )
+
+            if res.get('success') and res.get('data'):
+                cv_result['multimodal_insights'] = res['data']
+            else:
+                cv_result['multimodal_insights'] = None
+
+        except Exception as e:
+            logger.warning(f"Gemini multimodal enrichment warning: {e}")
+            cv_result['multimodal_insights'] = None
+
+        return cv_result
+
 
     @staticmethod
     def analyze_image_array(pil_img, file_url=None, declared_grade='Grade A', expected_crop='Tomato'):

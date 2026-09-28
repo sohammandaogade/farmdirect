@@ -4,6 +4,7 @@ Endpoints for Hybrid Matching, Demand Forecasting, Price/Profit, Selling Time, a
 """
 
 from flask import Blueprint, request, jsonify
+from database import db
 from utils.auth import token_required
 from models import ProduceListing
 from services.ai.hybrid_matching import HybridMatchingEngine
@@ -122,3 +123,118 @@ def duplicate_check():
     desc = data.get('description', '')
     res = AnomalyDetector.check_duplicate_listing(farmer_id, crop, qty, price, loc, desc)
     return jsonify({'success': True, 'data': res}), 200
+
+# -------------------------------------------------------------
+# NEW MODULAR AI INTELLIGENCE ENDPOINTS
+# -------------------------------------------------------------
+
+@ai_bp.route('/procurement/parse', methods=['POST'])
+def parse_procurement_query():
+    data = request.get_json() or {}
+    query = data.get('query', '').strip()
+    if not query:
+        return jsonify({'success': False, 'message': 'Procurement query text is required.'}), 400
+    res = ProcurementOptimizer.parse_natural_language_query(query)
+    return jsonify({'success': True, 'data': res}), 200
+
+@ai_bp.route('/listing/generate', methods=['POST'])
+def generate_listing_draft():
+    data = request.get_json() or {}
+    prompt = data.get('prompt', '').strip()
+    if not prompt:
+        return jsonify({'success': False, 'message': 'Prompt description is required.'}), 400
+    from services.ai.copilot_service import CopilotService
+    draft = CopilotService.generate_listing_attributes(prompt)
+    return jsonify({'success': True, 'data': draft}), 200
+
+@ai_bp.route('/listing/analyze', methods=['POST'])
+def analyze_listing_completeness():
+    data = request.get_json() or {}
+    from services.ai.copilot_service import CopilotService
+    audit = CopilotService.analyze_listing_quality(data)
+    return jsonify({'success': True, 'data': audit}), 200
+
+@ai_bp.route('/listing/from-image', methods=['POST'])
+def generate_listing_from_image():
+    from flask import current_app
+    from services.ai.vision_service import VisionQualityService
+    from services.ai.copilot_service import CopilotService
+
+    file_obj = request.files.get('image')
+    description = request.form.get('description', '')
+    declared_grade = request.form.get('declared_grade', 'Grade A')
+    crop_hint = request.form.get('crop', 'Tomato')
+
+    if not file_obj:
+        return jsonify({'success': False, 'message': 'Produce image file is required.'}), 400
+
+    upload_folder = current_app.config.get('UPLOAD_FOLDER')
+    inspection = VisionQualityService.process_and_inspect_image(
+        file_obj,
+        declared_grade=declared_grade,
+        crop=crop_hint,
+        upload_folder=upload_folder
+    )
+
+    if not inspection.get('success'):
+        return jsonify(inspection), 400
+
+    detected_crop = inspection.get('detected_crop') or crop_hint
+    assessed_grade = inspection.get('ai_assessed_grade') or declared_grade
+    full_prompt = f"I have fresh {assessed_grade} {detected_crop}. {description}".strip()
+
+    listing_draft = CopilotService.generate_listing_attributes(full_prompt)
+    listing_draft['crop'] = detected_crop
+    listing_draft['quality_grade'] = assessed_grade
+    listing_draft['image_url'] = inspection.get('image_url')
+    listing_draft['inspection_summary'] = inspection
+
+    return jsonify({
+        'success': True,
+        'data': {
+            'inspection': inspection,
+            'suggested_listing': listing_draft
+        }
+    }), 200
+
+@ai_bp.route('/match/explain', methods=['POST'])
+def explain_match():
+    data = request.get_json() or {}
+    listing_id = data.get('listing_id')
+    req = data.get('requirements') or {}
+
+    if not listing_id:
+        return jsonify({'success': False, 'message': 'listing_id is required.'}), 400
+
+    listing = db.session.get(ProduceListing, listing_id)
+    if not listing:
+        return jsonify({'success': False, 'message': 'Listing not found.'}), 404
+
+    buyer_id = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Bearer '):
+        from utils.auth import decode_token
+        p = decode_token(auth_header.split(' ')[1])
+        if p:
+            buyer_id = p.get('user_id')
+
+    explanation = hybrid_engine.generate_ai_match_explanation(listing, req, buyer_id)
+    return jsonify({'success': True, 'data': explanation}), 200
+
+@ai_bp.route('/pricing/insight', methods=['POST'])
+def get_pricing_insight():
+    data = request.get_json() or {}
+    crop = data.get('crop', 'Tomato')
+    region = data.get('region', 'Pune')
+    price = float(data.get('price', 25.0))
+
+    from services.price_engine import PriceEngine
+    insight = PriceEngine.generate_ai_price_insight(crop, region, price)
+    return jsonify({'success': True, 'data': insight}), 200
+
+@ai_bp.route('/analytics/summary', methods=['GET'])
+def get_analytics_summary():
+    from services.analytics import AnalyticsService
+    summary = AnalyticsService.generate_executive_marketplace_summary()
+    return jsonify({'success': True, 'data': summary}), 200
+

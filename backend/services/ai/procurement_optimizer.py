@@ -10,6 +10,9 @@ from models import ProduceListing
 from services.matching_engine import MatchingEngine
 from services.ai.trust_engine import TrustEngine
 from services.logistics import LogisticsService
+from services.ai.gemini_client import gemini_client
+from services.ai.schemas import PROCUREMENT_QUERY_SCHEMA
+from services.ai.prompts import SYSTEM_PROCUREMENT_PARSER
 
 class ProcurementOptimizer:
 
@@ -17,13 +20,42 @@ class ProcurementOptimizer:
     def parse_natural_language_query(text):
         """
         Extracts structured procurement intent from natural language statements.
-        Example: "I need 5 tonnes of Grade A tomatoes near Pune below ₹30/kg by Friday"
+        Uses Gemini structured JSON extraction if available, otherwise falls back gracefully
+        to the deterministic regex/keyword parser.
         """
         if not text:
             return {}
 
         raw = text.strip()
+
+        # 1. Attempt Gemini Structured NLU Extraction
+        if gemini_client.is_available():
+            gemini_res = gemini_client.generate_structured(
+                prompt=f"Extract procurement requirement from: \"{raw}\"",
+                schema=PROCUREMENT_QUERY_SCHEMA,
+                system_instruction=SYSTEM_PROCUREMENT_PARSER
+            )
+            if gemini_res.get('success') and gemini_res.get('data'):
+                gdata = gemini_res['data']
+                try:
+                    return {
+                        'crop': str(gdata.get('crop', 'Tomato')).title(),
+                        'quantity': float(gdata.get('quantity', 2000.0)),
+                        'unit': str(gdata.get('unit', 'kg')),
+                        'quality': str(gdata.get('quality', 'Grade A')),
+                        'location': str(gdata.get('location', 'Pune')).title(),
+                        'max_price': float(gdata['max_price']) if gdata.get('max_price') is not None else 35.0,
+                        'deadline': str(gdata.get('delivery_deadline', 'Within 3 days')),
+                        'preferences': gdata.get('extracted_preferences', []),
+                        'raw_query': raw,
+                        'parsed_by': 'gemini_nlu'
+                    }
+                except (ValueError, TypeError):
+                    pass  # Fall through to deterministic parser if types fail validation
+
+        # 2. Deterministic Rule-Based Fallback Parser
         lower = raw.lower()
+
 
         # Extract Crop
         known_crops = ['tomato', 'onion', 'potato', 'grapes', 'carrot', 'cabbage', 'cauliflower', 'capsicum', 'wheat', 'rice']
@@ -93,7 +125,8 @@ class ProcurementOptimizer:
             'location': detected_loc,
             'max_price': max_price,
             'deadline': deadline,
-            'raw_query': raw
+            'raw_query': raw,
+            'parsed_by': 'rule_based_fallback'
         }
 
     @staticmethod

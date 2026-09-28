@@ -5,6 +5,7 @@ Calculates fair agreement zones, volume elasticity discounts, and reasoned count
 Never automatically accepts or rejects negotiations without explicit user action.
 """
 
+from database import db
 from models import PurchaseRequest, Negotiation, PriceReference
 from services.price_engine import PriceEngine
 
@@ -12,7 +13,7 @@ class NegotiationCopilot:
 
     @staticmethod
     def analyze_negotiation(request_id, current_user_role='farmer'):
-        req = PurchaseRequest.query.get(request_id)
+        req = db.session.get(PurchaseRequest, request_id)
         if not req:
             return {'success': False, 'message': 'Negotiation request not found.'}
 
@@ -77,7 +78,7 @@ class NegotiationCopilot:
                 "Offering quick payment turnaround strengthens supplier willingness to accept."
             ]
 
-        return {
+        res = {
             'success': True,
             'request_id': request_id,
             'crop': crop,
@@ -103,3 +104,29 @@ class NegotiationCopilot:
             'trade_offs': trade_offs,
             'disclaimer': 'AI Negotiation Copilot provides decision guidance. Acceptance or rejection requires manual user confirmation.'
         }
+
+        # Enrich with Gemini strategic advice if available
+        from services.ai.gemini_client import gemini_client
+        from services.ai.schemas import NEGOTIATION_SUGGESTION_SCHEMA
+        from services.ai.prompts import SYSTEM_NEGOTIATION_ADVISOR
+
+        if gemini_client.is_available():
+            facts = {
+                "role": current_user_role,
+                "crop": crop,
+                "quantity_kg": quantity,
+                "listed_price_inr": listed_price,
+                "buyer_bid_inr": last_price,
+                "benchmark_corridor": f"₹{min_ref:.2f} - ₹{max_ref:.2f}/kg",
+                "calculated_counter_offer": suggested_counter
+            }
+            gemini_res = gemini_client.generate_structured(
+                prompt=f"Provide strategic negotiation counteroffer advice based on these verified numbers:\n{facts}",
+                schema=NEGOTIATION_SUGGESTION_SCHEMA,
+                system_instruction=SYSTEM_NEGOTIATION_ADVISOR
+            )
+            if gemini_res.get('success') and gemini_res.get('data'):
+                res['ai_strategic_advice'] = gemini_res['data']
+
+        return res
+

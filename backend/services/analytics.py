@@ -168,3 +168,61 @@ class AnalyticsService:
             'status_distribution': [{'status': k, 'count': v} for k, v in status_counts.items()],
             'regional_distribution': regional_distribution
         }
+
+    @staticmethod
+    def generate_executive_marketplace_summary():
+        """
+        Synthesizes raw database metrics into natural-language executive insights
+        using Gemini, strictly grounded in actual database aggregations.
+        """
+        metrics = AnalyticsService.get_admin_analytics()
+
+        from services.ai.gemini_client import gemini_client
+        from services.ai.schemas import MARKETPLACE_ANALYTICS_SCHEMA
+        from services.ai.prompts import SYSTEM_ANALYTICS_SUMMARIZER
+
+        if gemini_client.is_available():
+            facts = {
+                "active_listings": metrics['active_listings'],
+                "total_orders": metrics['total_orders'],
+                "total_traded_kg": metrics['total_quantity_traded'],
+                "total_gmv_inr": metrics['total_transaction_value'],
+                "top_traded_crops": sorted(metrics['crop_stats'], key=lambda x: x['volume_kg'], reverse=True)[:4],
+                "top_regions": sorted(metrics['regional_distribution'], key=lambda x: x['volume_kg'], reverse=True)[:4]
+            }
+            res = gemini_client.generate_structured(
+                prompt=f"Generate executive agricultural marketplace insights from these real platform numbers:\n{facts}",
+                schema=MARKETPLACE_ANALYTICS_SCHEMA,
+                system_instruction=SYSTEM_ANALYTICS_SUMMARIZER
+            )
+            if res.get('success') and res.get('data'):
+                metrics['ai_executive_summary'] = res['data']
+                metrics['ai_executive_summary']['source'] = 'gemini_grounded'
+                return metrics
+
+        # Deterministic Ground-Truth Fallback
+        top_crops = [c['crop'] for c in sorted(metrics['crop_stats'], key=lambda x: x['volume_kg'], reverse=True)[:3]]
+        crop_text = ", ".join(top_crops) if top_crops else "commercial staples"
+        summary_text = (
+            f"The marketplace currently hosts {metrics['active_listings']} active harvest listings with {metrics['total_orders']} "
+            f"confirmed transactions totaling {metrics['total_quantity_traded']:,.0f} kg and ₹{metrics['total_transaction_value']:,.2f} GMV. "
+            f"Trading activity is predominantly centered around {crop_text}."
+        )
+
+        metrics['ai_executive_summary'] = {
+            'executive_summary': summary_text,
+            'key_demand_trends': [
+                f"Total cumulative trade volume reached {metrics['total_quantity_traded']:,.0f} kg across {metrics['total_orders']} orders.",
+                f"Active marketplace listings stand at {metrics['active_listings']} direct farm offers."
+            ],
+            'regional_observations': [
+                f"Order fulfillment activity spans {len(metrics['regional_distribution'])} regional districts in Maharashtra."
+            ],
+            'actionable_recommendations': [
+                "Encourage pre-harvest forward contracts for high-velocity crops.",
+                "Promote quality inspection uploads to accelerate buyer checkout velocity."
+            ],
+            'source': 'deterministic_metrics'
+        }
+        return metrics
+

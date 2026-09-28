@@ -65,3 +65,40 @@ class PriceEngine:
             'reference_date': ref.reference_date.isoformat() if hasattr(ref.reference_date, 'isoformat') else str(ref.reference_date),
             'disclaimer': 'Based on historical/demo reference data. Not live market prices.'
         }
+
+    @staticmethod
+    def generate_ai_price_insight(crop, region, listing_price):
+        """
+        Enriches deterministic price references with Gemini pricing intelligence.
+        Advisory only: does NOT modify transaction or listing prices.
+        """
+        base_insight = PriceEngine.get_price_insight(crop, region, listing_price)
+        if not base_insight or not base_insight.get('has_reference'):
+            return {
+                'has_reference': False,
+                'disclaimer': 'Insufficient historical reference data available for this crop/region.'
+            }
+
+        from services.ai.gemini_client import gemini_client
+        from services.ai.schemas import PRICING_INSIGHT_SCHEMA
+        from services.ai.prompts import SYSTEM_PRICING_INTELLIGENCE
+
+        if gemini_client.is_available():
+            facts = {
+                "crop": crop,
+                "region": region,
+                "listing_price_inr": listing_price,
+                "reference_min": base_insight['min_price'],
+                "reference_max": base_insight['max_price'],
+                "reference_status": base_insight['status']
+            }
+            res = gemini_client.generate_structured(
+                prompt=f"Generate fair pricing advisory insight for this produce quote:\n{facts}",
+                schema=PRICING_INSIGHT_SCHEMA,
+                system_instruction=SYSTEM_PRICING_INTELLIGENCE
+            )
+            if res.get('success') and res.get('data'):
+                base_insight['ai_pricing_intelligence'] = res['data']
+
+        return base_insight
+
