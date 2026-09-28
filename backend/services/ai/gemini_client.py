@@ -35,9 +35,14 @@ class GeminiClient:
         else:
             logger.info("GeminiClient initialized in FALLBACK mode (GEMINI_API_KEY not set)")
 
+    @property
+    def current_api_key(self):
+        return os.environ.get('GEMINI_API_KEY') or self.api_key
+
     def is_available(self):
         """Returns True if the API key is configured."""
-        return bool(self.api_key and len(self.api_key.strip()) > 10)
+        key = self.current_api_key
+        return bool(key and len(key.strip()) > 10)
 
     def _get_cache_key(self, prompt, system_instruction, schema_str=""):
         raw = f"{prompt}|{system_instruction}|{schema_str}"
@@ -80,7 +85,7 @@ class GeminiClient:
         try:
             import requests
 
-            url = f"{self.base_url}/{self.model}:generateContent?key={self.api_key}"
+            url = f"{self.base_url}/{self.model}:generateContent?key={self.current_api_key}"
             headers = {'Content-Type': 'application/json'}
 
             payload = {
@@ -151,7 +156,7 @@ class GeminiClient:
         try:
             import requests
 
-            url = f"{self.base_url}/{self.model}:generateContent?key={self.api_key}"
+            url = f"{self.base_url}/{self.model}:generateContent?key={self.current_api_key}"
             headers = {'Content-Type': 'application/json'}
 
             # Append explicit schema reminder to system instruction
@@ -226,7 +231,7 @@ class GeminiClient:
         try:
             import requests
 
-            url = f"{self.base_url}/{self.model}:generateContent?key={self.api_key}"
+            url = f"{self.base_url}/{self.model}:generateContent?key={self.current_api_key}"
             headers = {'Content-Type': 'application/json'}
 
             b64_image = base64.b64encode(image_bytes).decode('utf-8')
