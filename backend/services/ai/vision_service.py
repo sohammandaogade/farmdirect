@@ -361,9 +361,15 @@ class VisionQualityService:
         # -------------------------------------------------------------
         # STAGE 3: Defect & Rot Analysis
         # -------------------------------------------------------------
-        # Defect pixels: dark necrotic tissue, rot, deep bruising (p_v < 0.22)
-        # or dark fungal discoloration
-        defect_mask = (p_v < 0.22) | ((p_r < 0.18) & (p_g < 0.18) & (p_b < 0.18))
+        # Defect pixels: dark necrotic tissue, rot, deep bruising, fungal spots, mold mycelium
+        # 1. Dark necrosis / rot / deep discoloration
+        dark_necrosis = (p_v < 0.28) & ((p_r < 0.28) & (p_g < 0.28) & (p_b < 0.28))
+        # 2. Black mold / fungal spots on alliums & vegetables
+        fungal_spots = (p_v < 0.35) & (p_s < 0.28) & ((p_r < 0.32) | (p_g < 0.30))
+        # 3. White / gray fuzzy mycelium fungal mold (high luminance, low saturation gray patches)
+        gray_mold = (p_s < 0.22) & (p_v > 0.38) & (p_v < 0.94) & (abs(p_r - p_g) < 0.14) & (abs(p_g - p_b) < 0.14)
+
+        defect_mask = dark_necrosis | fungal_spots | gray_mold
         defect_count = int(defect_mask.sum())
         defect_detected_pct = round((defect_count / float(produce_pixel_count)) * 100.0, 1)
 
@@ -484,7 +490,20 @@ class VisionQualityService:
         uniformity_score = min(98.0, max(60.0, round(100.0 - color_std * 48.0, 1)))
 
         # Determine visible defect level and grade
-        if defect_detected_pct >= 10.0:
+        if defect_detected_pct >= 20.0 or (gray_mold.sum() / float(produce_pixel_count) > 0.10):
+            visible_defect_level = 'CRITICAL_SPOILAGE'
+            defect_confidence = 96.0
+            ai_assessed_grade = 'Sub-standard / Rotten'
+            verification_status = 'REJECTED'
+            verification_badge = 'Rejected (Rotten)'
+            confidence_score = 95.0
+            assessment_notes = (
+                f"Severe fungal mold, rot, or decomposition detected across {defect_detected_pct:.1f}% "
+                f"of produce surface area. Produce is unfit for sale and strictly blocked from the marketplace."
+            )
+            status_desc = "Listing Blocked: Produce verified as rotten or severely spoiled."
+
+        elif defect_detected_pct >= 10.0:
             visible_defect_level = 'HIGH'
             defect_confidence = 94.5
             ai_assessed_grade = 'Grade C'

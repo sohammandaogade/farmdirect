@@ -348,15 +348,18 @@ class GeminiVisionService:
                 validated, 'IMAGE_UNSUITABLE', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine"
             )
 
-        # 2. Critical Spoilage / High defect ratio
-        if defect_pct >= 25.0 or legacy_cv.get('ai_assessed_grade') == 'Grade C / Sub-standard':
+        # 2. Critical Spoilage / High defect ratio / Mold
+        if (defect_pct >= 20.0 or 
+            legacy_cv.get('verification_status') == 'REJECTED' or
+            legacy_cv.get('visible_defect_level') in ['CRITICAL_SPOILAGE', 'ROTTEN'] or
+            legacy_cv.get('ai_assessed_grade') in ['Grade C / Sub-standard', 'Sub-standard / Rotten']):
             validated = {
                 "is_agricultural_produce": True,
                 "image_suitability": {"is_usable": True, "issue_detected": "NONE"},
                 "multiple_crops_detected": False,
                 "crop_identification": {"name": detected, "confidence": 0.85},
-                "quality_assessment": {"status": "ROTTEN", "confidence": 0.90, "issues": [f"High defect surface area ({defect_pct}%)"]},
-                "listing_decision": {"status": "REJECT", "reason": f"Severe produce defects detected ({defect_pct}% surface blemishes)."}
+                "quality_assessment": {"status": "ROTTEN", "confidence": 0.90, "issues": [legacy_cv.get('assessment_notes') or f"Severe mold/defect surface area ({defect_pct}%)"]},
+                "listing_decision": {"status": "REJECT", "reason": legacy_cv.get('assessment_notes') or f"Severe produce defects detected ({defect_pct}% surface blemishes)."}
             }
             return GeminiVisionService._format_final_response(
                 validated, 'REJECTED', False, file_url, user_crop, declared_grade, legacy_cv, "FarmDirect-AgriVision-ColorTextureEngine"

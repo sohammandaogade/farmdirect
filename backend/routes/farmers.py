@@ -92,6 +92,12 @@ def create_listing(current_user):
     if not avail_date:
         return jsonify({'success': False, 'message': 'Valid availability date (YYYY-MM-DD) is required.'}), 400
 
+    if not image_url:
+        return jsonify({
+            'success': False,
+            'message': 'Produce photo upload is compulsory. Please upload a clear photo of your harvested produce for AI quality verification before submitting a listing.'
+        }), 400
+
     # -------------------------------------------------------------
     # SERVER-SIDE AI QUALITY & CROP VERIFICATION ENFORCEMENT
     # -------------------------------------------------------------
@@ -103,14 +109,20 @@ def create_listing(current_user):
             inspection = None
 
     if not inspection and image_url:
-        inspection = QualityInspection.query.filter_by(image_url=image_url).order_by(QualityInspection.created_at.desc()).first()
+        norm_url = image_url.lstrip('/')
+        inspection = QualityInspection.query.filter(
+            (QualityInspection.image_url == image_url) | 
+            (QualityInspection.image_url == f"/{norm_url}") |
+            (QualityInspection.image_url == norm_url)
+        ).order_by(QualityInspection.created_at.desc()).first()
 
     initial_status = 'ACTIVE'
 
     if inspection:
         # 1. ROTTEN PRODUCE MUST BE BLOCKED SERVER-SIDE (Requirement 6)
         if (inspection.verification_status in ['REJECTED', 'ROTTEN', 'REJECT'] or
-            inspection.visible_defect_level in ['CRITICAL_SPOILAGE', 'ROTTEN']):
+            inspection.visible_defect_level in ['CRITICAL_SPOILAGE', 'ROTTEN'] or
+            getattr(inspection, 'ai_assessed_grade', '') in ['Sub-standard / Rotten', 'ROTTEN', 'REJECTED']):
             return jsonify({
                 'success': False,
                 'status': 'REJECTED',

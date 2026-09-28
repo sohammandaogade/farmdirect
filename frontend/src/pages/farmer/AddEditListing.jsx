@@ -61,6 +61,13 @@ export const AddEditListing = () => {
   // Duplicate Check Warning State
   const [duplicateWarning, setDuplicateWarning] = useState(null);
 
+  const isProduceRejected = Boolean(
+    inspectionResult?.listing_decision?.status === 'REJECT' ||
+    inspectionResult?.quality_assessment?.status === 'ROTTEN' ||
+    inspectionResult?.verification_status === 'REJECTED' ||
+    inspectionResult?.visible_defect_level === 'CRITICAL_SPOILAGE'
+  );
+
   useEffect(() => {
     if (isEdit) {
       loadListing();
@@ -131,7 +138,14 @@ export const AddEditListing = () => {
         }
         
         // Handle specific verification feedback without overwriting farmer declaration
-        if (insp.verification_status === 'CROP_MISMATCH') {
+        if (
+          insp.listing_decision?.status === 'REJECT' ||
+          insp.quality_assessment?.status === 'ROTTEN' ||
+          insp.verification_status === 'REJECTED' ||
+          insp.visible_defect_level === 'CRITICAL_SPOILAGE'
+        ) {
+          showToast(`🚫 Produce Rejected: Rotten or spoiled produce cannot be listed.`, 'error');
+        } else if (insp.verification_status === 'CROP_MISMATCH') {
           showToast(`⚠️ Crop mismatch: Image resembles ${insp.detected_crop || 'different produce'}.`, 'error');
         } else if (insp.verification_status === 'IMAGE_UNSUITABLE') {
           showToast(`⚠️ Image unsuitable: ${insp.image_quality_status || 'Poor image quality'}.`, 'error');
@@ -200,6 +214,22 @@ export const AddEditListing = () => {
 
     if (parseFloat(expectedPrice) <= 0) {
       setError('Expected price must be greater than 0.');
+      return;
+    }
+
+    if (!imageUrl) {
+      setError('Produce photo is compulsory. Please upload a clear photo of your harvested produce for AI quality verification before creating a listing.');
+      showToast('Produce photo is compulsory for listing verification', 'error');
+      return;
+    }
+
+    if (isProduceRejected) {
+      const reason =
+        inspectionResult?.listing_decision?.reason ||
+        inspectionResult?.assessment_notes ||
+        'The uploaded produce was verified as rotten, spoiled, or unfit for sale.';
+      setError(`Cannot create listing: ${reason} FarmDirect strictly prohibits listing spoiled produce.`);
+      showToast('Listing blocked: Rotten produce cannot be listed.', 'error');
       return;
     }
 
@@ -306,11 +336,14 @@ export const AddEditListing = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
               <Camera className="w-4 h-4 text-emerald-600" />
-              <span>Computer-Vision Produce Quality Verification</span>
+              <span>Produce Photo & AI Quality Verification</span>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200">
+                Compulsory *
+              </span>
             </div>
             <label className="cursor-pointer px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-2xs transition-colors flex items-center gap-1.5">
               <Upload className="w-3.5 h-3.5 text-slate-500" />
-              <span>{inspectingImage ? 'Scanning Image...' : 'Upload Produce Photo'}</span>
+              <span>{inspectingImage ? 'Scanning Image...' : imageUrl ? 'Replace Photo' : 'Upload Produce Photo *'}</span>
               <input
                 type="file"
                 accept="image/*"
@@ -323,7 +356,32 @@ export const AddEditListing = () => {
 
           {inspectionResult ? (
             <div className="space-y-2 animate-in fade-in">
-              {inspectionResult.verification_status === 'CROP_MISMATCH' && (
+              {isProduceRejected && (
+                <div className="p-4 bg-rose-50 rounded-2xl border-2 border-rose-500 text-xs space-y-2.5 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-rose-950 flex items-center gap-2 text-sm">
+                      <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0" />
+                      Listing Blocked: Produce Verified as Rotten / Unfit for Sale
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-rose-600 text-white tracking-wide">
+                      Rejected
+                    </span>
+                  </div>
+                  <p className="text-rose-900 text-xs leading-relaxed font-semibold">
+                    {inspectionResult.listing_decision?.reason ||
+                      inspectionResult.assessment_notes ||
+                      'The uploaded produce exhibits clear signs of mold, fungal growth, or advanced rot, making it unfit for sale.'}
+                  </p>
+                  <div className="p-3 bg-rose-100/80 rounded-xl text-rose-950 text-[11px] font-medium flex items-start gap-2 border border-rose-200">
+                    <AlertCircle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
+                    <span>
+                      FarmDirect strictly prohibits listing rotten, spoiled, or moldy crops. This listing cannot be created or published. Please upload a clear photo of healthy, marketable produce to proceed.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {!isProduceRejected && inspectionResult.verification_status === 'CROP_MISMATCH' && (
                 <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-300 text-xs space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-amber-900 flex items-center gap-1.5">
@@ -452,9 +510,15 @@ export const AddEditListing = () => {
               )}
             </div>
           ) : (
-            <p className="text-[11px] text-slate-500">
-              Upload a clear photo of your harvested produce. Our computer vision model assesses ripeness, uniformity, and defect ratios to certify fair grades.
-            </p>
+            <div className="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200/90 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                <Camera className="w-4 h-4 text-amber-700" />
+              </div>
+              <div className="text-[11px] text-amber-900 leading-snug">
+                <strong className="font-bold text-amber-950 block">Produce photo upload is compulsory *</strong>
+                Upload a clear photo of your harvested produce. Our multimodal AI performs universal crop identification, freshness verification, and rot/mold detection before publishing to the marketplace.
+              </div>
+            </div>
           )}
         </div>
 
@@ -601,16 +665,55 @@ export const AddEditListing = () => {
             />
           </div>
 
-          {/* Image URL */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Image URL (Optional)</label>
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/... or leave empty for smart auto-image"
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-            />
+          {/* Produce Photo (Compulsory) */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700">
+                Produce Photo (Compulsory) *
+              </label>
+              {imageUrl && (
+                <span
+                  className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                    isProduceRejected
+                      ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                      : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                  }`}
+                >
+                  {isProduceRejected ? '✕ Rotten / Rejected' : '✓ Photo Attached & Inspected'}
+                </span>
+              )}
+            </div>
+
+            {imageUrl ? (
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-3">
+                <img
+                  src={imageUrl}
+                  alt="Harvested produce preview"
+                  className="w-16 h-16 object-cover rounded-lg border border-slate-200 shrink-0"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-slate-800 truncate">Harvest Produce Image</p>
+                  <p className="text-[11px] text-slate-500 truncate">{imageUrl}</p>
+                  {isProduceRejected ? (
+                    <span className="text-[10px] font-bold text-rose-600 block mt-0.5">
+                      ⚠️ Rotten / spoiled produce detected. Please replace this photo with fresh produce above.
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-semibold text-emerald-600 block mt-0.5">
+                      ✓ AI visual inspection attached to this listing.
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>
+                  <strong>Photo required:</strong> Please upload a photo of your harvest using the inspection tool at the top of the form.
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
@@ -623,11 +726,27 @@ export const AddEditListing = () => {
             </Link>
             <button
               type="submit"
-              disabled={loading}
-              className="py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              disabled={loading || isProduceRejected}
+              className={`py-2.5 px-6 font-bold text-xs rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1.5 ${
+                isProduceRejected
+                  ? 'bg-rose-100 text-rose-500 border border-rose-200 cursor-not-allowed shadow-none'
+                  : !imageUrl
+                  ? 'bg-emerald-600/70 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+              }`}
             >
-              <Save className="w-4 h-4" />
-              <span>{loading ? 'Saving Produce...' : isEdit ? 'Update Listing' : 'Publish Listing'}</span>
+              {isProduceRejected ? <ShieldAlert className="w-4 h-4 text-rose-500" /> : <Save className="w-4 h-4" />}
+              <span>
+                {loading
+                  ? 'Saving Produce...'
+                  : isProduceRejected
+                  ? 'Listing Blocked (Rotten Produce)'
+                  : !imageUrl
+                  ? 'Upload Photo to Publish'
+                  : isEdit
+                  ? 'Update Listing'
+                  : 'Publish Listing'}
+              </span>
             </button>
           </div>
         </form>
