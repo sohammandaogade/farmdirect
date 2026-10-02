@@ -144,7 +144,12 @@ export const digitalTwinAPI = {
 };
 
 export const wasteAPI = {
-  getListings: (params = {}) => api.get('/waste/listings', { params }),
+  getListings: (params = {}) => {
+    const formattedParams = { ...params };
+    if (params.waste_type && !params.type) formattedParams.type = params.waste_type;
+    if (params.district && !params.location) formattedParams.location = params.district;
+    return api.get('/waste/listings', { params: formattedParams });
+  },
   createListing: (data) => api.post('/waste/listings', data),
   getMyListings: () => api.get('/waste/my-listings'),
   createOrder: (data) => api.post('/waste/orders', data),
