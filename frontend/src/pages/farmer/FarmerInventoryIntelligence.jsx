@@ -131,10 +131,10 @@ export const FarmerInventoryIntelligence = () => {
   const decision = smartSelling?.decision || 'SELL NOW';
   const decisionColor =
     decision === 'SELL NOW'
-      ? 'bg-emerald-600 text-white'
+      ? 'bg-[#8B7A66] text-white'
       : decision === 'WAIT / HOLD'
-      ? 'bg-amber-500 text-white'
-      : 'bg-blue-600 text-white';
+      ? 'bg-amber-600 text-white'
+      : 'bg-[#403A34] text-white';
 
   // Calculator figures
   const qty = currentListing?.quantity || 1000;
@@ -159,10 +159,10 @@ export const FarmerInventoryIntelligence = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8B7A66]">
               Supply Chain Engine
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FFE5B8] text-[#211C18]">
               Smart Inventory & Selling Timing
             </span>
           </div>
@@ -181,7 +181,7 @@ export const FarmerInventoryIntelligence = () => {
             <select
               value={selectedListingId}
               onChange={handleSelectListing}
-              className="px-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-800 shadow-xs focus:ring-2 focus:ring-emerald-500/20"
+              className="px-4 py-2.5 rounded-2xl bg-white border border-[#F5EBDD] text-xs font-bold text-slate-800 shadow-xs focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
             >
               {listings.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -236,7 +236,7 @@ export const FarmerInventoryIntelligence = () => {
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">
                     Model Confidence
                   </span>
-                  <span className="text-base font-black text-emerald-600">
+                  <span className="text-base font-black text-[#8B7A66]">
                     {smartSelling?.confidence_score ?? 91}%
                   </span>
                 </div>
@@ -247,7 +247,7 @@ export const FarmerInventoryIntelligence = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                  <Clock className="w-4 h-4 text-emerald-600" />
+                  <Clock className="w-4 h-4 text-[#8B7A66]" />
                   <span>Remaining Shelf Life</span>
                 </div>
                 <span className="text-xl font-black text-slate-900 block pt-1">
@@ -287,13 +287,13 @@ export const FarmerInventoryIntelligence = () => {
             </div>
 
             {/* Narrative Explanation */}
-            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-start gap-3">
-              <Sparkles className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="p-4 rounded-2xl bg-[#FFE5B8]/25 border border-[#FFE5B8] flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-[#8B7A66] shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-[#211C18] uppercase tracking-wider">
                   Strategic AI Rationale
                 </h4>
-                <p className="text-xs text-emerald-800 mt-1 font-medium leading-relaxed">
+                <p className="text-xs text-[#332A22] mt-1 font-medium leading-relaxed">
                   {smartSelling?.explanation ||
                     'High regional market demand combined with optimal produce freshness suggests listing immediately to capture premium price margins before local wholesale arrivals peak.'}
                 </p>
@@ -308,14 +308,14 @@ export const FarmerInventoryIntelligence = () => {
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div>
                   <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-emerald-600" />
+                    <TrendingUp className="w-5 h-5 text-[#8B7A66]" />
                     14-Day Regional Crop Demand Curve
                   </h3>
                   <p className="text-xs text-slate-500">
                     Demand forecast index for {currentListing?.crop} in {currentListing?.location_district || 'Maharashtra'}
                   </p>
                 </div>
-                <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-slate-100 text-slate-700">
+                <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-[#FAF8F5] border border-[#F5EBDD] text-slate-700">
                   Demand Index: {demandForecast?.demand_index ?? 85} / 100
                 </span>
               </div>
@@ -325,15 +325,15 @@ export const FarmerInventoryIntelligence = () => {
                   <AreaChart data={forecastChartData}>
                     <defs>
                       <linearGradient id="demandGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#8B7A66" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#8B7A66" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="day" stroke="#94a3b8" fontSize={11} />
                     <YAxis stroke="#94a3b8" fontSize={11} domain={[60, 100]} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#1e293b',
+                        backgroundColor: '#211C18',
                         borderRadius: '12px',
                         color: '#fff',
                         fontSize: '12px',
@@ -343,7 +343,7 @@ export const FarmerInventoryIntelligence = () => {
                     <Area
                       type="monotone"
                       dataKey="demand"
-                      stroke="#10b981"
+                      stroke="#8B7A66"
                       strokeWidth={3}
                       fillOpacity={1}
                       fill="url(#demandGrad)"
@@ -352,9 +352,9 @@ export const FarmerInventoryIntelligence = () => {
                 </ResponsiveContainer>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-600">
+              <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD] flex items-center justify-between text-xs font-semibold text-slate-600">
                 <span>Supply-Demand Balance:</span>
-                <span className="text-emerald-700 font-bold capitalize">
+                <span className="text-[#8B7A66] font-bold capitalize">
                   {demandForecast?.market_balance || 'Demand Exceeds Supply (+18%)'}
                 </span>
               </div>
@@ -365,7 +365,7 @@ export const FarmerInventoryIntelligence = () => {
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div>
                   <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                    <DollarSign className="w-5 h-5 text-[#8B7A66]" />
                     Interactive Margin & Profit Simulator
                   </h3>
                   <p className="text-xs text-slate-500">
@@ -385,7 +385,7 @@ export const FarmerInventoryIntelligence = () => {
                       step="0.5"
                       value={costPerKg}
                       onChange={(e) => setCostPerKg(parseFloat(e.target.value) || 0)}
-                      className="w-full mt-1.5 p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800"
+                      className="w-full mt-1.5 p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
                     />
                   </div>
                   <div>
@@ -397,7 +397,7 @@ export const FarmerInventoryIntelligence = () => {
                       step="0.5"
                       value={targetPrice}
                       onChange={(e) => setTargetPrice(parseFloat(e.target.value) || 0)}
-                      className="w-full mt-1.5 p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800"
+                      className="w-full mt-1.5 p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
                     />
                   </div>
                 </div>
@@ -405,7 +405,7 @@ export const FarmerInventoryIntelligence = () => {
                 <button
                   type="button"
                   onClick={handleRecalculateProfit}
-                  className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors"
+                  className="w-full py-2.5 bg-[#8B7A66] hover:bg-[#786855] text-white rounded-xl text-xs font-bold transition-all shadow-xs"
                 >
                   Recalculate AI Profit Band
                 </button>
@@ -426,17 +426,17 @@ export const FarmerInventoryIntelligence = () => {
                     </span>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
-                    <span className="text-[10px] font-bold text-emerald-800 uppercase">Net Margin</span>
-                    <span className="text-sm font-black text-emerald-700 block mt-0.5">
+                  <div className="p-3 rounded-2xl bg-[#FFE5B8]/40 border border-[#FFE5B8] text-center">
+                    <span className="text-[10px] font-black text-[#211C18] uppercase">Net Margin</span>
+                    <span className="text-sm font-black text-[#8B7A66] block mt-0.5">
                       {profitMarginPct}% (₹{netProfit.toLocaleString()})
                     </span>
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200/80 text-xs text-blue-900 flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD] text-xs text-[#332A22] flex items-center justify-between">
                   <span>Breakeven Selling Price:</span>
-                  <strong className="text-blue-800 font-bold">₹{costPerKg} / kg</strong>
+                  <strong className="text-[#8B7A66] font-bold">₹{costPerKg} / kg</strong>
                 </div>
               </div>
             </div>

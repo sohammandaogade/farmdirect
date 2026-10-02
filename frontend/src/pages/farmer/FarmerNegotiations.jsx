@@ -101,10 +101,10 @@ export const FarmerNegotiations = () => {
       </Link>
 
       {/* Contract & Negotiation Header */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl p-6 border border-[#F5EBDD] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-100 text-slate-700">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-[#FAF8F5] text-slate-700 border border-[#F5EBDD]">
               Request #{request?.id}
             </span>
             <span
@@ -128,7 +128,7 @@ export const FarmerNegotiations = () => {
           </p>
         </div>
 
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-right">
+        <div className="p-4 bg-[#FAF8F5] rounded-2xl border border-[#F5EBDD] text-xs text-right">
           <span className="text-[11px] text-slate-400 block">Initial Listing Price</span>
           <span className="text-base font-extrabold text-slate-800">₹{request?.farmer_listed_price}/kg</span>
           <span className="text-[11px] text-slate-500 block mt-0.5">Target: {request?.requested_quantity?.toLocaleString()} kg</span>

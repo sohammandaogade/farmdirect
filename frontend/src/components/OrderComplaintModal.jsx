@@ -89,12 +89,12 @@ export const OrderComplaintModal = ({ order, isOpen, onClose, role = 'buyer' }) 
         <div className="p-6 overflow-y-auto flex-1 space-y-4">
           {submittedComplaint ? (
             <div className="space-y-4 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-200">
-                <CheckCircle2 className="w-8 h-8" />
+              <div className="w-14 h-14 rounded-2xl bg-[#FFE5B8]/30 text-[#8B7A66] flex items-center justify-center mx-auto border border-[#FFE5B8]">
+                <CheckCircle2 className="w-8 h-8 text-[#8B7A66]" />
               </div>
 
               <div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FFE5B8] text-[#211C18]">
                   {submittedComplaint.status}
                 </span>
                 <h4 className="text-base font-black text-slate-900 mt-2">

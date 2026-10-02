@@ -61,7 +61,7 @@ export const FarmerOrders = () => {
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+          <span className="text-[10px] font-black uppercase tracking-wider text-[#211C18] bg-[#FFE5B8] px-2.5 py-0.5 rounded-full border border-[#FFE5B8]">
             Fulfillment & Carrier Dispatch
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-1.5">
@@ -107,12 +107,12 @@ export const FarmerOrders = () => {
                   onClick={() => setSelectedOrder(order)}
                   className={`p-5 rounded-3xl border transition-all cursor-pointer relative overflow-hidden ${
                     isSelected
-                      ? 'bg-emerald-50/40 border-emerald-500 ring-2 ring-emerald-500/20 shadow-card'
-                      : 'bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-subtle'
+                      ? 'bg-[#FFE5B8]/20 border-[#8B7A66] ring-2 ring-[#8B7A66]/20 shadow-md'
+                      : 'bg-white border-[#F5EBDD] hover:border-slate-300 hover:shadow-xs'
                   }`}
                 >
                   {isSelected && (
-                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-600" />
+                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-[#8B7A66]" />
                   )}
 
                   <div className="flex items-center justify-between text-xs mb-2">
@@ -139,7 +139,7 @@ export const FarmerOrders = () => {
 
                   <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                     <span className="text-slate-900 font-black tabular-nums">Total: ₹{order.total_amount?.toLocaleString()}</span>
-                    <span className="text-emerald-700 font-bold flex items-center gap-1 text-[11px]">
+                    <span className="text-[#8B7A66] font-bold flex items-center gap-1 text-[11px]">
                       <span>Manage</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </span>

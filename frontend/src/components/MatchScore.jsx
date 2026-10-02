@@ -8,26 +8,26 @@ export const MatchScore = ({ score, tier, size = 'md', showLabel = true }) => {
   const getColorClass = () => {
     if (numericScore >= 85) {
       return {
-        bg: 'bg-emerald-500',
-        text: 'text-emerald-700',
-        badgeBg: 'bg-emerald-50',
-        border: 'border-emerald-200',
-        ring: 'text-emerald-500',
+        bg: 'bg-[#8B7A66]',
+        text: 'text-[#8B7A66]',
+        badgeBg: 'bg-[#FFE5B8]/40',
+        border: 'border-[#FFE5B8]',
+        ring: 'text-[#8B7A66]',
         label: tier || 'Strong Match',
       };
     } else if (numericScore >= 70) {
       return {
-        bg: 'bg-teal-500',
-        text: 'text-teal-700',
-        badgeBg: 'bg-teal-50',
-        border: 'border-teal-200',
-        ring: 'text-teal-500',
+        bg: 'bg-[#6F655B]',
+        text: 'text-[#6F655B]',
+        badgeBg: 'bg-[#F5EBDD]',
+        border: 'border-[#E2D4C3]',
+        ring: 'text-[#6F655B]',
         label: tier || 'Good Match',
       };
     } else if (numericScore >= 50) {
       return {
-        bg: 'bg-amber-500',
-        text: 'text-amber-700',
+        bg: 'bg-amber-600',
+        text: 'text-amber-800',
         badgeBg: 'bg-amber-50',
         border: 'border-amber-200',
         ring: 'text-amber-500',

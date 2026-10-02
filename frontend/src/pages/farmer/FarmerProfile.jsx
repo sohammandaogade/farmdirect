@@ -55,12 +55,12 @@ export const FarmerProfile = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Account</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-[#8B7A66]">Account</span>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Farm Profile</h1>
         <p className="text-xs text-slate-500 mt-1">Manage public farm credentials and contact information</p>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#F5EBDD] shadow-xs">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -70,7 +70,7 @@ export const FarmerProfile = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
             <div>
@@ -91,7 +91,7 @@ export const FarmerProfile = () => {
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
             <div>
@@ -101,7 +101,7 @@ export const FarmerProfile = () => {
                 required
                 value={farmName}
                 onChange={(e) => setFarmName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
           </div>
@@ -114,7 +114,7 @@ export const FarmerProfile = () => {
                 required
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
             <div>
@@ -124,7 +124,7 @@ export const FarmerProfile = () => {
                 value={farmSize}
                 onChange={(e) => setFarmSize(e.target.value)}
                 placeholder="e.g. 25 acres"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
           </div>
@@ -136,7 +136,7 @@ export const FarmerProfile = () => {
               value={primaryCrops}
               onChange={(e) => setPrimaryCrops(e.target.value)}
               placeholder="e.g. Tomato, Onion, Potato"
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
             />
           </div>
 
@@ -144,7 +144,7 @@ export const FarmerProfile = () => {
             <button
               type="submit"
               disabled={saving}
-              className="py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              className="py-2.5 px-6 bg-[#8B7A66] hover:bg-[#786855] text-white font-bold text-xs rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               <span>{saving ? 'Saving Profile...' : 'Save Profile Changes'}</span>
