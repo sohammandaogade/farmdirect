@@ -4,12 +4,9 @@ import {
   Send,
   Languages,
   User,
-  Bot,
   Activity,
   Calendar,
   AlertTriangle,
-  ShoppingBag,
-  TrendingUp,
 } from 'lucide-react';
 import { copilotAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -154,17 +151,17 @@ export const BuyerCopilot = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#F5EBDD]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
               Procurement Intelligence
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-100 text-blue-800">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FAF8F5] text-[#6F655B] border border-[#F5EBDD]">
               Verified Grounding
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
             Buyer Procurement Copilot
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -173,8 +170,8 @@ export const BuyerCopilot = () => {
         </div>
 
         {/* Language Selector */}
-        <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs self-start sm:self-auto">
-          <Languages className="w-4 h-4 text-blue-600 ml-2" />
+        <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-[#F5EBDD] shadow-xs self-start sm:self-auto">
+          <Languages className="w-4 h-4 text-[#8B7A66] ml-2" />
           {[
             { id: 'en', label: 'EN' },
             { id: 'hi', label: 'हिन्दी' },
@@ -193,8 +190,8 @@ export const BuyerCopilot = () => {
               }}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 language === lang.id
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  ? 'bg-[#8B7A66] text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-[#FAF8F5]'
               }`}
             >
               {lang.label}
@@ -204,7 +201,7 @@ export const BuyerCopilot = () => {
       </div>
 
       {/* Main Chat Container */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs flex flex-col h-[650px] overflow-hidden">
+      <div className="bg-white rounded-3xl border border-[#F5EBDD] shadow-xs flex flex-col h-[650px] overflow-hidden">
         {/* Messages Scroll Area */}
         <div className="flex-1 p-6 overflow-y-auto space-y-6">
           {messages.map((msg, index) => {
@@ -216,7 +213,7 @@ export const BuyerCopilot = () => {
               >
                 <div
                   className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
-                    isBot ? 'bg-blue-600 text-white' : 'bg-slate-900 text-white'
+                    isBot ? 'bg-[#8B7A66] text-white' : 'bg-[#211C18] text-white'
                   }`}
                 >
                   {isBot ? <Sparkles className="w-4 h-4" /> : <User className="w-4 h-4" />}
@@ -232,8 +229,8 @@ export const BuyerCopilot = () => {
                           <span>LIVE DATA</span>
                         </span>
                       ) : msg.dataType === 'FORECAST' ? (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1">
-                          <Activity className="w-3 h-3 text-blue-600" />
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#F5EBDD] text-[#403A34] border border-[#8B7A66]/30 flex items-center gap-1">
+                          <Activity className="w-3 h-3 text-[#8B7A66]" />
                           <span>FORECAST</span>
                         </span>
                       ) : msg.dataType === 'HISTORICAL' ? (
@@ -242,8 +239,8 @@ export const BuyerCopilot = () => {
                           <span>HISTORICAL DATA</span>
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-purple-600" />
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#FAF8F5] text-[#6F655B] border border-[#F5EBDD] flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-[#8B7A66]" />
                           <span>AI ANALYSIS</span>
                         </span>
                       )}
@@ -259,8 +256,8 @@ export const BuyerCopilot = () => {
                   <div
                     className={`p-4 rounded-3xl text-xs sm:text-sm font-medium leading-relaxed shadow-xs ${
                       isBot
-                        ? 'bg-slate-50 border border-slate-100 text-slate-800 rounded-tl-sm'
-                        : 'bg-blue-600 text-white rounded-tr-sm'
+                        ? 'bg-[#FAF8F5] border border-[#F5EBDD] text-slate-800 rounded-tl-sm'
+                        : 'bg-[#211C18] text-white rounded-tr-sm'
                     }`}
                   >
                     {/* Live Data Unavailable Notice if Applicable */}
@@ -280,13 +277,13 @@ export const BuyerCopilot = () => {
 
                     {/* Actionable recommendations card */}
                     {msg.recommendations && msg.recommendations.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-slate-200/60 space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block">
+                      <div className="mt-3 pt-3 border-t border-[#F5EBDD] space-y-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#8B7A66] block">
                           Sourcing Strategy Recommendations:
                         </span>
                         {msg.recommendations.map((rec, rIdx) => (
                           <div key={rIdx} className="flex items-start gap-2 text-xs text-slate-700">
-                            <span className="text-blue-600 font-bold">•</span>
+                            <span className="text-[#8B7A66] font-bold">•</span>
                             <span>{rec}</span>
                           </div>
                         ))}
@@ -307,10 +304,10 @@ export const BuyerCopilot = () => {
 
           {loading && (
             <div className="flex items-center gap-3 mr-auto">
-              <div className="w-9 h-9 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+              <div className="w-9 h-9 rounded-2xl bg-[#8B7A66] text-white flex items-center justify-center shadow-xs">
                 <Sparkles className="w-4 h-4 animate-spin" />
               </div>
-              <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 text-xs text-slate-500 font-medium">
+              <div className="p-4 rounded-3xl bg-[#FAF8F5] border border-[#F5EBDD] text-xs text-slate-500 font-medium">
                 Scanning wholesale pricing data and regional supply indices...
               </div>
             </div>
@@ -318,7 +315,7 @@ export const BuyerCopilot = () => {
         </div>
 
         {/* Quick Suggestion Chips */}
-        <div className="px-6 py-3 bg-slate-50/80 border-t border-slate-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <div className="px-6 py-3 bg-[#FAF8F5] border-t border-[#F5EBDD] flex items-center gap-2 overflow-x-auto no-scrollbar">
           <span className="text-[10px] font-bold uppercase text-slate-400 whitespace-nowrap">
             Suggestions:
           </span>
@@ -326,7 +323,7 @@ export const BuyerCopilot = () => {
             <button
               key={idx}
               onClick={() => handleSend(q)}
-              className="text-xs bg-white hover:bg-blue-50 hover:text-blue-700 text-slate-600 font-semibold px-3 py-1.5 rounded-xl border border-slate-200/80 transition-colors whitespace-nowrap"
+              className="text-xs bg-white hover:bg-[#FAF8F5] hover:text-[#8B7A66] hover:border-[#8B7A66]/40 text-slate-600 font-semibold px-3 py-1.5 rounded-xl border border-[#F5EBDD] transition-colors whitespace-nowrap"
             >
               {q}
             </button>
@@ -339,7 +336,7 @@ export const BuyerCopilot = () => {
             e.preventDefault();
             handleSend();
           }}
-          className="p-4 bg-white border-t border-slate-100 flex items-center gap-3"
+          className="p-4 bg-white border-t border-[#F5EBDD] flex items-center gap-3"
         >
           <input
             type="text"
@@ -352,12 +349,12 @@ export const BuyerCopilot = () => {
                 ? 'प्रमाणित फसल मूल्य, सप्लायर या नेगोशिएशन रणनीति के बारे में पूछें...'
                 : 'प्रमाणित पिकांचे दर, पुरवठादार किंवा घासाघिस धोरणाबद्दल विचारा...'
             }
-            className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            className="flex-1 px-4 py-3 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD] text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
           />
           <button
             type="submit"
             disabled={!inputMessage.trim() || loading}
-            className="p-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl shadow-md shadow-blue-600/20 active:scale-95 transition-all"
+            className="p-3 bg-[#8B7A66] hover:bg-[#726352] disabled:opacity-50 text-white rounded-2xl shadow-md shadow-[#8B7A66]/20 active:scale-95 transition-all"
           >
             <Send className="w-4 h-4" />
           </button>
