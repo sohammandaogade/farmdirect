@@ -32,6 +32,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import StatCard from '../../components/StatCard';
+import SteppedStageChart from '../../components/SteppedStageChart';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { adminAPI, commandCenterAPI } from '../../services/api';
 
@@ -320,6 +321,17 @@ export const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Platform Order Fulfillment Stepped Funnel */}
+      {(analytics?.status_distribution || analytics?.orders_by_status) && (
+        <SteppedStageChart
+          title="Platform Order Fulfillment Lifecycle"
+          subtitle="System-wide transaction progression across fulfillment stages"
+          stages={analytics.status_distribution || analytics.orders_by_status}
+          totalCount={analytics.total_orders}
+          unit="orders"
+        />
+      )}
 
       {/* Tables Row: Recent Users & Recent Orders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

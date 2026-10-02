@@ -396,7 +396,7 @@ export const WasteMarketplace = () => {
                 setCreateError('');
                 setShowCreateModal(true);
               }}
-              className="py-3 px-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="py-3 px-5 btn-hawaiian-primary text-xs uppercase tracking-wider rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               <PlusCircle className="w-4 h-4" />
               <span>List Farm Residue</span>
@@ -719,7 +719,7 @@ export const WasteMarketplace = () => {
                   ) : user?.role === 'buyer' ? (
                     <button
                       onClick={() => handleOpenOrderModal(item)}
-                      className="w-full py-2.5 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
+                      className="w-full py-2.5 btn-hawaiian-primary rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
                     >
                       <ShoppingBag className="w-4 h-4" />
                       <span>Procure Biomass Batch</span>

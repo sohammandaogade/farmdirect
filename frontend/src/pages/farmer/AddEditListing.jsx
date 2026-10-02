@@ -18,7 +18,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import FairPriceInsight from '../../components/FairPriceInsight';
 
-const CROPS = ['Tomato', 'Onion', 'Potato', 'Wheat', 'Rice', 'Carrot', 'Cabbage', 'Capsicum', 'Maize', 'Cauliflower'];
+const CROPS = ['Tomato', 'Onion', 'Potato', 'Wheat', 'Rice', 'Carrot', 'Cabbage', 'Capsicum', 'Maize', 'Cauliflower', 'Strawberry'];
 const GRADES = ['Grade A', 'Grade B', 'Organic', 'Grade C (Processing)'];
 
 export const AddEditListing = () => {
@@ -303,13 +303,13 @@ export const AddEditListing = () => {
         <span>Back to My Listings</span>
       </Link>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-warm-border shadow-card space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-warm-border">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl font-black text-warm-charcoal tracking-tight">
               {isEdit ? 'Edit Produce Listing' : 'List New Produce'}
             </h1>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-hawaiian-400 mt-1">
               Publish harvest availability with AI quality certification directly to buyers
             </p>
           </div>
@@ -317,9 +317,9 @@ export const AddEditListing = () => {
           <button
             type="button"
             onClick={() => setShowAiGenModal(true)}
-            className="py-2 px-3.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs rounded-xl border border-purple-200 transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+            className="py-2 px-3.5 bg-mocassin-100 hover:bg-mocassin-200 text-hawaiian-800 font-bold text-xs rounded-xl border border-mocassin-300 transition-colors flex items-center gap-1.5 self-start sm:self-auto"
           >
-            <Sparkles className="w-4 h-4 text-purple-600" />
+            <Sparkles className="w-4 h-4 text-hawaiian-600" />
             <span>Generate from Notes</span>
           </button>
         </div>
@@ -783,10 +783,10 @@ export const AddEditListing = () => {
           </div>
 
           {/* Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-warm-border flex items-center justify-end gap-3">
             <Link
               to="/farmer/listings"
-              className="py-2.5 px-4 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+              className="py-2.5 px-4 rounded-xl border border-warm-border text-xs font-semibold text-hawaiian-600 hover:bg-warm-canvas transition-colors"
             >
               Cancel
             </Link>
@@ -797,8 +797,8 @@ export const AddEditListing = () => {
                 isProduceRejected
                   ? 'bg-rose-100 text-rose-500 border border-rose-200 cursor-not-allowed shadow-none'
                   : !imageUrl
-                  ? 'bg-emerald-600/70 hover:bg-emerald-700 text-white shadow-emerald-600/20'
-                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                  ? 'bg-hawaiian-400 text-white cursor-not-allowed opacity-80'
+                  : 'btn-hawaiian-primary'
               }`}
             >
               {isProduceRejected ? <ShieldAlert className="w-4 h-4 text-rose-500" /> : <Save className="w-4 h-4" />}

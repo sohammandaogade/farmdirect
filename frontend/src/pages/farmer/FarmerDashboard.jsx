@@ -31,6 +31,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import StatCard from '../../components/StatCard';
+import SteppedStageChart from '../../components/SteppedStageChart';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import { analyticsAPI, requestsAPI, ordersAPI } from '../../services/api';
@@ -260,38 +261,15 @@ export const FarmerDashboard = () => {
         </div>
       </div>
 
-      {/* Real-time Order Fulfillment Lifecycle Breakdown */}
+      {/* Real-time Order Fulfillment Lifecycle Stepped Funnel */}
       {analytics?.status_distribution && analytics.status_distribution.length > 0 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
-            <div>
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-emerald-600" />
-                <h3 className="text-base font-bold text-slate-900">Order Fulfillment Lifecycle</h3>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">Live distribution across active fulfillment stages</p>
-            </div>
-            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/80 self-start sm:self-auto">
-              {analytics.total_orders} Total Orders Processed
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {analytics.status_distribution.map((st) => (
-              <div key={st.status} className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 hover:bg-slate-100/60 transition-colors">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block truncate">
-                  {st.status.replace('_', ' ')}
-                </span>
-                <span className="text-2xl font-black text-slate-900 block mt-1.5 tabular-nums">
-                  {st.count}
-                </span>
-                <span className="text-[11px] font-bold text-emerald-700 block mt-0.5">
-                  {analytics.total_orders > 0 ? Math.round((st.count / analytics.total_orders) * 100) : 0}% of volume
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <SteppedStageChart
+          title="Harvest Order Fulfillment Pipeline"
+          subtitle="Real-time order stage progression from placement to confirmed delivery"
+          stages={analytics.status_distribution}
+          totalCount={analytics.total_orders}
+          unit="orders"
+        />
       )}
 
       {/* Tables Row: Inbound Purchase Requests & Orders */}

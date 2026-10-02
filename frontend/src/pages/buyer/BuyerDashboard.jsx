@@ -29,6 +29,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import StatCard from '../../components/StatCard';
+import SteppedStageChart from '../../components/SteppedStageChart';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { analyticsAPI, ordersAPI, marketplaceAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -38,6 +39,7 @@ const BUYER_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#0
 export const BuyerDashboard = () => {
   const { user } = useAuth();
   const [analytics, setAnalytics] = useState(null);
+  const [allOrders, setAllOrders] = useState([]);
   const [currentOrders, setCurrentOrders] = useState([]);
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +58,11 @@ export const BuyerDashboard = () => {
       ]);
 
       if (anRes.data?.success) setAnalytics(anRes.data.data);
-      if (ordRes.data?.success) setCurrentOrders((ordRes.data.data || []).slice(0, 5));
+      if (ordRes.data?.success) {
+        const ordersList = ordRes.data.data || [];
+        setAllOrders(ordersList);
+        setCurrentOrders(ordersList.slice(0, 5));
+      }
       if (markRes.data?.success) setRecommended((markRes.data.data || []).slice(0, 4));
     } catch (e) {
       console.error('Failed to load buyer dashboard:', e);
@@ -70,6 +76,13 @@ export const BuyerDashboard = () => {
   const businessName = user?.buyer_profile?.business_name || `${user?.name} Enterprise`;
   const buyerType = user?.buyer_profile?.buyer_type || 'Commercial Buyer';
   const location = user?.buyer_profile?.location || 'Maharashtra';
+
+  const buyerStages = [
+    { id: 'CONFIRMED', label: 'Confirmed', count: allOrders.filter(o => o.status === 'CONFIRMED').length, description: 'Order logged and confirmed' },
+    { id: 'PICKUP_SCHEDULED', label: 'Pickup Scheduled', count: allOrders.filter(o => o.status === 'PICKUP_SCHEDULED').length, description: 'Carrier dispatch scheduled' },
+    { id: 'IN_TRANSIT', label: 'In Transit', count: allOrders.filter(o => o.status === 'IN_TRANSIT').length, description: 'Live cargo in transit' },
+    { id: 'DELIVERED', label: 'Delivered', count: allOrders.filter(o => o.status === 'DELIVERED').length, description: 'Delivered and verified' },
+  ];
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -257,6 +270,17 @@ export const BuyerDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Buyer Delivery Fulfillment Pipeline Stepped Funnel */}
+      {allOrders.length > 0 && (
+        <SteppedStageChart
+          title="Procurement Delivery Pipeline"
+          subtitle="Real-time lifecycle tracking of commercial consignments across stages"
+          stages={buyerStages}
+          totalCount={allOrders.length}
+          unit="orders"
+        />
+      )}
 
       {/* Two Columns: Current Orders & Recommended Produce */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
