@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, ArrowUpRight } from 'lucide-react';
+import { Truck } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -29,19 +29,23 @@ export const AdminOrders = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Audit Trail</span>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Platform Orders & Contracts</h1>
+      <div className="pb-4 border-b border-[#F5EBDD]">
+        <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
+          Audit Trail
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
+          Platform Orders & Contracts
+        </h1>
         <p className="text-xs text-slate-500 mt-1">Audit agreements, price realizations, and carrier milestones</p>
       </div>
 
       {loading ? (
         <LoadingSpinner text="Fetching platform orders..." />
       ) : (
-        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
+        <div className="bg-white rounded-3xl border border-[#F5EBDD] overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold text-[10px]">
+              <thead className="bg-[#FAF8F5] border-b border-[#F5EBDD] text-slate-500 uppercase tracking-wider font-bold text-[10px]">
                 <tr>
                   <th className="py-3.5 px-4">Order Number</th>
                   <th className="py-3.5 px-4">Farmer</th>
@@ -52,9 +56,9 @@ export const AdminOrders = () => {
                   <th className="py-3.5 px-4">Created Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              <tbody className="divide-y divide-[#F5EBDD] font-medium text-slate-700">
                 {orders.map((o) => (
-                  <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={o.id} className="hover:bg-[#FAF8F5]/80 transition-colors">
                     <td className="py-4 px-4 font-mono font-bold text-slate-900">
                       {o.order_number}
                     </td>
@@ -70,7 +74,7 @@ export const AdminOrders = () => {
                       <div className="font-bold text-slate-900 capitalize">{o.crop}</div>
                       <div className="text-[11px] text-slate-500">{o.quantity?.toLocaleString()} kg @ ₹{o.agreed_price}/kg</div>
                     </td>
-                    <td className="py-4 px-4 font-black text-emerald-700 text-sm">
+                    <td className="py-4 px-4 font-black text-[#8B7A66] text-sm">
                       ₹{o.total_amount?.toLocaleString()}
                     </td>
                     <td className="py-4 px-4">

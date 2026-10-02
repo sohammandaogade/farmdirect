@@ -1,25 +1,10 @@
 import React, { useState } from 'react';
 import {
   Sliders,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  Play,
   RotateCcw,
   Sparkles,
-  ShieldAlert,
-  Truck,
-  DollarSign,
   Zap,
 } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from 'recharts';
 import { commandCenterAPI } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -64,35 +49,20 @@ export const WhatIfSimulator = () => {
   const projections = simResult?.projections;
   const baseline = simResult?.baseline;
 
-  const comparisonData = simResult && projections
-    ? [
-        {
-          metric: 'Price (₹/kg)',
-          Baseline: baseline?.average_price_per_kg || 24.5,
-          Simulated: projections?.projected_avg_price_per_kg || 28.5,
-        },
-        {
-          metric: 'Supply (x100 kg)',
-          Baseline: Math.round((baseline?.supply_volume_kg || 15000) / 100),
-          Simulated: Math.round((projections?.projected_supply_kg || 13500) / 100),
-        },
-      ]
-    : [];
-
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#F5EBDD]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
               Macroeconomic Engine
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-purple-100 text-purple-800">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FAF8F5] text-[#6F655B] border border-[#F5EBDD]">
               What-If Simulator
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
             What-If Market Stress Simulator
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -103,9 +73,9 @@ export const WhatIfSimulator = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={handleReset}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 bg-white hover:bg-[#FAF8F5] text-slate-700 font-bold text-xs rounded-xl border border-[#F5EBDD] transition-colors flex items-center gap-1.5"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4 text-slate-500" />
             <span>Reset Sliders</span>
           </button>
         </div>
@@ -113,13 +83,13 @@ export const WhatIfSimulator = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Sliders Configuration Panel */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="pb-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#F5EBDD] shadow-xs space-y-6">
+          <div className="pb-4 border-b border-[#F5EBDD] flex items-center justify-between">
             <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-emerald-600" />
+              <Sliders className="w-5 h-5 text-[#8B7A66]" />
               Scenario Stress Levers
             </h3>
-            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-[#FAF8F5] text-slate-600 border border-[#F5EBDD]">
               Elasticity Model
             </span>
           </div>
@@ -131,7 +101,7 @@ export const WhatIfSimulator = () => {
               <select
                 value={targetCrop}
                 onChange={(e) => setTargetCrop(e.target.value)}
-                className="w-full mt-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800"
+                className="w-full mt-1.5 p-2.5 rounded-xl bg-[#FAF8F5] border border-[#F5EBDD] text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               >
                 <option value="Tomato">Tomato (Perishable Horticulture)</option>
                 <option value="Onion">Onion (Storage Vegetable)</option>
@@ -148,7 +118,7 @@ export const WhatIfSimulator = () => {
                 <span
                   className={
                     demandShock > 0
-                      ? 'text-emerald-600'
+                      ? 'text-[#8B7A66]'
                       : demandShock < 0
                       ? 'text-rose-600'
                       : 'text-slate-500'
@@ -164,7 +134,7 @@ export const WhatIfSimulator = () => {
                 step="5"
                 value={demandShock}
                 onChange={(e) => setDemandShock(e.target.value)}
-                className="w-full mt-2 accent-emerald-600"
+                className="w-full mt-2 accent-[#8B7A66]"
               />
               <span className="text-[10px] text-slate-400">Range: -50% (Slump) to +100% (Surge)</span>
             </div>
@@ -232,7 +202,7 @@ export const WhatIfSimulator = () => {
             <button
               onClick={handleSimulate}
               disabled={loading}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 active:scale-95 flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#8B7A66] hover:bg-[#726352] text-white rounded-2xl text-xs font-bold transition-all shadow-md shadow-[#8B7A66]/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <Zap className="w-4 h-4" />
               <span>{loading ? 'Running Microeconomic Simulation...' : 'Simulate Market Equilibrium'}</span>
@@ -243,12 +213,12 @@ export const WhatIfSimulator = () => {
         {/* Simulation Output Dashboard */}
         <div className="lg:col-span-2 space-y-6">
           {loading ? (
-            <div className="bg-white rounded-3xl p-12 border border-slate-200">
+            <div className="bg-white rounded-3xl p-12 border border-[#F5EBDD] shadow-xs">
               <LoadingSpinner text="Computing market equilibrium price elasticity..." />
             </div>
           ) : simResult ? (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6 animate-in fade-in">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#F5EBDD] shadow-xs space-y-6 animate-in fade-in">
+              <div className="flex items-center justify-between pb-4 border-b border-[#F5EBDD]">
                 <div>
                   <h3 className="text-lg font-black text-slate-900">
                     Simulation Projections for Maharashtra
@@ -272,7 +242,7 @@ export const WhatIfSimulator = () => {
 
               {/* Metric Impact Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD]">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                     Equilibrium Price
                   </span>
@@ -280,7 +250,7 @@ export const WhatIfSimulator = () => {
                     <span className="text-2xl font-black text-slate-900">
                       ₹{projections?.projected_avg_price_per_kg?.toFixed(2) || '28.50'}/kg
                     </span>
-                    <span className="text-xs font-bold text-emerald-600">
+                    <span className="text-xs font-bold text-[#8B7A66]">
                       ({projections?.projected_price_change_pct > 0 ? `+${projections?.projected_price_change_pct}%` : `${projections?.projected_price_change_pct}%`})
                     </span>
                   </div>
@@ -289,7 +259,7 @@ export const WhatIfSimulator = () => {
                   </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD]">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                     Supply-Demand Gap
                   </span>
@@ -303,7 +273,7 @@ export const WhatIfSimulator = () => {
                   </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD]">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                     Freight Pressure Index
                   </span>
@@ -326,7 +296,7 @@ export const WhatIfSimulator = () => {
                   </h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 text-slate-400 uppercase text-[10px] font-bold">
+                      <thead className="bg-[#FAF8F5] text-slate-400 uppercase text-[10px] font-bold">
                         <tr>
                           <th className="p-2.5 rounded-l-xl">Commodity</th>
                           <th className="p-2.5">Baseline</th>
@@ -335,12 +305,12 @@ export const WhatIfSimulator = () => {
                           <th className="p-2.5 rounded-r-xl">Vulnerability Profile</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 font-medium">
+                      <tbody className="divide-y divide-[#F5EBDD] font-medium">
                         {simResult.crop_breakdown.map((cb, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/60">
+                          <tr key={idx} className="hover:bg-[#FAF8F5]">
                             <td className="p-2.5 font-bold text-slate-800">{cb.crop}</td>
                             <td className="p-2.5 text-slate-500">₹{cb.baseline_price}/kg</td>
-                            <td className="p-2.5 font-bold text-emerald-600">₹{cb.projected_price}/kg</td>
+                            <td className="p-2.5 font-bold text-[#8B7A66]">₹{cb.projected_price}/kg</td>
                             <td className="p-2.5">
                               <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
                                 cb.perishability === 'High' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'
@@ -358,18 +328,18 @@ export const WhatIfSimulator = () => {
               )}
 
               {/* Strategic Policy Interventions */}
-              <div className="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-2">
-                <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs uppercase tracking-wider">
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
+              <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD] space-y-2">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-xs uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-[#8B7A66]" />
                   <span>Strategic AI Platform Recommendations</span>
                 </div>
-                <p className="text-xs text-emerald-800 font-medium leading-relaxed">
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
                   {projections?.strategic_recommendation || 'Encourage forward contract lock-ins between wholesale buyers and cooperative farmer clusters to mitigate unseasonal price volatility.'}
                 </p>
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center space-y-3">
+            <div className="bg-white rounded-3xl p-12 border border-[#F5EBDD] shadow-xs text-center space-y-3">
               <Zap className="w-12 h-12 text-slate-300 mx-auto" />
               <h3 className="text-base font-bold text-slate-800">
                 Ready to run macroeconomic simulation

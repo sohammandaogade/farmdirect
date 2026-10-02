@@ -42,19 +42,23 @@ export const AdminListings = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Inventory Oversight</span>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Marketplace Produce Listings</h1>
+      <div className="pb-4 border-b border-[#F5EBDD]">
+        <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
+          Inventory Oversight
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
+          Marketplace Produce Listings
+        </h1>
         <p className="text-xs text-slate-500 mt-1">Audit all active and completed farmer listings</p>
       </div>
 
       {loading ? (
         <LoadingSpinner text="Fetching marketplace listings..." />
       ) : (
-        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
+        <div className="bg-white rounded-3xl border border-[#F5EBDD] overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold text-[10px]">
+              <thead className="bg-[#FAF8F5] border-b border-[#F5EBDD] text-slate-500 uppercase tracking-wider font-bold text-[10px]">
                 <tr>
                   <th className="py-3.5 px-4">Produce</th>
                   <th className="py-3.5 px-4">Farmer / Farm</th>
@@ -65,9 +69,9 @@ export const AdminListings = () => {
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              <tbody className="divide-y divide-[#F5EBDD] font-medium text-slate-700">
                 {listings.map((l) => (
-                  <tr key={l.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={l.id} className="hover:bg-[#FAF8F5]/80 transition-colors">
                     <td className="py-4 px-4 font-bold capitalize text-slate-900">
                       {l.crop} • <span className="text-xs text-slate-400 font-normal">{l.quality_grade}</span>
                     </td>
@@ -79,7 +83,7 @@ export const AdminListings = () => {
                     <td className="py-4 px-4">
                       {l.available_quantity?.toLocaleString()} / {l.quantity?.toLocaleString()} {l.unit}
                     </td>
-                    <td className="py-4 px-4 font-black text-emerald-700">
+                    <td className="py-4 px-4 font-black text-[#8B7A66]">
                       ₹{l.expected_price}/{l.unit}
                     </td>
                     <td className="py-4 px-4">
@@ -101,7 +105,7 @@ export const AdminListings = () => {
                           href={`/marketplace/${l.id}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100"
+                          className="p-1.5 rounded-xl border border-[#F5EBDD] text-slate-600 hover:bg-[#FAF8F5]"
                         >
                           <Eye className="w-4 h-4" />
                         </a>
