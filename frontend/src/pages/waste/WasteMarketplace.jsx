@@ -367,17 +367,17 @@ export const WasteMarketplace = () => {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Top Banner Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 p-6 sm:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-[#211C18] via-[#332A22] to-[#211C18] border border-[#8B7A66]/30 p-6 sm:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
         <div className="absolute right-0 top-0 translate-x-12 -translate-y-6 opacity-10 pointer-events-none">
-          <Recycle className="w-96 h-96 text-emerald-300" />
+          <Recycle className="w-96 h-96 text-[#8B7A66]" />
         </div>
 
         <div className="relative z-10 space-y-2 max-w-2xl">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+            <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#FFE5B8]/20 text-[#FFE5B8] border border-[#FFE5B8]/30">
               Circular Economy • Zero Crop Burning
             </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#8B7A66]/30 text-[#FFE5B8] border border-[#8B7A66]/40">
               Verified Biomass
             </span>
           </div>

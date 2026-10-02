@@ -115,9 +115,9 @@ export const BuyerDashboard = () => {
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
               to="/buyer/smart-match"
-              className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-2xl shadow-lg shadow-emerald-900/40 active:scale-95 transition-all flex items-center gap-2"
+              className="px-5 py-3 bg-[#8B7A66] hover:bg-[#726352] text-white font-bold text-xs rounded-2xl shadow-lg shadow-[#8B7A66]/30 active:scale-95 transition-all flex items-center gap-2"
             >
-              <Sparkles className="w-4 h-4 text-emerald-200" />
+              <Sparkles className="w-4 h-4 text-[#FFE5B8]" />
               <span>AI Smart Match</span>
             </Link>
 
