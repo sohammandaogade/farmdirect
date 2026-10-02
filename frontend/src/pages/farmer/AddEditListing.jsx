@@ -539,33 +539,33 @@ export const AddEditListing = () => {
               )}
 
               {(inspectionResult.verification_status === 'VERIFIED_ALIGNED' || inspectionResult.verification_status === 'VERIFIED_SUPERIOR') && (
-                <div className="p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-300 space-y-2">
+                <div className="p-3.5 bg-[#FFE5B8]/25 rounded-xl border border-[#FFE5B8] space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="text-xs font-bold text-[#211C18] flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-[#8B7A66] shrink-0" />
                       AI Quality Certified: <strong>{inspectionResult.ai_assessed_grade}</strong>
                     </span>
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#FFE5B8] text-[#211C18]">
                       Confidence: {inspectionResult.confidence_score}%
                     </span>
                   </div>
-                  <p className="text-[11px] text-emerald-800">
+                  <p className="text-[11px] text-[#332A22]">
                     {inspectionResult.assessment_notes}
                   </p>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                    <div className="p-2 bg-white rounded-lg border border-emerald-100">
+                    <div className="p-2 bg-white rounded-lg border border-[#F5EBDD]">
                       <span className="text-[10px] font-bold text-slate-400 block">Ripeness</span>
                       <strong className="text-slate-800">
                         {inspectionResult.ripeness_pct ?? inspectionResult.legacy_cv_telemetry?.ripeness_pct ?? 88}%
                       </strong>
                     </div>
-                    <div className="p-2 bg-white rounded-lg border border-emerald-100">
+                    <div className="p-2 bg-white rounded-lg border border-[#F5EBDD]">
                       <span className="text-[10px] font-bold text-slate-400 block">Uniformity</span>
                       <strong className="text-slate-800">
                         {inspectionResult.uniformity_score ?? inspectionResult.legacy_cv_telemetry?.uniformity_score ?? 82}%
                       </strong>
                     </div>
-                    <div className="p-2 bg-white rounded-lg border border-emerald-100">
+                    <div className="p-2 bg-white rounded-lg border border-[#F5EBDD]">
                       <span className="text-[10px] font-bold text-slate-400 block">Defects</span>
                       <strong className="text-slate-800">
                         {inspectionResult.defect_detected_pct ?? inspectionResult.legacy_cv_telemetry?.defect_detected_pct ?? 2.5}%
@@ -596,7 +596,7 @@ export const AddEditListing = () => {
               <select
                 value={crop}
                 onChange={(e) => setCrop(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               >
                 {CROPS.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -614,7 +614,7 @@ export const AddEditListing = () => {
                   value={customCrop}
                   onChange={(e) => setCustomCrop(e.target.value)}
                   placeholder="e.g. Strawberry, Garlic"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
                 />
               </div>
             )}
@@ -626,7 +626,7 @@ export const AddEditListing = () => {
                 value={variety}
                 onChange={(e) => setVariety(e.target.value)}
                 placeholder="e.g. Sharbati, Nashik Red, Hybrid"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
 
@@ -635,7 +635,7 @@ export const AddEditListing = () => {
               <select
                 value={qualityGrade}
                 onChange={(e) => setQualityGrade(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               >
                 {GRADES.map((g) => (
                   <option key={g} value={g}>{g}</option>
@@ -655,7 +655,7 @@ export const AddEditListing = () => {
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="e.g. 2000"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
 
@@ -664,7 +664,7 @@ export const AddEditListing = () => {
               <select
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               >
                 <option value="kg">kg (Kilograms)</option>
                 <option value="quintal">quintal (100 kg)</option>
@@ -681,7 +681,7 @@ export const AddEditListing = () => {
                 value={expectedPrice}
                 onChange={(e) => setExpectedPrice(e.target.value)}
                 placeholder="e.g. 28"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
           </div>
@@ -703,7 +703,7 @@ export const AddEditListing = () => {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. Pune, Maharashtra"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
 
@@ -714,7 +714,7 @@ export const AddEditListing = () => {
                 required
                 value={availabilityDate}
                 onChange={(e) => setAvailabilityDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
               />
             </div>
           </div>
@@ -727,7 +727,7 @@ export const AddEditListing = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. Fresh farm-grown tomatoes suitable for restaurants and retailers. Plump, deep-red, hand-picked."
-              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
             />
           </div>
 

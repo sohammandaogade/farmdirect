@@ -59,9 +59,9 @@ export const BuyerRequests = () => {
 
         <Link
           to="/buyer/smart-match"
-          className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md shadow-emerald-700/20 active:scale-95 transition-all flex items-center gap-1.5 self-start sm:self-auto"
+          className="py-2.5 px-4 bg-[#8B7A66] hover:bg-[#786855] text-white font-bold text-xs rounded-2xl shadow-md active:scale-95 transition-all flex items-center gap-1.5 self-start sm:self-auto"
         >
-          <Sparkles className="w-3.5 h-3.5" />
+          <Sparkles className="w-3.5 h-3.5 text-[#FFE5B8]" />
           <span>New AI Smart Match</span>
         </Link>
       </div>
@@ -77,10 +77,10 @@ export const BuyerRequests = () => {
           onAction={() => window.location.href = '/marketplace'}
         />
       ) : (
-        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-card">
+        <div className="bg-white rounded-3xl border border-[#F5EBDD] overflow-hidden shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
+              <thead className="bg-[#FAF8F5] border-b border-[#F5EBDD] text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
                 <tr>
                   <th className="py-4 px-5">Farmer / Farm</th>
                   <th className="py-4 px-5">Produce</th>
@@ -92,7 +92,7 @@ export const BuyerRequests = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                 {requests.map((req) => (
-                  <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={req.id} className="hover:bg-[#FAF8F5]/80 transition-colors">
                     <td className="py-4 px-5">
                       <div className="font-bold text-slate-900">{req.farm_name || req.farmer_name}</div>
                       <div className="text-[11px] text-slate-400 mt-0.5">{req.listing_location}</div>
@@ -105,7 +105,7 @@ export const BuyerRequests = () => {
                     </td>
                     <td className="py-4 px-5">
                       <div className="text-slate-400 line-through text-[11px]">₹{req.farmer_listed_price}/kg</div>
-                      <div className="font-black text-emerald-700 text-sm mt-0.5">Offer: ₹{req.offered_price}/kg</div>
+                      <div className="font-black text-[#8B7A66] text-sm mt-0.5">Offer: ₹{req.offered_price}/kg</div>
                     </td>
                     <td className="py-4 px-5">
                       <span

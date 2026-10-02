@@ -128,7 +128,7 @@ export const ListingDetails = () => {
 
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs col-span-2 sm:col-span-1">
                   <span className="text-slate-400 block text-[11px]">Listing Status</span>
-                  <span className="text-sm font-bold text-emerald-700 mt-0.5 block">
+                  <span className="text-sm font-bold text-[#8B7A66] mt-0.5 block">
                     {listing.status}
                   </span>
                 </div>
@@ -155,10 +155,10 @@ export const ListingDetails = () => {
 
           {/* AI Quality Inspection Report Card */}
           {listing.quality_inspection && (
-            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs space-y-4">
+            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
+                  <div className="w-8 h-8 rounded-xl bg-[#FFE5B8]/30 flex items-center justify-center text-[#8B7A66]">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
@@ -185,8 +185,8 @@ export const ListingDetails = () => {
                   <strong className="text-slate-800 text-sm mt-0.5 block">{listing.quality_grade}</strong>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                  <span className="text-[10px] font-bold text-emerald-600 block uppercase">AI Assessed</span>
-                  <strong className="text-emerald-700 text-sm mt-0.5 block">{listing.quality_inspection.ai_assessed_grade}</strong>
+                  <span className="text-[10px] font-bold text-[#8B7A66] block uppercase">AI Assessed</span>
+                  <strong className="text-[#8B7A66] text-sm mt-0.5 block">{listing.quality_inspection.ai_assessed_grade}</strong>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
                   <span className="text-[10px] font-bold text-slate-400 block uppercase">Ripeness</span>

@@ -25,12 +25,12 @@ export const PurchaseHistory = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Audit & Archives</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[#8B7A66]">Audit & Archives</span>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Purchase History</h1>
           <p className="text-xs text-slate-500 mt-1">Complete log of historical procurement contracts and fulfillments</p>
         </div>
 
-        <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-xs text-xs">
+        <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-[#F5EBDD] shadow-xs text-xs">
           <div>
             <span className="text-slate-400 block text-[11px]">Total Volume</span>
             <strong className="text-slate-800">{totalVolume.toLocaleString()} kg</strong>
@@ -38,7 +38,7 @@ export const PurchaseHistory = () => {
           <div className="h-6 w-px bg-slate-200" />
           <div>
             <span className="text-slate-400 block text-[11px]">Total Spent</span>
-            <strong className="text-emerald-700">₹{totalSpent.toLocaleString()}</strong>
+            <strong className="text-[#8B7A66]">₹{totalSpent.toLocaleString()}</strong>
           </div>
         </div>
       </div>
@@ -52,10 +52,10 @@ export const PurchaseHistory = () => {
           message="Completed contracts and orders will be archived here."
         />
       ) : (
-        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
+        <div className="bg-white rounded-3xl border border-[#F5EBDD] overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold text-[10px]">
+              <thead className="bg-[#FAF8F5] border-b border-[#F5EBDD] text-slate-500 uppercase tracking-wider font-bold text-[10px]">
                 <tr>
                   <th className="py-3.5 px-4">Order ID</th>
                   <th className="py-3.5 px-4">Date</th>
