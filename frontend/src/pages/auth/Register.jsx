@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Sprout, Store, AlertCircle, ArrowRight, UserPlus, ShieldCheck, Check } from 'lucide-react';
+import { Sprout, Store, AlertCircle, UserPlus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 
@@ -90,19 +90,20 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAF9] flex items-center justify-center p-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-4 py-12 relative overflow-hidden selection:bg-[#FFE5B8] selection:text-[#403A34]">
       {/* Ambient background glow */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#FFE5B8]/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-40 right-10 w-80 h-80 bg-[#8B7A66]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-xl w-full relative z-10">
         {/* Brand logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center shadow-lg shadow-emerald-700/25 group-hover:scale-105 transition-transform duration-300">
-              <Sprout className="w-6 h-6 stroke-[2.2]" />
+            <div className="w-12 h-12 rounded-2xl bg-[#8B7A66] text-white flex items-center justify-center shadow-lg shadow-[#8B7A66]/25 group-hover:scale-105 transition-transform duration-300">
+              <Sprout className="w-6 h-6 stroke-[2.2] text-emerald-400" />
             </div>
             <span className="text-2xl font-black text-slate-900 tracking-tight">
-              Farm<span className="text-emerald-600">Direct</span>
+              Farm<span className="text-[#8B7A66]">Direct</span>
             </span>
           </Link>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-4 tracking-tight">
@@ -113,19 +114,19 @@ export const Register = () => {
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-elevated">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#F5EBDD] shadow-xs">
           {/* Role selector tabs */}
-          <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl mb-6">
+          <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#FAF8F5] rounded-2xl mb-6 border border-[#F5EBDD]">
             <button
               type="button"
               onClick={() => setRole('farmer')}
               className={`py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                 role === 'farmer'
-                  ? 'bg-white text-emerald-800 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#8B7A66] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Sprout className="w-4 h-4 text-emerald-600" />
+              <Sprout className="w-4 h-4 text-[#FFE5B8]" />
               <span>I am a Farmer</span>
             </button>
 
@@ -134,11 +135,11 @@ export const Register = () => {
               onClick={() => setRole('buyer')}
               className={`py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                 role === 'buyer'
-                  ? 'bg-white text-blue-800 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#211C18] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Store className="w-4 h-4 text-blue-600" />
+              <Store className="w-4 h-4 text-[#FFE5B8]" />
               <span>I am a Commercial Buyer</span>
             </button>
           </div>
@@ -161,7 +162,7 @@ export const Register = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Rajesh Patil"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-[#F5EBDD] rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66] transition-all text-slate-900"
                 />
               </div>
 
@@ -173,7 +174,7 @@ export const Register = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@domain.com"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-[#F5EBDD] rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66] transition-all text-slate-900"
                 />
               </div>
             </div>
@@ -187,7 +188,7 @@ export const Register = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="10-digit mobile (e.g. 9876543210)"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-[#F5EBDD] rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66] transition-all text-slate-900"
                 />
               </div>
 
@@ -199,15 +200,15 @@ export const Register = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-[#F5EBDD] rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66] transition-all text-slate-900"
                 />
               </div>
             </div>
 
             {/* Role-specific fields */}
             {role === 'farmer' ? (
-              <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-200/60 space-y-3">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 block">
+              <div className="p-4 bg-[#FAF8F5] rounded-2xl border border-[#F5EBDD] space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] block">
                   Producer & Farm Details
                 </span>
 
@@ -220,7 +221,7 @@ export const Register = () => {
                       value={farmName}
                       onChange={(e) => setFarmName(e.target.value)}
                       placeholder="e.g. Rajesh Farms"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-900"
+                      className="w-full px-3 py-2 bg-white border border-[#F5EBDD] rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 text-slate-900"
                     />
                   </div>
 
@@ -232,7 +233,7 @@ export const Register = () => {
                       value={farmLocation}
                       onChange={(e) => setFarmLocation(e.target.value)}
                       placeholder="e.g. Pune, Nashik, Satara"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-900"
+                      className="w-full px-3 py-2 bg-white border border-[#F5EBDD] rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 text-slate-900"
                     />
                   </div>
                 </div>
@@ -245,7 +246,7 @@ export const Register = () => {
                       value={farmSize}
                       onChange={(e) => setFarmSize(e.target.value)}
                       placeholder="e.g. 25 acres"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-900"
+                      className="w-full px-3 py-2 bg-white border border-[#F5EBDD] rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 text-slate-900"
                     />
                   </div>
 
@@ -256,14 +257,14 @@ export const Register = () => {
                       value={primaryCrops}
                       onChange={(e) => setPrimaryCrops(e.target.value)}
                       placeholder="e.g. Tomato, Onion, Potato"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-900"
+                      className="w-full px-3 py-2 bg-white border border-[#F5EBDD] rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 text-slate-900"
                     />
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-200/60 space-y-3">
-                <span className="text-[10px] font-black uppercase tracking-wider text-blue-900 block">
+              <div className="p-4 bg-[#FAF8F5] rounded-2xl border border-[#F5EBDD] space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] block">
                   Commercial Buyer Profile
                 </span>
 
@@ -276,7 +277,7 @@ export const Register = () => {
                       value={businessName}
                       onChange={(e) => setBusinessName(e.target.value)}
                       placeholder="e.g. ABC Restaurant / Hotel"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900"
+                      className="w-full px-3 py-2 bg-white border border-[#F5EBDD] rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 text-slate-900"
                     />
                   </div>
 
@@ -285,7 +286,7 @@ export const Register = () => {
                     <select
                       value={buyerType}
                       onChange={(e) => setBuyerType(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900"
+                      className="w-full px-3 py-2 bg-white border border-[#F5EBDD] rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 text-slate-900"
                     >
                       <option value="Restaurant">Restaurant / Hotel</option>
                       <option value="Retailer">Retailer / Supermarket</option>
@@ -303,7 +304,7 @@ export const Register = () => {
                     value={businessLocation}
                     onChange={(e) => setBusinessLocation(e.target.value)}
                     placeholder="e.g. Pune, Mumbai, Nagpur"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900"
+                    className="w-full px-3 py-2 bg-white border border-[#F5EBDD] rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 text-slate-900"
                   />
                 </div>
               </div>
@@ -314,8 +315,8 @@ export const Register = () => {
               disabled={loading}
               className={`w-full py-3.5 px-4 text-white font-bold text-xs rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-4 ${
                 role === 'farmer'
-                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-700/25'
-                  : 'bg-blue-600 hover:bg-blue-700 shadow-blue-700/25'
+                  ? 'bg-[#8B7A66] hover:bg-[#726352] shadow-[#8B7A66]/25'
+                  : 'bg-[#211C18] hover:bg-[#332A22] shadow-black/20'
               }`}
             >
               <UserPlus className="w-4 h-4" />
@@ -323,9 +324,9 @@ export const Register = () => {
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-slate-100 text-center text-xs text-slate-500">
+          <div className="mt-6 pt-5 border-t border-[#F5EBDD] text-center text-xs text-slate-500">
             Already registered?{' '}
-            <Link to="/login" className="text-emerald-700 font-bold hover:underline">
+            <Link to="/login" className="text-[#8B7A66] font-bold hover:underline">
               Sign In here
             </Link>
           </div>
