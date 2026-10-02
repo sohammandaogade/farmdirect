@@ -164,10 +164,10 @@ export const FarmerCopilot = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#8B7A66]">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
               AI Agricultural Advisory
             </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FFE5B8] text-[#211C18]">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
               Verified Grounding
             </span>
           </div>
@@ -180,8 +180,8 @@ export const FarmerCopilot = () => {
         </div>
 
         {/* Language Toggle */}
-        <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-[#F5EBDD] shadow-xs self-start sm:self-auto">
-          <Languages className="w-4 h-4 text-[#8B7A66] ml-2" />
+        <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs self-start sm:self-auto">
+          <Languages className="w-4 h-4 text-emerald-600 ml-2" />
           {[
             { id: 'en', label: 'EN' },
             { id: 'hi', label: 'हिन्दी' },
@@ -200,7 +200,7 @@ export const FarmerCopilot = () => {
               }}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 language === lang.id
-                  ? 'bg-[#8B7A66] text-white shadow-xs'
+                  ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -223,7 +223,7 @@ export const FarmerCopilot = () => {
               >
                 <div
                   className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
-                    isBot ? 'bg-[#8B7A66] text-white' : 'bg-[#211C18] text-white'
+                    isBot ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-white'
                   }`}
                 >
                   {isBot ? <Sparkles className="w-4 h-4" /> : <User className="w-4 h-4" />}
@@ -234,8 +234,8 @@ export const FarmerCopilot = () => {
                   {isBot && msg.dataType && (
                     <div className="flex items-center gap-1.5 mb-1">
                       {msg.dataType === 'LIVE' ? (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#FFE5B8]/50 text-[#211C18] border border-[#FFE5B8] flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           <span>LIVE DATA</span>
                         </span>
                       ) : msg.dataType === 'FORECAST' ? (
@@ -249,8 +249,8 @@ export const FarmerCopilot = () => {
                           <span>HISTORICAL DATA</span>
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#F5EBDD] text-[#6F655B] border border-[#EADCC9] flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-[#8B7A66]" />
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-purple-600" />
                           <span>AI ADVISORY</span>
                         </span>
                       )}
@@ -267,7 +267,7 @@ export const FarmerCopilot = () => {
                     className={`p-4 rounded-3xl text-xs sm:text-sm font-medium leading-relaxed shadow-xs ${
                       isBot
                         ? 'bg-slate-50 border border-slate-100 text-slate-800 rounded-tl-sm'
-                        : 'bg-[#211C18] text-white rounded-tr-sm'
+                        : 'bg-emerald-600 text-white rounded-tr-sm'
                     }`}
                   >
                     {/* Live Data Unavailable Notice if Applicable */}
@@ -288,12 +288,12 @@ export const FarmerCopilot = () => {
                     {/* Actionable recommendations card */}
                     {msg.recommendations && msg.recommendations.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-slate-200/60 space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#8B7A66] block">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
                           Recommended Next Steps:
                         </span>
                         {msg.recommendations.map((rec, rIdx) => (
                           <div key={rIdx} className="flex items-start gap-2 text-xs text-slate-700">
-                            <span className="text-[#8B7A66] font-bold">•</span>
+                            <span className="text-emerald-600 font-bold">•</span>
                             <span>{rec}</span>
                           </div>
                         ))}
@@ -314,7 +314,7 @@ export const FarmerCopilot = () => {
 
           {loading && (
             <div className="flex items-center gap-3 mr-auto">
-              <div className="w-9 h-9 rounded-2xl bg-[#8B7A66] text-white flex items-center justify-center shadow-xs">
+              <div className="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
                 <Sparkles className="w-4 h-4 animate-spin" />
               </div>
               <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 text-xs text-slate-500 font-medium">
@@ -325,7 +325,7 @@ export const FarmerCopilot = () => {
         </div>
 
         {/* Quick Suggestion Chips */}
-        <div className="px-6 py-3 bg-[#FAF8F5] border-t border-[#F5EBDD] flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <div className="px-6 py-3 bg-slate-50/80 border-t border-slate-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
           <span className="text-[10px] font-bold uppercase text-slate-400 whitespace-nowrap">
             Suggestions:
           </span>
@@ -333,7 +333,7 @@ export const FarmerCopilot = () => {
             <button
               key={idx}
               onClick={() => handleSend(q)}
-              className="text-xs bg-white hover:bg-[#FFE5B8]/30 hover:text-[#211C18] text-slate-700 font-semibold px-3 py-1.5 rounded-xl border border-[#F5EBDD] transition-colors whitespace-nowrap"
+              className="text-xs bg-white hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 font-semibold px-3 py-1.5 rounded-xl border border-slate-200/80 transition-colors whitespace-nowrap"
             >
               {q}
             </button>
@@ -346,7 +346,7 @@ export const FarmerCopilot = () => {
             e.preventDefault();
             handleSend();
           }}
-          className="p-4 bg-white border-t border-[#F5EBDD] flex items-center gap-3"
+          className="p-4 bg-white border-t border-slate-100 flex items-center gap-3"
         >
           <input
             type="text"
@@ -359,12 +359,12 @@ export const FarmerCopilot = () => {
                 ? 'प्रमाणित मंडी भाव, मौसम या कटाई के बारे में पूछें...'
                 : 'प्रमाणित बाजारभाव, हवामान किंवा काढणीबाबत विचारा...'
             }
-            className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+            className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
           />
           <button
             type="submit"
             disabled={!inputMessage.trim() || loading}
-            className="p-3 bg-[#8B7A66] hover:bg-[#786855] disabled:opacity-50 text-white rounded-2xl shadow-md active:scale-95 transition-all"
+            className="p-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-2xl shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
           >
             <Send className="w-4 h-4" />
           </button>

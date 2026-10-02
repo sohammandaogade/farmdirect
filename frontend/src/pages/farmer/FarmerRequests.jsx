@@ -95,7 +95,7 @@ export const FarmerRequests = () => {
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="pb-2 border-b border-slate-200/80">
-        <span className="text-[10px] font-black uppercase tracking-wider text-[#211C18] bg-[#FFE5B8] px-2.5 py-0.5 rounded-full border border-[#FFE5B8]">
+        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
           Inbound Sourcing Proposals
         </span>
         <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-1.5">
@@ -115,10 +115,10 @@ export const FarmerRequests = () => {
           message="When commercial buyers discover your produce or send purchase requests, they will appear here."
         />
       ) : (
-        <div className="bg-white rounded-3xl border border-[#F5EBDD] overflow-hidden shadow-card">
+        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#FAF8F5] border-b border-[#F5EBDD] text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
+              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
                 <tr>
                   <th className="py-4 px-5">Buyer / Business</th>
                   <th className="py-4 px-5">Crop</th>
@@ -130,7 +130,7 @@ export const FarmerRequests = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                 {requests.map((req) => (
-                  <tr key={req.id} className="hover:bg-[#FAF8F5]/80 transition-colors">
+                  <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-4 px-5">
                       <div className="font-bold text-slate-900">{req.buyer_business || req.buyer_name}</div>
                       <div className="text-[11px] text-slate-400 mt-0.5">{req.buyer_type} • {req.buyer_location}</div>
@@ -143,7 +143,7 @@ export const FarmerRequests = () => {
                     </td>
                     <td className="py-4 px-5">
                       <div className="text-slate-400 line-through text-[11px]">Listed: ₹{req.farmer_listed_price}/kg</div>
-                      <div className="font-black text-[#8B7A66] text-sm mt-0.5">Offer: ₹{req.offered_price}/kg</div>
+                      <div className="font-black text-emerald-700 text-sm mt-0.5">Offer: ₹{req.offered_price}/kg</div>
                     </td>
                     <td className="py-4 px-5">
                       <span
@@ -174,7 +174,7 @@ export const FarmerRequests = () => {
                           <>
                             <button
                               onClick={() => handleAccept(req.id)}
-                              className="py-2 px-3 rounded-xl bg-[#8B7A66] hover:bg-[#786855] text-white font-bold text-[11px] shadow-sm active:scale-95 transition-all flex items-center gap-1"
+                              className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-sm active:scale-95 transition-all flex items-center gap-1"
                               title="Accept Offer"
                             >
                               <Check className="w-3.5 h-3.5" />
@@ -236,7 +236,7 @@ export const FarmerRequests = () => {
                   required
                   value={counterPrice}
                   onChange={(e) => setCounterPrice(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 />
               </div>
 
@@ -250,7 +250,7 @@ export const FarmerRequests = () => {
                   required
                   value={counterQty}
                   onChange={(e) => setCounterQty(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 />
               </div>
 
@@ -263,7 +263,7 @@ export const FarmerRequests = () => {
                   value={counterNote}
                   onChange={(e) => setCounterNote(e.target.value)}
                   placeholder="e.g. Can do ₹28/kg if delivery is taken in crates at farm gate."
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 />
               </div>
 
@@ -278,7 +278,7 @@ export const FarmerRequests = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-[#8B7A66] hover:bg-[#786855] text-white font-bold text-xs shadow-md active:scale-95 transition-all disabled:opacity-50"
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50"
                 >
                   {submitting ? 'Sending...' : 'Send Counter'}
                 </button>

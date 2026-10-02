@@ -81,7 +81,7 @@ export const Marketplace = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-[#211C18] bg-[#FFE5B8] px-2.5 py-0.5 rounded-full border border-[#FFE5B8]">
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
               Live Agricultural Exchange
             </span>
           </div>
@@ -96,9 +96,9 @@ export const Marketplace = () => {
         <div className="flex items-center gap-3">
           <Link
             to="/buyer/smart-match"
-            className="py-2.5 px-4 bg-[#8B7A66] hover:bg-[#786855] text-white font-bold text-xs rounded-2xl shadow-md active:scale-95 transition-all flex items-center gap-2"
+            className="py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs rounded-2xl shadow-md shadow-emerald-700/20 active:scale-95 transition-all flex items-center gap-2"
           >
-            <Sparkles className="w-4 h-4 text-[#FFE5B8]" />
+            <Sparkles className="w-4 h-4 text-emerald-200" />
             <span>Launch AI Smart Match</span>
           </Link>
         </div>

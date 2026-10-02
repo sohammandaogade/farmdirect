@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
   ShieldAlert,
+  AlertTriangle,
   CheckCircle2,
+  XCircle,
   Eye,
+  Filter,
+  Layers,
+  ArrowRight,
   Clock,
+  Sparkles,
   X,
 } from 'lucide-react';
 import { commandCenterAPI } from '../../services/api';
@@ -74,17 +80,17 @@ export const AnomalyDetection = () => {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#F5EBDD]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-600">
               Audit & Compliance Center
             </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FAF8F5] text-[#6F655B] border border-[#F5EBDD]">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-800">
               Anomaly & Fraud Sentinel
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
             Market Integrity & Anomaly Audit
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -92,8 +98,8 @@ export const AnomalyDetection = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-[#F5EBDD] shadow-xs">
-          <ShieldAlert className="w-4 h-4 text-amber-600" />
+        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-xs">
+          <ShieldAlert className="w-4 h-4 text-rose-600" />
           <span className="text-xs font-bold text-slate-700">
             <strong>{pendingCount}</strong> Active Flags Awaiting Audit
           </span>
@@ -101,7 +107,7 @@ export const AnomalyDetection = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#F5EBDD] pb-2">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
         {[
           { id: 'pending', label: 'Pending Review' },
           { id: 'resolved', label: 'Resolved History' },
@@ -112,8 +118,8 @@ export const AnomalyDetection = () => {
             onClick={() => setFilterTab(tab.id)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               filterTab === tab.id
-                ? 'bg-[#8B7A66] text-white shadow-xs'
-                : 'text-slate-600 hover:bg-[#FAF8F5]'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             {tab.label}
@@ -125,8 +131,8 @@ export const AnomalyDetection = () => {
       {loading ? (
         <LoadingSpinner text="Scanning audit logs and fraud detection telemetry..." />
       ) : anomalies.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 border border-[#F5EBDD] shadow-xs text-center space-y-3">
-          <CheckCircle2 className="w-12 h-12 text-[#8B7A66] mx-auto" />
+        <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center space-y-3">
+          <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
           <h3 className="text-base font-bold text-slate-800">No anomalies in this queue</h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
             All marketplace listings and trade transactions are currently within fair-market statistical baselines.
@@ -137,7 +143,7 @@ export const AnomalyDetection = () => {
           {anomalies.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-3xl p-6 border border-[#F5EBDD] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-[#8B7A66]/40 transition-all"
+              className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 transition-all"
             >
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2.5">
@@ -173,7 +179,7 @@ export const AnomalyDetection = () => {
                   <span>Target: {item.entity_type || 'Listing'} #{item.entity_id || 'N/A'}</span>
                   <span>Detected: {new Date(item.created_at || Date.now()).toLocaleDateString()}</span>
                   {item.resolution_note && (
-                    <span className="text-[#6F655B] bg-[#FAF8F5] border border-[#F5EBDD] px-2 py-0.5 rounded-md font-semibold">
+                    <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
                       Resolution: {item.resolution_note}
                     </span>
                   )}
@@ -183,7 +189,7 @@ export const AnomalyDetection = () => {
               {item.status !== 'RESOLVED' && (
                 <button
                   onClick={() => setSelectedAnomaly(item)}
-                  className="px-4 py-2.5 bg-[#8B7A66] hover:bg-[#726352] text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-[#8B7A66]/20 flex items-center gap-1.5 self-start md:self-auto shrink-0"
+                  className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 self-start md:self-auto shrink-0"
                 >
                   <Eye className="w-3.5 h-3.5" />
                   <span>Audit & Resolve</span>
@@ -197,8 +203,8 @@ export const AnomalyDetection = () => {
       {/* Resolution Modal */}
       {selectedAnomaly && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-5 border border-[#F5EBDD] shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-[#F5EBDD]">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-5 border border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-lg font-black text-slate-900">Audit Resolution Action</h3>
               <button
                 onClick={() => setSelectedAnomaly(null)}
@@ -208,7 +214,7 @@ export const AnomalyDetection = () => {
               </button>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD] text-xs space-y-1">
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-xs space-y-1">
               <span className="text-slate-400 font-bold uppercase text-[10px]">Flagged Entity:</span>
               <strong className="text-slate-900 block text-sm font-black">
                 {selectedAnomaly.title}
@@ -223,7 +229,7 @@ export const AnomalyDetection = () => {
                   value={resolutionText}
                   onChange={(e) => setResolutionText(e.target.value)}
                   rows={3}
-                  className="w-full mt-1.5 p-2.5 rounded-xl bg-[#FAF8F5] border border-[#F5EBDD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                  className="w-full mt-1.5 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold"
                   required
                 />
               </div>
@@ -232,14 +238,14 @@ export const AnomalyDetection = () => {
                 <button
                   type="button"
                   onClick={() => setSelectedAnomaly(null)}
-                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-[#FAF8F5] rounded-xl"
+                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={resolving}
-                  className="px-5 py-2 bg-[#8B7A66] hover:bg-[#726352] disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md shadow-[#8B7A66]/20 transition-colors"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md"
                 >
                   {resolving ? 'Resolving...' : 'Confirm Resolution'}
                 </button>

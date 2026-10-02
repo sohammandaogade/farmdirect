@@ -108,12 +108,12 @@ export const SmartMatch = () => {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#211C18] via-[#332A22] to-[#211C18] text-white p-6 sm:p-8 shadow-xl border border-[#FFE5B8]/30">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FFE5B8]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-[#8B7A66]/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 text-white p-6 sm:p-8 shadow-elevated border border-emerald-900/40">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFE5B8]/20 border border-[#FFE5B8]/40 text-[#FFE5B8] text-[11px] font-black uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-black uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
             <span>AI Agricultural Recommendation Engine</span>
           </div>
@@ -139,10 +139,10 @@ export const SmartMatch = () => {
       </div>
 
       {/* Requirement Input Form */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#F5EBDD] shadow-card">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-card">
         <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#FFE5B8]/30 text-[#8B7A66]">
+            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
               <Search className="w-4 h-4" />
             </div>
             <div>
@@ -164,7 +164,7 @@ export const SmartMatch = () => {
                     setIsCustomCrop(!isCustomCrop);
                     if (!isCustomCrop && !customCrop) setCustomCrop('');
                   }}
-                  className="text-[11px] font-bold text-[#8B7A66] hover:text-[#786855] hover:underline"
+                  className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
                 >
                   {isCustomCrop ? '← Standard Crops' : '+ Custom Produce'}
                 </button>
@@ -178,7 +178,7 @@ export const SmartMatch = () => {
                     value={customCrop}
                     onChange={(e) => setCustomCrop(e.target.value)}
                     placeholder="e.g. Dragon Fruit, Sweet Corn, Organic Turmeric"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                   />
                   {customCrop && (
                     <button
@@ -194,7 +194,7 @@ export const SmartMatch = () => {
                 <select
                   value={crop}
                   onChange={(e) => setCrop(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 >
                   {CROPS.map((c) => (
                     <option key={c} value={c}>{c}</option>
@@ -212,7 +212,7 @@ export const SmartMatch = () => {
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="e.g. 1500"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
 
@@ -226,7 +226,7 @@ export const SmartMatch = () => {
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 placeholder="e.g. 30"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
 
@@ -239,7 +239,7 @@ export const SmartMatch = () => {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. Pune"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
 
@@ -249,7 +249,7 @@ export const SmartMatch = () => {
               <select
                 value={quality}
                 onChange={(e) => setQuality(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               >
                 {QUALITIES.map((q) => (
                   <option key={q} value={q}>{q}</option>
@@ -265,7 +265,7 @@ export const SmartMatch = () => {
                 required
                 value={requiredByDate}
                 onChange={(e) => setRequiredByDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
           </div>
@@ -274,9 +274,9 @@ export const SmartMatch = () => {
             <button
               type="submit"
               disabled={loading}
-              className="py-3 px-7 bg-[#8B7A66] hover:bg-[#786855] text-white font-bold text-xs rounded-2xl shadow-lg active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
+              className="py-3 px-7 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-lg shadow-emerald-600/25 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
             >
-              <Sparkles className="w-4 h-4 text-[#FFE5B8]" />
+              <Sparkles className="w-4 h-4 text-emerald-200" />
               <span>{loading ? 'Evaluating Agricultural Matches...' : 'Find Matches via AI'}</span>
             </button>
           </div>
@@ -296,7 +296,7 @@ export const SmartMatch = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#8B7A66]" />
+              <Sparkles className="w-5 h-5 text-emerald-600" />
               <span>Ranked Farm Matches ({matches.length})</span>
             </h2>
             <span className="text-xs font-semibold text-slate-400">
@@ -311,7 +311,7 @@ export const SmartMatch = () => {
               return (
                 <div
                   key={listing.id}
-                  className="bg-white rounded-3xl border border-[#F5EBDD] p-6 sm:p-7 shadow-card hover:shadow-card-hover transition-all duration-300"
+                  className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-7 shadow-card hover:shadow-card-hover transition-all duration-300"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-5 border-b border-slate-100">
                     {/* Produce & Farmer Info */}
@@ -328,7 +328,7 @@ export const SmartMatch = () => {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FFE5B8]/40 text-[#211C18] border border-[#FFE5B8]">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200/80">
                             Rank #{index + 1}
                           </span>
                           <span className="text-xs text-slate-300">•</span>
@@ -338,7 +338,7 @@ export const SmartMatch = () => {
                           {listing.crop}
                         </h3>
                         <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-[#8B7A66] shrink-0" />
+                          <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                           <span>{listing.location}</span>
                           <span>•</span>
                           <strong className="text-slate-800">{listing.farm_name || listing.farmer_name}</strong>
@@ -357,7 +357,7 @@ export const SmartMatch = () => {
 
                       <div className="text-right">
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Gate Price</span>
-                        <span className="text-2xl font-black text-[#8B7A66] tabular-nums">
+                        <span className="text-2xl font-black text-emerald-700 tabular-nums">
                           ₹{listing.expected_price}/kg
                         </span>
                       </div>
@@ -409,7 +409,7 @@ export const SmartMatch = () => {
 
                     <button
                       onClick={() => handleRequestPurchase(listing)}
-                      className="py-2.5 px-5 rounded-xl bg-[#8B7A66] hover:bg-[#786855] text-white text-xs font-bold shadow-md active:scale-95 transition-all flex items-center gap-1.5"
+                      className="py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-1.5"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>Request Direct Purchase</span>

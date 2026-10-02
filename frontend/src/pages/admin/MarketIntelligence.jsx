@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
   MapPin,
+  TrendingUp,
+  TrendingDown,
   AlertTriangle,
   Layers,
+  Activity,
   Filter,
+  Eye,
   ShieldAlert,
+  ArrowRight,
 } from 'lucide-react';
 import { commandCenterAPI } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -43,10 +48,10 @@ export const MarketIntelligence = () => {
       const d = item.demand_index || 70;
       if (d > 85) return 'bg-rose-500 text-white border-rose-600';
       if (d > 75) return 'bg-amber-500 text-white border-amber-600';
-      return 'bg-[#8B7A66] text-white border-[#726352]';
+      return 'bg-emerald-500 text-white border-emerald-600';
     } else if (activeLayer === 'supply') {
       const s = item.supply_volume_kg || 0;
-      if (s > 10000) return 'bg-[#8B7A66] text-white border-[#726352]';
+      if (s > 10000) return 'bg-emerald-600 text-white border-emerald-700';
       if (s > 4000) return 'bg-blue-600 text-white border-blue-700';
       return 'bg-slate-500 text-white border-slate-600';
     } else if (activeLayer === 'risk') {
@@ -57,9 +62,9 @@ export const MarketIntelligence = () => {
     } else {
       // price
       const p = item.avg_price || 30;
-      if (p > 50) return 'bg-[#8B7A66] text-white border-[#726352]';
+      if (p > 50) return 'bg-purple-600 text-white border-purple-700';
       if (p > 30) return 'bg-blue-600 text-white border-blue-700';
-      return 'bg-[#6F655B] text-white border-[#5A524A]';
+      return 'bg-teal-600 text-white border-teal-700';
     }
   };
 
@@ -68,17 +73,17 @@ export const MarketIntelligence = () => {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#F5EBDD]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
               Macro Intelligence
             </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FAF8F5] text-[#6F655B] border border-[#F5EBDD]">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
               Regional Heatmap
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
             Supply-Demand Intelligence Heatmap
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -92,7 +97,7 @@ export const MarketIntelligence = () => {
           <select
             value={selectedCrop}
             onChange={(e) => setSelectedCrop(e.target.value)}
-            className="px-4 py-2 bg-white border border-[#F5EBDD] text-xs font-bold text-slate-800 rounded-xl shadow-xs focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+            className="px-4 py-2 bg-white border border-slate-200 text-xs font-bold text-slate-800 rounded-xl shadow-xs"
           >
             <option value="">All Commodities</option>
             <option value="Tomato">Tomato</option>
@@ -106,9 +111,9 @@ export const MarketIntelligence = () => {
       </div>
 
       {/* Layer Switcher */}
-      <div className="bg-white p-2.5 rounded-2xl border border-[#F5EBDD] shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white p-2.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-500 px-2">
-          <Layers className="w-4 h-4 text-[#8B7A66]" />
+          <Layers className="w-4 h-4 text-emerald-600" />
           <span>Heatmap Layer Mode:</span>
         </div>
 
@@ -124,8 +129,8 @@ export const MarketIntelligence = () => {
               onClick={() => setActiveLayer(layer.id)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeLayer === layer.id
-                  ? 'bg-[#8B7A66] text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-[#FAF8F5]'
+                  ? 'bg-slate-900 text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
               {layer.label}
@@ -137,11 +142,11 @@ export const MarketIntelligence = () => {
       {/* Interactive Map Grid & District Inspector */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* District Grid Heatmap */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-[#F5EBDD] shadow-xs space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-[#F5EBDD]">
+        <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-[#8B7A66]" />
+                <MapPin className="w-5 h-5 text-emerald-600" />
                 Regional Agro Hubs (Maharashtra State)
               </h3>
               <p className="text-xs text-slate-500">
@@ -165,8 +170,8 @@ export const MarketIntelligence = () => {
                   onClick={() => setSelectedDistrict(d)}
                   className={`cursor-pointer rounded-3xl p-5 border-2 transition-all space-y-3 relative overflow-hidden ${
                     isSelected
-                      ? 'border-[#8B7A66] ring-4 ring-[#8B7A66]/10 shadow-lg'
-                      : 'border-[#F5EBDD] hover:border-[#8B7A66]/40'
+                      ? 'border-emerald-500 ring-4 ring-emerald-500/10 shadow-lg'
+                      : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -188,7 +193,7 @@ export const MarketIntelligence = () => {
                     Primary: <strong>{d.primary_crops?.join(', ') || 'Horticulture'}</strong>
                   </p>
 
-                  <div className="pt-2 border-t border-[#F5EBDD] grid grid-cols-2 gap-2 text-xs">
+                  <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-slate-400 block text-[9px] uppercase font-bold">
                         Supply
@@ -201,7 +206,7 @@ export const MarketIntelligence = () => {
                       <span className="text-slate-400 block text-[9px] uppercase font-bold">
                         Avg Price
                       </span>
-                      <strong className="text-[#8B7A66] text-xs font-black">
+                      <strong className="text-emerald-600 text-xs font-black">
                         ₹{d.avg_price} / kg
                       </strong>
                     </div>
@@ -219,11 +224,11 @@ export const MarketIntelligence = () => {
           </div>
 
           {/* Legend Guide */}
-          <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD] flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
             <span className="font-bold text-slate-600">Color Spectrum Guide:</span>
             <div className="flex items-center gap-4 text-[11px] font-semibold text-slate-500">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-[#8B7A66]" /> Standard Band
+                <span className="w-3 h-3 rounded-full bg-emerald-500" /> Optimal / Healthy
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-amber-500" /> High Pressure / Moderate
@@ -236,8 +241,8 @@ export const MarketIntelligence = () => {
         </div>
 
         {/* Selected District Deep-Dive Inspector */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#F5EBDD] shadow-xs space-y-6">
-          <div className="pb-4 border-b border-[#F5EBDD]">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="pb-4 border-b border-slate-100">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
               District Micro-Intelligence
             </span>
@@ -251,13 +256,13 @@ export const MarketIntelligence = () => {
 
           {selectedDistrict ? (
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD] space-y-2">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
                 <span className="text-xs font-bold text-slate-700 block">Key Agricultural Commodities</span>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedDistrict.primary_crops?.map((c, i) => (
                     <span
                       key={i}
-                      className="px-2.5 py-1 rounded-xl text-xs font-bold bg-white text-[#8B7A66] border border-[#F5EBDD] shadow-2xs"
+                      className="px-2.5 py-1 rounded-xl text-xs font-bold bg-white text-emerald-700 border border-emerald-100 shadow-2xs"
                     >
                       {c}
                     </span>
@@ -266,7 +271,7 @@ export const MarketIntelligence = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD]">
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
                   <span className="text-slate-400 block text-[10px] font-bold uppercase">
                     Demand Pressure
                   </span>
@@ -275,7 +280,7 @@ export const MarketIntelligence = () => {
                   </strong>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD]">
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
                   <span className="text-slate-400 block text-[10px] font-bold uppercase">
                     Supply Deficit / Surplus
                   </span>
@@ -283,7 +288,7 @@ export const MarketIntelligence = () => {
                     className={`text-base font-black mt-1 block ${
                       selectedDistrict.market_balance?.includes('Deficit')
                         ? 'text-rose-600'
-                        : 'text-[#8B7A66]'
+                        : 'text-emerald-600'
                     }`}
                   >
                     {selectedDistrict.market_balance || 'Balanced'}
@@ -291,11 +296,11 @@ export const MarketIntelligence = () => {
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#F5EBDD] space-y-1">
-                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 space-y-1">
+                <span className="text-xs font-bold text-blue-900 uppercase tracking-wider block">
                   Logistics & Perishability Status
                 </span>
-                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                <p className="text-xs text-blue-800 font-medium leading-relaxed">
                   Corridor transit access to Mumbai / Pune wholesale hubs is stable. Cold chain availability index: 82/100.
                 </p>
               </div>

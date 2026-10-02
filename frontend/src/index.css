@@ -7,94 +7,67 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-[#FAF8F5] text-[#231E19] antialiased font-sans selection:bg-[#FFE5B8] selection:text-[#3D342B];
+    @apply bg-[#F8FAF9] text-slate-900 antialiased font-sans selection:bg-emerald-600 selection:text-white;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight font-bold text-[#231E19];
+    @apply tracking-tight font-bold text-slate-900;
   }
 }
 
 @layer utilities {
-  /* Warm Glass Effect */
-  .glass-warm {
-    background: rgba(255, 255, 255, 0.88);
+  /* Modern Glass Effect */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(232, 226, 216, 0.8);
+    border: 1px solid rgba(226, 232, 240, 0.8);
   }
 
-  .glass-warm-dark {
-    background: rgba(61, 52, 43, 0.92);
+  .glass-panel-dark {
+    background: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 229, 184, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  /* FarmDirect Signature Gradient */
-  .gradient-farmdirect {
-    background: linear-gradient(135deg, #766654 0%, #8B7A66 60%, #AFA190 100%);
+  /* Agritech Gradient Accents */
+  .gradient-agri {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
   }
 
-  .gradient-mocassin {
-    background: linear-gradient(135deg, #FFF9ED 0%, #FFE5B8 100%);
-  }
-
-  .gradient-warm-hero {
-    background: linear-gradient(135deg, #2D261F 0%, #3D342B 55%, #5E5142 100%);
+  .gradient-card-hero {
+    background: linear-gradient(135deg, #0b1f16 0%, #123e2c 50%, #064e3b 100%);
   }
 
   /* Text Gradients */
-  .text-gradient-hawaiian {
-    background: linear-gradient(135deg, #5E5142 0%, #8B7A66 100%);
+  .text-gradient-emerald {
+    background: linear-gradient(135deg, #047857 0%, #10b981 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  /* Button Primitives */
-  .btn-hawaiian-primary {
-    background: linear-gradient(135deg, #8B7A66 0%, #766654 100%);
-    color: #FFFFFF;
-    box-shadow: 0 4px 14px 0 rgba(139, 122, 102, 0.35);
-    transition: all 0.25s ease;
-  }
-  .btn-hawaiian-primary:hover {
-    background: linear-gradient(135deg, #766654 0%, #5E5142 100%);
-    box-shadow: 0 6px 20px 0 rgba(139, 122, 102, 0.45);
-    transform: translateY(-1px);
-  }
-  .btn-hawaiian-primary:active {
-    transform: translateY(0);
-  }
-
-  .btn-mocassin-secondary {
-    background-color: #FFE5B8;
-    color: #4D4236;
-    border: 1px solid #FED898;
-    transition: all 0.2s ease;
-  }
-  .btn-mocassin-secondary:hover {
-    background-color: #FFF0D5;
-    color: #231E19;
-    border-color: #F5C474;
-    transform: translateY(-1px);
+  .text-gradient-dark {
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 }
 
-/* Custom Warm Scrollbar */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F5F2EB;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1C6B7;
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #8B7A66;
+  background: #94a3b8;
 }

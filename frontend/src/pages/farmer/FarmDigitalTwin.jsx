@@ -29,7 +29,7 @@ import { digitalTwinAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-const COLORS = ['#8B7A66', '#FFE5B8', '#6F655B', '#403A34', '#AFA190', '#D97706'];
+const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 export const FarmDigitalTwin = () => {
   const { user } = useAuth();
@@ -149,57 +149,57 @@ export const FarmDigitalTwin = () => {
   return (
     <div className="space-y-8">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#E8E2D8]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#8B7A66]">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
               Agronomic Intelligence
             </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FFE5B8] text-[#5E5142] border border-[#FED898]">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
               Live Digital Twin
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#211C18] tracking-tight mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
             {twinData?.farm_name || 'My Farm'} Digital Twin
           </h1>
-          <p className="text-xs text-[#6F655B] mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Real-time agro-ecological modeling for{' '}
-            <strong className="text-[#211C18]">{twinData?.location || 'Maharashtra'}</strong> (
+            <strong className="text-slate-700">{twinData?.location || 'Maharashtra'}</strong> (
             {twinData?.total_acres || 5} Acres total area)
           </p>
         </div>
 
         {/* Health Score Pill */}
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2.5 rounded-2xl bg-white border border-[#E8E2D8] shadow-card flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#FFF9ED] border border-[#FED898] text-[#8B7A66] flex items-center justify-center">
+          <div className="px-4 py-2.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
               <Activity className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#AFA190] block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                 Agri Health Index
               </span>
-              <span className="text-xl font-black text-[#211C18]">{healthScore} / 100</span>
+              <span className="text-xl font-black text-emerald-600">{healthScore} / 100</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Soil Telemetry Section */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E8E2D8] shadow-card space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E2D8]">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div>
-            <h2 className="text-lg font-black text-[#211C18] flex items-center gap-2">
-              <Droplets className="w-5 h-5 text-[#8B7A66]" />
+            <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+              <Droplets className="w-5 h-5 text-emerald-600" />
               Soil Biomass & Telemetry
             </h2>
-            <p className="text-xs text-[#6F655B]">
+            <p className="text-xs text-slate-500">
               Nutrient composition, organic carbon ratio, and active moisture retention
             </p>
           </div>
           <button
             onClick={() => setShowSoilModal(true)}
-            className="px-4 py-2 btn-hawaiian-primary text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-1.5 self-start sm:self-auto"
+            className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 self-start sm:self-auto"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Update Soil Test</span>
@@ -258,13 +258,13 @@ export const FarmDigitalTwin = () => {
         </div>
 
         {/* AI Soil Advisory */}
-        <div className="p-4 rounded-2xl bg-[#FFF9ED] border border-[#FED898] flex items-start gap-3">
-          <Sparkles className="w-5 h-5 text-[#8B7A66] shrink-0 mt-0.5" />
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-start gap-3">
+          <Sparkles className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-xs font-bold text-[#5E5142] uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
               Agronomic Soil Recommendation
             </h4>
-            <p className="text-xs text-[#403A34] mt-1 font-medium leading-relaxed">
+            <p className="text-xs text-emerald-800 mt-1 font-medium leading-relaxed">
               {soil.recommendation ||
                 'Soil is balanced for high-yield horticultural crops (Tomatoes, Onions, Grapes). Maintain organic carbon mulch to retain root moisture during dry spells.'}
             </p>
@@ -275,20 +275,20 @@ export const FarmDigitalTwin = () => {
       {/* Historical Yields & Expenses Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Historical Crop Performance */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E8E2D8] shadow-card space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-[#E8E2D8]">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
-              <h3 className="text-base font-black text-[#211C18] flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-[#8B7A66]" />
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-emerald-600" />
                 Historical Crop Yields & Revenue
               </h3>
-              <p className="text-xs text-[#6F655B]">Yield harvest records across seasons</p>
+              <p className="text-xs text-slate-500">Yield harvest records across seasons</p>
             </div>
             <button
               onClick={() => setShowCropModal(true)}
-              className="px-3.5 py-1.5 bg-[#FAF8F5] hover:bg-[#F5EBDD] text-[#211C18] border border-[#E8E2D8] text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
             >
-              <PlusCircle className="w-3.5 h-3.5 text-[#8B7A66]" />
+              <PlusCircle className="w-3.5 h-3.5" />
               <span>Add Record</span>
             </button>
           </div>
@@ -298,14 +298,13 @@ export const FarmDigitalTwin = () => {
             {cropHistory.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={cropHistory}>
-                  <XAxis dataKey="crop" stroke="#AFA190" fontSize={11} />
-                  <YAxis stroke="#AFA190" fontSize={11} />
+                  <XAxis dataKey="crop" stroke="#94a3b8" fontSize={11} />
+                  <YAxis stroke="#94a3b8" fontSize={11} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#211C18',
+                      backgroundColor: '#1e293b',
                       borderRadius: '12px',
-                      color: '#FFF9F0',
-                      border: '1px solid #403A34',
+                      color: '#fff',
                       fontSize: '12px',
                     }}
                     formatter={(val, name) => [
@@ -313,11 +312,11 @@ export const FarmDigitalTwin = () => {
                       name === 'yield_kg' ? 'Yield' : 'Revenue',
                     ]}
                   />
-                  <Bar dataKey="yield_kg" fill="#8B7A66" radius={[6, 6, 0, 0]} name="yield_kg" />
+                  <Bar dataKey="yield_kg" fill="#10b981" radius={[6, 6, 0, 0]} name="yield_kg" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-[#AFA190]">
+              <div className="h-full flex items-center justify-center text-xs text-slate-400">
                 No historical crop data logged yet.
               </div>
             )}
@@ -325,17 +324,17 @@ export const FarmDigitalTwin = () => {
 
           {/* Historic Crop Yield Summary Cards */}
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="p-3 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D8]">
-              <span className="text-[10px] font-bold text-[#AFA190] uppercase">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">
                 Total Historic Revenue
               </span>
-              <span className="text-lg font-black text-[#211C18] block mt-0.5">
+              <span className="text-lg font-black text-slate-900 block mt-0.5">
                 ₹{totalHistoricRevenue.toLocaleString()}
               </span>
             </div>
-            <div className="p-3 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D8]">
-              <span className="text-[10px] font-bold text-[#AFA190] uppercase">Logged Seasons</span>
-              <span className="text-lg font-black text-[#8B7A66] block mt-0.5">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Logged Seasons</span>
+              <span className="text-lg font-black text-emerald-600 block mt-0.5">
                 {cropHistory.length} Batches
               </span>
             </div>
@@ -343,7 +342,7 @@ export const FarmDigitalTwin = () => {
         </div>
 
         {/* Farm Operating Expenses */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E8E2D8] shadow-card space-y-6">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
@@ -517,7 +516,7 @@ export const FarmDigitalTwin = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 btn-hawaiian-primary text-xs font-bold rounded-xl shadow-md"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md"
                 >
                   Save Telemetry
                 </button>
@@ -614,7 +613,7 @@ export const FarmDigitalTwin = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 btn-hawaiian-primary text-xs font-bold rounded-xl shadow-md"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md"
                 >
                   Save Record
                 </button>
@@ -682,7 +681,7 @@ export const FarmDigitalTwin = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 btn-hawaiian-primary text-xs font-bold rounded-xl shadow-md"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md"
                 >
                   Save Expense
                 </button>

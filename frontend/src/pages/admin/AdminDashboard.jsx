@@ -8,11 +8,16 @@ import {
   TrendingUp,
   Package,
   Layers,
+  ArrowUpRight,
   Sparkles,
   MapPin,
+  Zap,
   ShieldAlert,
   ArrowRight,
-  Sliders,
+  ShieldCheck,
+  CheckCircle2,
+  Activity,
+  Sliders
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -27,11 +32,10 @@ import {
   CartesianGrid,
 } from 'recharts';
 import StatCard from '../../components/StatCard';
-import SteppedStageChart from '../../components/SteppedStageChart';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { adminAPI, commandCenterAPI } from '../../services/api';
 
-const ADMIN_COLORS = ['#8B7A66', '#D4B996', '#6F655B', '#403A34', '#AFA190', '#D97706'];
+const ADMIN_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 export const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
@@ -70,11 +74,11 @@ export const AdminDashboard = () => {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#F5EBDD]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
+            <span className="text-[11px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200/60">
               System Administration
             </span>
           </div>
@@ -89,16 +93,16 @@ export const AdminDashboard = () => {
         <div className="flex items-center gap-2">
           <Link
             to="/admin/users"
-            className="px-4 py-2.5 rounded-2xl bg-white border border-[#F5EBDD] text-slate-700 hover:bg-[#FAF8F5] font-bold text-xs shadow-xs transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs shadow-subtle transition-all flex items-center gap-1.5"
           >
             <Users className="w-4 h-4 text-slate-400" />
             <span>Manage Users</span>
           </Link>
           <Link
             to="/admin/market-intelligence"
-            className="px-4 py-2.5 rounded-2xl bg-[#8B7A66] hover:bg-[#726352] text-white font-bold text-xs shadow-md shadow-[#8B7A66]/20 transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
           >
-            <Sparkles className="w-4 h-4 text-[#FFE5B8]" />
+            <Sparkles className="w-4 h-4 text-emerald-400" />
             <span>Macro Heatmap</span>
           </Link>
         </div>
@@ -111,7 +115,7 @@ export const AdminDashboard = () => {
           value={analytics?.total_farmers ?? 0}
           subtitle="Direct agricultural producers"
           icon={Sprout}
-          color="primary"
+          color="emerald"
         />
 
         <StatCard
@@ -140,15 +144,15 @@ export const AdminDashboard = () => {
       </div>
 
       {/* AI Market Command Center Quick Launch Hub */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#211C18] via-[#332A22] to-[#211C18] p-6 sm:p-8 text-white space-y-6 shadow-elevated border border-[#8B7A66]/30">
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#FFE5B8]/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#8B7A66]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-950 via-purple-950 to-slate-950 p-6 sm:p-8 text-white space-y-6 shadow-elevated border border-purple-900/30">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#FFE5B8]" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-[#FFE5B8]">
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
                 AI Market Intelligence Suite
               </span>
             </div>
@@ -167,13 +171,13 @@ export const AdminDashboard = () => {
             to="/admin/market-intelligence"
             className="p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all space-y-3 group hover:-translate-y-0.5"
           >
-            <div className="w-10 h-10 rounded-xl bg-[#FFE5B8]/20 text-[#FFE5B8] flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
               <MapPin className="w-5 h-5" />
             </div>
             <div>
               <h4 className="text-sm font-bold text-white flex items-center justify-between">
                 <span>Supply-Demand Heatmap</span>
-                <ArrowRight className="w-4 h-4 text-[#FFE5B8] group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition-transform" />
               </h4>
               <p className="text-xs text-slate-300 mt-1">
                 Regional price disparity and harvest density across 36 Maharashtra districts.
@@ -185,13 +189,13 @@ export const AdminDashboard = () => {
             to="/admin/simulator"
             className="p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all space-y-3 group hover:-translate-y-0.5"
           >
-            <div className="w-10 h-10 rounded-xl bg-[#8B7A66]/30 text-[#FFE5B8] flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
               <h4 className="text-sm font-bold text-white flex items-center justify-between">
                 <span>What-If Stress Simulator</span>
-                <ArrowRight className="w-4 h-4 text-[#FFE5B8] group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform" />
               </h4>
               <p className="text-xs text-slate-300 mt-1">
                 Simulate diesel tariff shocks, monsoon delays, and crop price elasticities.
@@ -222,16 +226,16 @@ export const AdminDashboard = () => {
       {/* Analytics Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Traded Crops Bar Chart */}
-        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-xs">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card">
           <div className="flex items-center justify-between mb-6">
             <div>
               <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-[#8B7A66]" />
+                <Package className="w-4 h-4 text-emerald-600" />
                 <h3 className="text-base font-bold text-slate-900">Top Crops by Volume</h3>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Disintermediated harvest weight (kg)</p>
             </div>
-            <span className="text-[11px] font-bold px-3 py-1 bg-[#FAF8F5] text-[#6F655B] rounded-full border border-[#F5EBDD]">
+            <span className="text-[11px] font-bold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/60">
               Database Aggregate
             </span>
           </div>
@@ -240,14 +244,14 @@ export const AdminDashboard = () => {
             {analytics?.top_crops && analytics.top_crops.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={analytics.top_crops} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F5EBDD" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="crop" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}kg`} />
                   <Tooltip
                     formatter={(v) => [`${v.toLocaleString()} kg`, 'Traded Weight']}
-                    contentStyle={{ borderRadius: '16px', border: '1px solid #F5EBDD', backgroundColor: '#FAF8F5', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
-                  <Bar dataKey="quantity" fill="#8B7A66" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="quantity" fill="#10b981" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -261,10 +265,10 @@ export const AdminDashboard = () => {
         </div>
 
         {/* Order Status Distribution Pie */}
-        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Layers className="w-4 h-4 text-[#8B7A66]" />
+              <Layers className="w-4 h-4 text-purple-600" />
               <h3 className="text-base font-bold text-slate-900">Platform Order Pipeline</h3>
             </div>
             <p className="text-xs text-slate-400">Status breakdown of current orders</p>
@@ -290,7 +294,7 @@ export const AdminDashboard = () => {
                   </Pie>
                   <Tooltip
                     formatter={(v) => [v, 'Orders']}
-                    contentStyle={{ borderRadius: '16px', border: '1px solid #F5EBDD', backgroundColor: '#FAF8F5', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -303,7 +307,7 @@ export const AdminDashboard = () => {
             )}
           </div>
 
-          <div className="space-y-2 pt-3 border-t border-[#F5EBDD] max-h-24 overflow-y-auto text-xs">
+          <div className="space-y-2 pt-3 border-t border-slate-100 max-h-24 overflow-y-auto text-xs">
             {analytics?.orders_by_status?.map((item, idx) => (
               <div key={item.status} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -317,32 +321,21 @@ export const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Platform Order Fulfillment Stepped Funnel */}
-      {(analytics?.status_distribution || analytics?.orders_by_status) && (
-        <SteppedStageChart
-          title="Platform Order Fulfillment Lifecycle"
-          subtitle="System-wide transaction progression across fulfillment stages"
-          stages={analytics.status_distribution || analytics.orders_by_status}
-          totalCount={analytics.total_orders}
-          unit="orders"
-        />
-      )}
-
       {/* Tables Row: Recent Users & Recent Orders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Users */}
-        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-xs">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#8B7A66]" />
+                <Users className="w-4 h-4 text-emerald-600" />
                 <h3 className="text-base font-bold text-slate-900">Recent Registrations</h3>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Newly onboarded market participants</p>
             </div>
             <Link
               to="/admin/users"
-              className="text-xs font-bold text-[#8B7A66] hover:text-[#726352] flex items-center gap-1 group transition-colors"
+              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 group"
             >
               <span>View all</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -355,11 +348,11 @@ export const AdminDashboard = () => {
               <p className="text-xs font-semibold text-slate-600">No users found</p>
             </div>
           ) : (
-            <div className="divide-y divide-[#F5EBDD]">
+            <div className="divide-y divide-slate-100">
               {recentUsers.map((u) => (
                 <div key={u.id} className="py-3 flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#F5EBDD] text-slate-700 flex items-center justify-center font-black text-xs shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-black text-xs shrink-0">
                       {u.name?.charAt(0) || 'U'}
                     </div>
                     <div className="min-w-0">
@@ -386,18 +379,18 @@ export const AdminDashboard = () => {
         </div>
 
         {/* Recent Orders */}
-        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-xs">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <Truck className="w-4 h-4 text-[#8B7A66]" />
+                <Truck className="w-4 h-4 text-blue-600" />
                 <h3 className="text-base font-bold text-slate-900">Platform Orders</h3>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Live platform transactions and settlements</p>
             </div>
             <Link
               to="/admin/orders"
-              className="text-xs font-bold text-[#8B7A66] hover:text-[#726352] flex items-center gap-1 group transition-colors"
+              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 group"
             >
               <span>View all</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -410,7 +403,7 @@ export const AdminDashboard = () => {
               <p className="text-xs font-semibold text-slate-600">No platform transactions yet</p>
             </div>
           ) : (
-            <div className="divide-y divide-[#F5EBDD]">
+            <div className="divide-y divide-slate-100">
               {recentOrders.map((ord) => (
                 <div key={ord.id} className="py-3 flex items-center justify-between gap-3 text-xs">
                   <div className="min-w-0 flex-1">

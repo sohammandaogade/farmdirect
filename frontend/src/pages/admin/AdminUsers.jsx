@@ -42,27 +42,21 @@ export const AdminUsers = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#F5EBDD]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
-            Access Control
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
-            Platform Users Directory
-          </h1>
+          <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Access Control</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Platform Users Directory</h1>
           <p className="text-xs text-slate-500 mt-1">Audit and moderate participating farmers, commercial buyers, and admins</p>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-1.5 bg-[#FAF8F5] p-1.5 rounded-2xl border border-[#F5EBDD] self-start">
+        <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl self-start">
           {['all', 'farmer', 'buyer', 'admin'].map((r) => (
             <button
               key={r}
               onClick={() => setRoleFilter(r)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
-                roleFilter === r
-                  ? 'bg-[#8B7A66] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+                roleFilter === r ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               {r}
@@ -74,10 +68,10 @@ export const AdminUsers = () => {
       {loading ? (
         <LoadingSpinner text="Fetching users..." />
       ) : (
-        <div className="bg-white rounded-3xl border border-[#F5EBDD] overflow-hidden shadow-xs">
+        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#FAF8F5] border-b border-[#F5EBDD] text-slate-500 uppercase tracking-wider font-bold text-[10px]">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold text-[10px]">
                 <tr>
                   <th className="py-3.5 px-4">Name & Email</th>
                   <th className="py-3.5 px-4">Role</th>
@@ -87,7 +81,7 @@ export const AdminUsers = () => {
                   <th className="py-3.5 px-4 text-right">Moderation</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F5EBDD] font-medium text-slate-700">
+              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                 {users.map((u) => {
                   const orgName =
                     u.role === 'farmer'
@@ -97,7 +91,7 @@ export const AdminUsers = () => {
                       : 'System Staff';
 
                   return (
-                    <tr key={u.id} className="hover:bg-[#FAF8F5]/80 transition-colors">
+                    <tr key={u.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-4 px-4">
                         <div className="font-bold text-slate-900">{u.name}</div>
                         <div className="text-[11px] text-slate-400">{u.email}</div>
@@ -137,7 +131,7 @@ export const AdminUsers = () => {
                             className={`px-3 py-1 rounded-xl text-xs font-semibold transition-colors ${
                               u.is_active
                                 ? 'border border-rose-200 text-rose-600 hover:bg-rose-50'
-                                : 'bg-[#8B7A66] hover:bg-[#726352] text-white shadow-xs'
+                                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                             }`}
                           >
                             {u.is_active ? 'Deactivate' : 'Activate'}

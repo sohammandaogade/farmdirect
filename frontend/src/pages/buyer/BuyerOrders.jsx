@@ -134,12 +134,12 @@ export const BuyerOrders = () => {
                   onClick={() => setSelectedOrder(order)}
                   className={`p-5 rounded-3xl border transition-all cursor-pointer relative overflow-hidden ${
                     isSelected
-                      ? 'bg-[#FFE5B8]/20 border-[#8B7A66] ring-2 ring-[#8B7A66]/20 shadow-md'
-                      : 'bg-white border-[#F5EBDD] hover:border-slate-300 hover:shadow-subtle'
+                      ? 'bg-blue-50/40 border-blue-500 ring-2 ring-blue-500/20 shadow-card'
+                      : 'bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-subtle'
                   }`}
                 >
                   {isSelected && (
-                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-[#8B7A66]" />
+                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-blue-600" />
                   )}
 
                   <div className="flex items-center justify-between text-xs mb-2">
@@ -190,7 +190,7 @@ export const BuyerOrders = () => {
 
                 {/* POST-DELIVERY RATING UI (Strictly for Delivered Orders Only) */}
                 {selectedOrder.status === 'DELIVERED' && (
-                  <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-card space-y-4">
+                  <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
@@ -205,7 +205,7 @@ export const BuyerOrders = () => {
                       </div>
 
                       {currentOrderRating && (
-                        <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FFE5B8] text-[#211C18] self-start sm:self-auto">
+                        <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 self-start sm:self-auto">
                           Rating Recorded
                         </span>
                       )}
@@ -281,7 +281,7 @@ export const BuyerOrders = () => {
                           <button
                             type="submit"
                             disabled={submittingRating}
-                            className="px-5 py-2.5 bg-[#8B7A66] hover:bg-[#786855] disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+                            className="px-5 py-2.5 bg-slate-900 hover:bg-black disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
                           >
                             <Send className="w-3.5 h-3.5" />
                             <span>{submittingRating ? 'Saving...' : 'Submit Rating'}</span>

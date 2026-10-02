@@ -26,18 +26,18 @@ export const ToastProvider = ({ children }) => {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-start p-4 rounded-2xl shadow-xl border backdrop-blur-md transition-all duration-300 transform translate-y-0 ${
+            className={`pointer-events-auto flex items-start p-4 rounded-xl shadow-lg border backdrop-blur-md transition-all duration-300 transform translate-y-0 ${
               toast.type === 'success'
-                ? 'bg-[#211C18]/95 text-white border-[#8B7A66]/50 shadow-[#211C18]/20'
+                ? 'bg-emerald-950/90 text-white border-emerald-500/30'
                 : toast.type === 'error'
-                ? 'bg-rose-950/95 text-white border-rose-500/30'
-                : 'bg-[#332A22]/95 text-white border-[#6F655B]/40'
+                ? 'bg-rose-950/90 text-white border-rose-500/30'
+                : 'bg-slate-900/90 text-white border-slate-700'
             }`}
           >
             <div className="mr-3 mt-0.5 shrink-0">
-              {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-[#FFE5B8]" />}
+              {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
               {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400" />}
-              {toast.type === 'info' && <Info className="w-5 h-5 text-[#FFE5B8]" />}
+              {toast.type === 'info' && <Info className="w-5 h-5 text-sky-400" />}
             </div>
             <div className="flex-1 text-sm font-medium leading-relaxed">{toast.message}</div>
             <button

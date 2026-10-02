@@ -18,7 +18,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import FairPriceInsight from '../../components/FairPriceInsight';
 
-const CROPS = ['Tomato', 'Onion', 'Potato', 'Wheat', 'Rice', 'Carrot', 'Cabbage', 'Capsicum', 'Maize', 'Cauliflower', 'Strawberry'];
+const CROPS = ['Tomato', 'Onion', 'Potato', 'Wheat', 'Rice', 'Carrot', 'Cabbage', 'Capsicum', 'Maize', 'Cauliflower'];
 const GRADES = ['Grade A', 'Grade B', 'Organic', 'Grade C (Processing)'];
 
 export const AddEditListing = () => {
@@ -303,13 +303,13 @@ export const AddEditListing = () => {
         <span>Back to My Listings</span>
       </Link>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-warm-border shadow-card space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-warm-border">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
           <div>
-            <h1 className="text-2xl font-black text-warm-charcoal tracking-tight">
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               {isEdit ? 'Edit Produce Listing' : 'List New Produce'}
             </h1>
-            <p className="text-xs text-hawaiian-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Publish harvest availability with AI quality certification directly to buyers
             </p>
           </div>
@@ -317,9 +317,9 @@ export const AddEditListing = () => {
           <button
             type="button"
             onClick={() => setShowAiGenModal(true)}
-            className="py-2 px-3.5 bg-mocassin-100 hover:bg-mocassin-200 text-hawaiian-800 font-bold text-xs rounded-xl border border-mocassin-300 transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+            className="py-2 px-3.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs rounded-xl border border-purple-200 transition-colors flex items-center gap-1.5 self-start sm:self-auto"
           >
-            <Sparkles className="w-4 h-4 text-hawaiian-600" />
+            <Sparkles className="w-4 h-4 text-purple-600" />
             <span>Generate from Notes</span>
           </button>
         </div>
@@ -539,33 +539,33 @@ export const AddEditListing = () => {
               )}
 
               {(inspectionResult.verification_status === 'VERIFIED_ALIGNED' || inspectionResult.verification_status === 'VERIFIED_SUPERIOR') && (
-                <div className="p-3.5 bg-[#FFE5B8]/25 rounded-xl border border-[#FFE5B8] space-y-2">
+                <div className="p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-300 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#211C18] flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-[#8B7A66] shrink-0" />
+                    <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       AI Quality Certified: <strong>{inspectionResult.ai_assessed_grade}</strong>
                     </span>
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#FFE5B8] text-[#211C18]">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">
                       Confidence: {inspectionResult.confidence_score}%
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#332A22]">
+                  <p className="text-[11px] text-emerald-800">
                     {inspectionResult.assessment_notes}
                   </p>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                    <div className="p-2 bg-white rounded-lg border border-[#F5EBDD]">
+                    <div className="p-2 bg-white rounded-lg border border-emerald-100">
                       <span className="text-[10px] font-bold text-slate-400 block">Ripeness</span>
                       <strong className="text-slate-800">
                         {inspectionResult.ripeness_pct ?? inspectionResult.legacy_cv_telemetry?.ripeness_pct ?? 88}%
                       </strong>
                     </div>
-                    <div className="p-2 bg-white rounded-lg border border-[#F5EBDD]">
+                    <div className="p-2 bg-white rounded-lg border border-emerald-100">
                       <span className="text-[10px] font-bold text-slate-400 block">Uniformity</span>
                       <strong className="text-slate-800">
                         {inspectionResult.uniformity_score ?? inspectionResult.legacy_cv_telemetry?.uniformity_score ?? 82}%
                       </strong>
                     </div>
-                    <div className="p-2 bg-white rounded-lg border border-[#F5EBDD]">
+                    <div className="p-2 bg-white rounded-lg border border-emerald-100">
                       <span className="text-[10px] font-bold text-slate-400 block">Defects</span>
                       <strong className="text-slate-800">
                         {inspectionResult.defect_detected_pct ?? inspectionResult.legacy_cv_telemetry?.defect_detected_pct ?? 2.5}%
@@ -596,7 +596,7 @@ export const AddEditListing = () => {
               <select
                 value={crop}
                 onChange={(e) => setCrop(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               >
                 {CROPS.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -614,7 +614,7 @@ export const AddEditListing = () => {
                   value={customCrop}
                   onChange={(e) => setCustomCrop(e.target.value)}
                   placeholder="e.g. Strawberry, Garlic"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 />
               </div>
             )}
@@ -626,7 +626,7 @@ export const AddEditListing = () => {
                 value={variety}
                 onChange={(e) => setVariety(e.target.value)}
                 placeholder="e.g. Sharbati, Nashik Red, Hybrid"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
 
@@ -635,7 +635,7 @@ export const AddEditListing = () => {
               <select
                 value={qualityGrade}
                 onChange={(e) => setQualityGrade(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               >
                 {GRADES.map((g) => (
                   <option key={g} value={g}>{g}</option>
@@ -655,7 +655,7 @@ export const AddEditListing = () => {
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="e.g. 2000"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
 
@@ -664,7 +664,7 @@ export const AddEditListing = () => {
               <select
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               >
                 <option value="kg">kg (Kilograms)</option>
                 <option value="quintal">quintal (100 kg)</option>
@@ -681,7 +681,7 @@ export const AddEditListing = () => {
                 value={expectedPrice}
                 onChange={(e) => setExpectedPrice(e.target.value)}
                 placeholder="e.g. 28"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
           </div>
@@ -703,7 +703,7 @@ export const AddEditListing = () => {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. Pune, Maharashtra"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
 
@@ -714,7 +714,7 @@ export const AddEditListing = () => {
                 required
                 value={availabilityDate}
                 onChange={(e) => setAvailabilityDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
           </div>
@@ -727,7 +727,7 @@ export const AddEditListing = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. Fresh farm-grown tomatoes suitable for restaurants and retailers. Plump, deep-red, hand-picked."
-              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
             />
           </div>
 
@@ -783,10 +783,10 @@ export const AddEditListing = () => {
           </div>
 
           {/* Actions */}
-          <div className="pt-4 border-t border-warm-border flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
             <Link
               to="/farmer/listings"
-              className="py-2.5 px-4 rounded-xl border border-warm-border text-xs font-semibold text-hawaiian-600 hover:bg-warm-canvas transition-colors"
+              className="py-2.5 px-4 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
             >
               Cancel
             </Link>
@@ -797,8 +797,8 @@ export const AddEditListing = () => {
                 isProduceRejected
                   ? 'bg-rose-100 text-rose-500 border border-rose-200 cursor-not-allowed shadow-none'
                   : !imageUrl
-                  ? 'bg-hawaiian-400 text-white cursor-not-allowed opacity-80'
-                  : 'btn-hawaiian-primary'
+                  ? 'bg-emerald-600/70 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
               }`}
             >
               {isProduceRejected ? <ShieldAlert className="w-4 h-4 text-rose-500" /> : <Save className="w-4 h-4" />}

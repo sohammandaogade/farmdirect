@@ -11,6 +11,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend,
   CartesianGrid,
 } from 'recharts';
 import {
@@ -20,15 +21,16 @@ import {
   Wallet,
   Receipt,
   Scale,
+  Calendar,
   AlertCircle,
   PieChart as PieIcon,
-  LineChart,
+  LineChart
 } from 'lucide-react';
 import { analyticsAPI } from '../../services/api';
 import StatCard from '../../components/StatCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-const WARM_CHART_COLORS = ['#8B7A66', '#D4B996', '#6F655B', '#403A34', '#AFA190', '#D97706', '#9C8E80'];
+const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6'];
 
 export const BuyerAnalytics = () => {
   const [data, setData] = useState(null);
@@ -67,7 +69,7 @@ export const BuyerAnalytics = () => {
         <p className="text-xs text-slate-500">{error}</p>
         <button
           onClick={fetchAnalytics}
-          className="px-4 py-2 bg-[#8B7A66] text-white rounded-xl text-xs font-bold hover:bg-[#726352] transition-colors"
+          className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800"
         >
           Retry
         </button>
@@ -82,13 +84,11 @@ export const BuyerAnalytics = () => {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Page Title */}
-      <div className="pb-4 border-b border-[#F5EBDD]">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
-            Commercial Procurement Intelligence
-          </span>
-        </div>
-        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+      <div className="pb-2 border-b border-slate-200/80">
+        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+          Commercial Procurement Intelligence
+        </span>
+        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-1.5">
           Spend Analysis & Budget Summary
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -103,7 +103,7 @@ export const BuyerAnalytics = () => {
           value={`₹${(data?.total_spending || 0).toLocaleString('en-IN')}`}
           subtitle="Direct agricultural procurement"
           icon={Wallet}
-          color="primary"
+          color="emerald"
         />
         <StatCard
           title="Total Volume Fulfilled"
@@ -131,16 +131,16 @@ export const BuyerAnalytics = () => {
       {/* Primary Graphs Row: Spend Timeline & Spending by Crop */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Spending Over Time (Area Chart) */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card flex flex-col justify-between">
           <div className="flex items-center justify-between mb-6">
             <div>
               <div className="flex items-center gap-2">
-                <LineChart className="w-4 h-4 text-[#8B7A66]" />
+                <LineChart className="w-4 h-4 text-emerald-600" />
                 <h3 className="text-base font-bold text-slate-900">Cumulative Spend Timeline</h3>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Total expenditure from finalized farm contracts over dates</p>
             </div>
-            <span className="text-[11px] font-bold px-3 py-1 bg-[#FAF8F5] text-[#6F655B] rounded-full border border-[#F5EBDD]">
+            <span className="text-[11px] font-bold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/60">
               Verified Order Data
             </span>
           </div>
@@ -151,11 +151,11 @@ export const BuyerAnalytics = () => {
                 <AreaChart data={data.spending_timeline} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="buyerSpendGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8B7A66" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#8B7A66" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F5EBDD" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis
                     stroke="#94a3b8"
@@ -166,13 +166,13 @@ export const BuyerAnalytics = () => {
                   />
                   <Tooltip
                     formatter={(v) => [`₹${Number(v).toLocaleString('en-IN')}`, 'Expenditure']}
-                    contentStyle={{ borderRadius: '16px', border: '1px solid #F5EBDD', backgroundColor: '#FAF8F5', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
                   <Area
                     type="monotone"
                     dataKey="spending"
-                    stroke="#8B7A66"
-                    strokeWidth={2.5}
+                    stroke="#059669"
+                    strokeWidth={3}
                     fillOpacity={1}
                     fill="url(#buyerSpendGrad)"
                   />
@@ -189,10 +189,10 @@ export const BuyerAnalytics = () => {
         </div>
 
         {/* Spending Allocation by Crop (Donut Pie Chart) */}
-        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <PieIcon className="w-4 h-4 text-[#8B7A66]" />
+              <PieIcon className="w-4 h-4 text-emerald-600" />
               <h3 className="text-base font-bold text-slate-900">Spending by Commodity</h3>
             </div>
             <p className="text-xs text-slate-400">Portfolio allocation across crops</p>
@@ -213,12 +213,12 @@ export const BuyerAnalytics = () => {
                     paddingAngle={3}
                   >
                     {data.spending_by_crop.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={WARM_CHART_COLORS[index % WARM_CHART_COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
                     formatter={(v) => [`₹${Number(v).toLocaleString('en-IN')}`, 'Expenditure']}
-                    contentStyle={{ borderRadius: '16px', border: '1px solid #F5EBDD', backgroundColor: '#FAF8F5', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -231,13 +231,13 @@ export const BuyerAnalytics = () => {
             )}
           </div>
 
-          <div className="space-y-2 pt-3 border-t border-[#F5EBDD] max-h-28 overflow-y-auto text-xs">
+          <div className="space-y-2 pt-3 border-t border-slate-100 max-h-28 overflow-y-auto text-xs">
             {data?.spending_by_crop?.map((item, idx) => (
               <div key={item.crop} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span
                     className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: WARM_CHART_COLORS[idx % WARM_CHART_COLORS.length] }}
+                    style={{ backgroundColor: COLORS[idx % COLORS.length] }}
                   />
                   <span className="font-bold text-slate-800 capitalize truncate max-w-[120px]">{item.crop}</span>
                 </div>
@@ -253,16 +253,16 @@ export const BuyerAnalytics = () => {
       {/* Secondary Graphs Row: Purchase Volumes & Average Negotiated Prices */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quantity Traded by Crop */}
-        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-xs">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <Scale className="w-4 h-4 text-[#8B7A66]" />
+                <Scale className="w-4 h-4 text-blue-600" />
                 <h3 className="text-base font-bold text-slate-900">Procured Volume by Crop (kg)</h3>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Total volume purchased per agricultural category</p>
             </div>
-            <span className="text-[11px] font-bold px-3 py-1 bg-[#FAF8F5] text-[#6F655B] rounded-full border border-[#F5EBDD]">
+            <span className="text-[11px] font-bold px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-200/60">
               Volume Sourced
             </span>
           </div>
@@ -271,7 +271,7 @@ export const BuyerAnalytics = () => {
             {hasCropData ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.spending_by_crop} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F5EBDD" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="crop" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis
                     stroke="#94a3b8"
@@ -285,9 +285,9 @@ export const BuyerAnalytics = () => {
                       name === 'quantity' ? `${Number(v).toLocaleString('en-IN')} kg` : v,
                       name === 'quantity' ? 'Volume' : 'Orders',
                     ]}
-                    contentStyle={{ borderRadius: '16px', border: '1px solid #F5EBDD', backgroundColor: '#FAF8F5', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
-                  <Bar dataKey="quantity" fill="#8B7A66" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="quantity" fill="#3b82f6" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -301,16 +301,16 @@ export const BuyerAnalytics = () => {
         </div>
 
         {/* Average Purchase Price (₹/kg) */}
-        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#F5EBDD] shadow-xs">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-[#8B7A66]" />
+                <TrendingUp className="w-4 h-4 text-emerald-600" />
                 <h3 className="text-base font-bold text-slate-900">Average Unit Price Achieved (₹/kg)</h3>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Effective unit costs achieved via direct farmer negotiations</p>
             </div>
-            <span className="text-[11px] font-bold px-3 py-1 bg-[#FAF8F5] text-[#6F655B] rounded-full border border-[#F5EBDD]">
+            <span className="text-[11px] font-bold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/60">
               Unit Rate (₹/kg)
             </span>
           </div>
@@ -319,7 +319,7 @@ export const BuyerAnalytics = () => {
             {hasPriceData ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.avg_prices_by_crop} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F5EBDD" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="crop" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis
                     stroke="#94a3b8"
@@ -330,9 +330,9 @@ export const BuyerAnalytics = () => {
                   />
                   <Tooltip
                     formatter={(v) => [`₹${Number(v).toLocaleString('en-IN')}/kg`, 'Average Price']}
-                    contentStyle={{ borderRadius: '16px', border: '1px solid #F5EBDD', backgroundColor: '#FAF8F5', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
-                  <Bar dataKey="avg_price" fill="#6F655B" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="avg_price" fill="#10b981" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

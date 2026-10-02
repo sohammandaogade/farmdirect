@@ -50,17 +50,13 @@ export const BuyerProfile = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="pb-4 border-b border-[#F5EBDD]">
-        <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
-          Account Settings
-        </span>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
-          Business Profile
-        </h1>
+      <div>
+        <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Account</span>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Business Profile</h1>
         <p className="text-xs text-slate-500 mt-1">Manage corporate procurement details and operating facility location</p>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#F5EBDD] shadow-xs">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -70,7 +66,7 @@ export const BuyerProfile = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-[#F5EBDD] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
             <div>
@@ -92,7 +88,7 @@ export const BuyerProfile = () => {
                 required
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-[#F5EBDD] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
@@ -101,7 +97,7 @@ export const BuyerProfile = () => {
               <select
                 value={buyerType}
                 onChange={(e) => setBuyerType(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-[#F5EBDD] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="Restaurant">Restaurant</option>
                 <option value="Retailer">Retailer / Supermarket</option>
@@ -119,7 +115,7 @@ export const BuyerProfile = () => {
                 required
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-[#F5EBDD] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
@@ -130,16 +126,16 @@ export const BuyerProfile = () => {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+91 98765 43210"
-                className="w-full px-3.5 py-2.5 bg-[#FAF8F5] border border-[#F5EBDD] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#F5EBDD] flex justify-end">
+          <div className="pt-4 border-t border-slate-100 flex justify-end">
             <button
               type="submit"
               disabled={saving}
-              className="py-2.5 px-6 bg-[#8B7A66] hover:bg-[#726352] text-white font-bold text-xs rounded-xl shadow-md shadow-[#8B7A66]/20 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              className="py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/20 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               <span>{saving ? 'Saving Profile...' : 'Update Business Profile'}</span>

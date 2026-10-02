@@ -73,14 +73,14 @@ export const FarmerListings = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#8B7A66]">Active Catalog</span>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#211C18] tracking-tight">My Produce Listings</h1>
-          <p className="text-xs text-[#6F655B] mt-1">Manage crop availability, harvest prices, and inventory stocks</p>
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Inventory</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">My Produce Listings</h1>
+          <p className="text-xs text-slate-500 mt-1">Manage crop availability, prices, and stock</p>
         </div>
 
         <Link
           to="/farmer/listings/new"
-          className="py-2.5 px-5 btn-hawaiian-primary font-bold text-xs rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-2 self-start"
+          className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2 self-start"
         >
           <PlusCircle className="w-4 h-4" />
           <span>Add Produce</span>
@@ -88,15 +88,15 @@ export const FarmerListings = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#E8E2D8]">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200">
         {['ALL', 'ACTIVE', 'PAUSED', 'SOLD'].map((st) => (
           <button
             key={st}
             onClick={() => setStatusFilter(st)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
               statusFilter === st
-                ? 'bg-[#8B7A66] text-white shadow-subtle'
-                : 'bg-white text-[#403A34] hover:bg-[#F5EBDD] border border-[#E8E2D8]'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100'
             }`}
           >
             {st}
@@ -105,7 +105,7 @@ export const FarmerListings = () => {
       </div>
 
       {loading ? (
-        <LoadingSpinner text="Fetching inventory catalog..." />
+        <LoadingSpinner text="Fetching listings..." />
       ) : listings.length === 0 ? (
         <EmptyState
           icon={Sprout}
@@ -119,55 +119,55 @@ export const FarmerListings = () => {
           {listings.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-3xl border border-[#E8E2D8] p-5 sm:p-6 shadow-card hover:shadow-card-hover hover:border-[#8B7A66] transition-all flex flex-col justify-between"
+              className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase bg-[#F5EBDD] text-[#5E5142]">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-100 text-slate-700">
                       {item.quality_grade}
                     </span>
-                    <h3 className="text-xl font-black text-[#211C18] capitalize mt-1.5">{item.crop}</h3>
-                    <p className="text-xs text-[#AFA190]">{item.location} • Ready: {item.availability_date}</p>
+                    <h3 className="text-xl font-bold text-slate-900 capitalize mt-1">{item.crop}</h3>
+                    <p className="text-xs text-slate-400">{item.location} • Ready: {item.availability_date}</p>
                   </div>
                   <span
                     className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
                       item.status === 'ACTIVE'
-                        ? 'bg-[#FFE5B8] text-[#5E5142] border border-[#FED898]'
+                        ? 'bg-emerald-100 text-emerald-800'
                         : item.status === 'PAUSED'
-                        ? 'bg-[#F5EBDD] text-[#332A22] border border-[#E8E2D8]'
-                        : 'bg-[#FAF8F5] text-[#AFA190] border border-[#D1C6B7]'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-slate-200 text-slate-700'
                     }`}
                   >
                     {item.status}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 my-4 bg-[#FAF8F5] p-3.5 rounded-2xl border border-[#E8E2D8] text-xs">
+                <div className="grid grid-cols-2 gap-2 my-4 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-xs">
                   <div>
-                    <span className="text-[#AFA190] block text-[10px] uppercase font-bold">Available / Total</span>
-                    <span className="font-bold text-[#211C18]">
+                    <span className="text-slate-400 block text-[11px]">Available / Total</span>
+                    <span className="font-bold text-slate-800">
                       {item.available_quantity?.toLocaleString()} / {item.quantity?.toLocaleString()} {item.unit}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[#AFA190] block text-[10px] uppercase font-bold">Asking Price</span>
-                    <span className="font-black text-[#211C18]">
+                    <span className="text-slate-400 block text-[11px]">Expected Price</span>
+                    <span className="font-black text-emerald-700">
                       ₹{item.expected_price}/{item.unit}
                     </span>
                   </div>
                 </div>
 
                 {item.description && (
-                  <p className="text-xs text-[#6F655B] line-clamp-2 mb-4 leading-relaxed">{item.description}</p>
+                  <p className="text-xs text-slate-500 line-clamp-2 mb-4">{item.description}</p>
                 )}
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t border-[#E8E2D8] flex items-center justify-between gap-1 text-xs">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-1 text-xs">
                 <Link
                   to={`/marketplace/${item.id}`}
-                  className="p-2 rounded-xl text-[#6F655B] hover:bg-[#F5EBDD] hover:text-[#211C18] transition-colors"
+                  className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
                   title="View in Marketplace"
                 >
                   <Eye className="w-4 h-4" />
@@ -175,7 +175,7 @@ export const FarmerListings = () => {
 
                 <Link
                   to={`/farmer/listings/edit/${item.id}`}
-                  className="p-2 rounded-xl text-[#6F655B] hover:bg-[#F5EBDD] hover:text-[#211C18] transition-colors"
+                  className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
                   title="Edit"
                 >
                   <Edit3 className="w-4 h-4" />
@@ -184,13 +184,13 @@ export const FarmerListings = () => {
                 {item.status !== 'SOLD' && (
                   <button
                     onClick={() => handleToggleStatus(item.id, item.status)}
-                    className="p-2 rounded-xl text-[#6F655B] hover:bg-[#F5EBDD] transition-colors"
+                    className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
                     title={item.status === 'ACTIVE' ? 'Pause Listing' : 'Activate Listing'}
                   >
                     {item.status === 'ACTIVE' ? (
-                      <PauseCircle className="w-4 h-4 text-[#D97706]" />
+                      <PauseCircle className="w-4 h-4 text-amber-600" />
                     ) : (
-                      <PlayCircle className="w-4 h-4 text-[#8B7A66]" />
+                      <PlayCircle className="w-4 h-4 text-emerald-600" />
                     )}
                   </button>
                 )}
@@ -198,10 +198,10 @@ export const FarmerListings = () => {
                 {item.status !== 'SOLD' && (
                   <button
                     onClick={() => handleMarkSold(item.id)}
-                    className="p-2 rounded-xl text-[#6F655B] hover:bg-[#F5EBDD] transition-colors"
+                    className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
                     title="Mark Sold"
                   >
-                    <CheckCircle className="w-4 h-4 text-[#332A22]" />
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
                   </button>
                 )}
 

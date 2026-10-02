@@ -367,17 +367,17 @@ export const WasteMarketplace = () => {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Top Banner Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-[#211C18] via-[#332A22] to-[#211C18] border border-[#8B7A66]/30 p-6 sm:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 p-6 sm:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
         <div className="absolute right-0 top-0 translate-x-12 -translate-y-6 opacity-10 pointer-events-none">
-          <Recycle className="w-96 h-96 text-[#8B7A66]" />
+          <Recycle className="w-96 h-96 text-emerald-300" />
         </div>
 
         <div className="relative z-10 space-y-2 max-w-2xl">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#FFE5B8]/20 text-[#FFE5B8] border border-[#FFE5B8]/30">
+            <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
               Circular Economy • Zero Crop Burning
             </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#8B7A66]/30 text-[#FFE5B8] border border-[#8B7A66]/40">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
               Verified Biomass
             </span>
           </div>
@@ -396,7 +396,7 @@ export const WasteMarketplace = () => {
                 setCreateError('');
                 setShowCreateModal(true);
               }}
-              className="py-3 px-5 btn-hawaiian-primary text-xs uppercase tracking-wider rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="py-3 px-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               <PlusCircle className="w-4 h-4" />
               <span>List Farm Residue</span>
@@ -560,7 +560,7 @@ export const WasteMarketplace = () => {
         <LoadingSpinner text="Scanning agricultural residue listings..." />
       ) : filteredListings.length === 0 ? (
         <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 space-y-4 shadow-xs">
-          <div className="w-16 h-16 rounded-full bg-[#FFE5B8]/30 text-[#8B7A66] flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
             <Recycle className="w-8 h-8" />
           </div>
           <div className="space-y-1">
@@ -571,7 +571,7 @@ export const WasteMarketplace = () => {
             </h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
               {activeTab === 'my'
-                ? 'Monetize your post-harvest crop residues, stalks, and bagasse for bio-energy and composting industries.'
+                ? 'Monetize your post-harvest crop residues, stalks, and bagasse for green energy and composting industries.'
                 : 'Try resetting your search query or region filter to browse other active residue batches.'}
             </p>
           </div>
@@ -581,7 +581,7 @@ export const WasteMarketplace = () => {
                 setCreateError('');
                 setShowCreateModal(true);
               }}
-              className="py-2.5 px-5 bg-[#8B7A66] hover:bg-[#786855] text-white font-bold text-xs rounded-xl shadow-md transition-all inline-flex items-center gap-2"
+              className="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all inline-flex items-center gap-2"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Publish First Residue Batch</span>
@@ -597,7 +597,7 @@ export const WasteMarketplace = () => {
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-3xl border border-[#F5EBDD] shadow-xs hover:border-[#FFE5B8] hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
+                className="bg-white rounded-3xl border border-slate-200/90 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
               >
                 <div>
                   {/* Image & Status Badge */}
@@ -614,7 +614,7 @@ export const WasteMarketplace = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
 
                     <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
-                      <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase bg-[#8B7A66] text-white shadow-md">
+                      <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase bg-emerald-600 text-white shadow-md">
                         {item.waste_type}
                       </span>
                       {isSold ? (
@@ -622,7 +622,7 @@ export const WasteMarketplace = () => {
                           SOLD OUT
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FFE5B8] text-[#211C18] shadow-md">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500 text-slate-950 shadow-md">
                           AVAILABLE
                         </span>
                       )}
@@ -630,7 +630,7 @@ export const WasteMarketplace = () => {
 
                     <div className="absolute bottom-3 left-3 right-3 text-white">
                       <div className="flex items-center gap-1 text-xs font-semibold text-slate-200">
-                        <MapPin className="w-3.5 h-3.5 text-[#FFE5B8] shrink-0" />
+                        <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                         <span className="truncate">{item.location || 'Maharashtra'}</span>
                       </div>
                     </div>
@@ -639,7 +639,7 @@ export const WasteMarketplace = () => {
                   {/* Body Content */}
                   <div className="p-5 space-y-4">
                     <div>
-                      <h3 className="text-base font-black text-slate-900 group-hover:text-[#8B7A66] transition-colors">
+                      <h3 className="text-base font-black text-slate-900 group-hover:text-emerald-700 transition-colors">
                         {item.waste_type}
                       </h3>
                       <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
@@ -661,7 +661,7 @@ export const WasteMarketplace = () => {
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">
                           Asking Price
                         </span>
-                        <strong className="text-[#8B7A66] text-sm font-black">
+                        <strong className="text-emerald-600 text-sm font-black">
                           ₹{item.asking_price?.toLocaleString()}
                           <span className="text-[10px] font-semibold text-slate-400">
                             /{item.unit || 'ton'}
@@ -672,8 +672,8 @@ export const WasteMarketplace = () => {
 
                     {/* Suggested Uses Tags */}
                     {item.suggested_uses && (
-                      <div className="text-[11px] text-slate-600 bg-[#FFE5B8]/20 p-2.5 rounded-xl border border-[#FFE5B8]/40">
-                        <strong className="text-[#211C18] font-bold block mb-0.5">
+                      <div className="text-[11px] text-slate-600 bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100/70">
+                        <strong className="text-emerald-900 font-bold block mb-0.5">
                           Recommended Industrial Uses:
                         </strong>
                         <span className="text-slate-600">{item.suggested_uses}</span>
@@ -712,14 +712,14 @@ export const WasteMarketplace = () => {
                       Residue Batch Fully Procured
                     </div>
                   ) : isMyListing ? (
-                    <div className="w-full py-2.5 bg-[#FFE5B8]/25 border border-[#FFE5B8] text-[#211C18] rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-[#8B7A66]" />
+                    <div className="w-full py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       <span>Your Active Listing</span>
                     </div>
                   ) : user?.role === 'buyer' ? (
                     <button
                       onClick={() => handleOpenOrderModal(item)}
-                      className="w-full py-2.5 btn-hawaiian-primary rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
+                      className="w-full py-2.5 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
                     >
                       <ShoppingBag className="w-4 h-4" />
                       <span>Procure Biomass Batch</span>
@@ -760,7 +760,7 @@ export const WasteMarketplace = () => {
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#FFE5B8]/30 text-[#8B7A66] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                   <PlusCircle className="w-5 h-5" />
                 </div>
                 <div>
@@ -794,12 +794,12 @@ export const WasteMarketplace = () => {
                 <div>
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-slate-700">Residue / By-product Type *</label>
-                    <span className="text-[10px] text-[#8B7A66] font-bold">Auto-fills uses & details</span>
+                    <span className="text-[10px] text-emerald-600 font-bold">Auto-fills uses & details</span>
                   </div>
                   <select
                     value={formData.waste_type}
                     onChange={(e) => handlePresetSelect(e.target.value)}
-                    className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                    className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     required
                   >
                     {WASTE_PRESETS.map((p) => (
@@ -821,7 +821,7 @@ export const WasteMarketplace = () => {
                       min="0.1"
                       value={formData.quantity}
                       onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                      className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                      className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       placeholder="e.g. 25"
                       required
                     />
@@ -832,7 +832,7 @@ export const WasteMarketplace = () => {
                     <select
                       value={formData.unit}
                       onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                      className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                      className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     >
                       <option value="tonnes">Tonnes</option>
                       <option value="quintals">Quintals</option>
@@ -848,7 +848,7 @@ export const WasteMarketplace = () => {
                       min="1"
                       value={formData.asking_price}
                       onChange={(e) => setFormData({ ...formData, asking_price: e.target.value })}
-                      className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                      className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       placeholder="e.g. 1400"
                       required
                     />
@@ -863,7 +863,7 @@ export const WasteMarketplace = () => {
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     placeholder="e.g. Kolhapur, Maharashtra"
-                    className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                    className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     required
                   />
                 </div>
@@ -876,7 +876,7 @@ export const WasteMarketplace = () => {
                     value={formData.suggested_uses}
                     onChange={(e) => setFormData({ ...formData, suggested_uses: e.target.value })}
                     placeholder="e.g. Bio-pellets, Boiler Fuel, Paper Pulp, Cattle Fodder"
-                    className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                    className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -888,7 +888,7 @@ export const WasteMarketplace = () => {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={2}
                     placeholder="Moisture condition, baling status, access for 10-wheel transport trucks..."
-                    className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                    className="w-full mt-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -910,16 +910,16 @@ export const WasteMarketplace = () => {
                       value={formData.image_url}
                       onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                       placeholder="https://..."
-                      className="flex-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                      className="flex-1 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
 
                 {/* Expected Revenue Estimate */}
                 {parseFloat(formData.quantity) > 0 && parseFloat(formData.asking_price) > 0 && (
-                  <div className="p-3.5 rounded-2xl bg-[#FFE5B8]/30 border border-[#FFE5B8] flex items-center justify-between text-xs">
-                    <span className="font-bold text-[#211C18]">Total Estimated Revenue:</span>
-                    <strong className="text-[#8B7A66] text-sm font-black">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-between text-xs">
+                    <span className="font-bold text-emerald-900">Total Estimated Revenue:</span>
+                    <strong className="text-emerald-700 text-sm font-black">
                       ₹{(parseFloat(formData.quantity) * parseFloat(formData.asking_price)).toLocaleString()}
                     </strong>
                   </div>
@@ -939,7 +939,7 @@ export const WasteMarketplace = () => {
                 <button
                   type="submit"
                   disabled={createSubmitting}
-                  className="px-5 py-2.5 bg-[#8B7A66] hover:bg-[#786855] disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center gap-2"
                 >
                   {createSubmitting ? (
                     <>
@@ -976,7 +976,7 @@ export const WasteMarketplace = () => {
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                  <ShoppingBag className="w-5 h-5 text-[#FFE5B8]" />
+                  <ShoppingBag className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
                   <h3 className="text-base font-black text-slate-900">
@@ -1003,12 +1003,12 @@ export const WasteMarketplace = () => {
               {confirmedOrder ? (
                 /* ORDER CONFIRMED RECEIPT VIEW */
                 <div className="space-y-4 text-center">
-                  <div className="w-16 h-16 rounded-3xl bg-[#FFE5B8]/30 text-[#8B7A66] flex items-center justify-center mx-auto border border-[#FFE5B8]">
-                    <CheckCircle2 className="w-9 h-9 text-[#8B7A66]" />
+                  <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-200">
+                    <CheckCircle2 className="w-9 h-9 text-emerald-600" />
                   </div>
 
                   <div>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FFE5B8] text-[#211C18] tracking-wider">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 tracking-wider">
                       Order Confirmed • #{confirmedOrder.id}
                     </span>
                     <h4 className="text-lg font-black text-slate-900 mt-1">
@@ -1033,7 +1033,7 @@ export const WasteMarketplace = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400 font-semibold">Total Cost:</span>
-                      <strong className="text-[#8B7A66] font-black text-sm">
+                      <strong className="text-emerald-600 font-black text-sm">
                         ₹{confirmedOrder.total_price?.toLocaleString()}
                       </strong>
                     </div>
@@ -1051,7 +1051,7 @@ export const WasteMarketplace = () => {
                     </div>
                     <div className="flex justify-between pt-1 border-t border-slate-200/80">
                       <span className="text-slate-400 font-semibold">Contract Status:</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FFE5B8] text-[#211C18]">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
                         {confirmedOrder.status || 'CONFIRMED'}
                       </span>
                     </div>
@@ -1093,10 +1093,10 @@ export const WasteMarketplace = () => {
                   {/* Listing Snapshot */}
                   <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FFE5B8] text-[#211C18]">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
                         {selectedListingForOrder.waste_type}
                       </span>
-                      <span className="text-xs font-black text-[#8B7A66]">
+                      <span className="text-xs font-black text-emerald-600">
                         ₹{selectedListingForOrder.asking_price?.toLocaleString()} / {selectedListingForOrder.unit || 'ton'}
                       </span>
                     </div>
@@ -1129,13 +1129,13 @@ export const WasteMarketplace = () => {
                         max={selectedListingForOrder.quantity}
                         value={orderQuantity}
                         onChange={(e) => setOrderQuantity(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B7A66]/20 focus:border-[#8B7A66]"
+                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setOrderQuantity(selectedListingForOrder.quantity.toString())}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-[#8B7A66] hover:text-[#786855] bg-[#FFE5B8]/40 px-2 py-0.5 rounded-md"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md"
                       >
                         Max Stock
                       </button>
@@ -1146,14 +1146,14 @@ export const WasteMarketplace = () => {
                   </div>
 
                   {/* Order Total Price Box */}
-                  <div className="p-3.5 rounded-2xl bg-[#FFE5B8]/30 border border-[#FFE5B8] flex items-center justify-between text-xs">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-between text-xs">
                     <div>
-                      <span className="font-bold text-[#211C18] block">Total Procurement Cost:</span>
-                      <span className="text-[10px] text-[#6F655B]">
+                      <span className="font-bold text-emerald-900 block">Total Procurement Cost:</span>
+                      <span className="text-[10px] text-emerald-700">
                         {orderQuantity || 0} {selectedListingForOrder.unit || 'tonnes'} × ₹{selectedListingForOrder.asking_price?.toLocaleString()}
                       </span>
                     </div>
-                    <strong className="text-[#8B7A66] text-base font-black">
+                    <strong className="text-emerald-700 text-base font-black">
                       ₹{((parseFloat(orderQuantity) || 0) * selectedListingForOrder.asking_price).toLocaleString()}
                     </strong>
                   </div>
@@ -1171,7 +1171,7 @@ export const WasteMarketplace = () => {
                     <button
                       type="submit"
                       disabled={orderSubmitting}
-                      className="px-5 py-2.5 bg-[#8B7A66] hover:bg-[#786855] disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center gap-2"
+                      className="px-5 py-2.5 bg-slate-900 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center gap-2"
                     >
                       {orderSubmitting ? (
                         <>

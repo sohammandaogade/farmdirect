@@ -16,7 +16,7 @@ import StatCard from '../../components/StatCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { Sprout, Store, TrendingUp, Package } from 'lucide-react';
 
-const WARM_COLORS = ['#8B7A66', '#D4B996', '#6F655B', '#403A34', '#AFA190', '#D97706'];
+const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 export const AdminAnalytics = () => {
   const [data, setData] = useState(null);
@@ -33,13 +33,9 @@ export const AdminAnalytics = () => {
 
   return (
     <div className="space-y-8">
-      <div className="pb-4 border-b border-[#F5EBDD]">
-        <span className="text-[10px] font-black uppercase tracking-wider text-[#403A34] bg-[#FFE5B8]/40 px-2.5 py-0.5 rounded-full border border-[#8B7A66]/20">
-          Platform Intelligence
-        </span>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
-          Macro Agricultural Trade Analytics
-        </h1>
+      <div>
+        <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Platform Intelligence</span>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Macro Agricultural Trade Analytics</h1>
         <p className="text-xs text-slate-500 mt-1">Platform-wide disintermediation metrics and volume distribution</p>
       </div>
 
@@ -49,7 +45,7 @@ export const AdminAnalytics = () => {
           value={`${data?.total_quantity_traded?.toLocaleString() ?? 0} kg`}
           subtitle="Direct farmer-buyer trade"
           icon={Package}
-          color="primary"
+          color="emerald"
         />
         <StatCard
           title="Platform GMV"
@@ -76,7 +72,7 @@ export const AdminAnalytics = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Crop Trade Volume */}
-        <div className="bg-white rounded-3xl p-6 border border-[#F5EBDD] shadow-xs">
+        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
           <h3 className="text-sm font-bold text-slate-900 mb-1">Crop Trade Volume (kg)</h3>
           <p className="text-xs text-slate-400 mb-6">Aggregate commodities fulfilled</p>
 
@@ -88,9 +84,9 @@ export const AdminAnalytics = () => {
                   <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `${v} kg`} />
                   <Tooltip
                     formatter={(v) => [`${v.toLocaleString()} kg`, 'Volume']}
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #F5EBDD', backgroundColor: '#FAF8F5', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
-                  <Bar dataKey="volume_kg" fill="#8B7A66" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="volume_kg" fill="#10b981" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -102,7 +98,7 @@ export const AdminAnalytics = () => {
         </div>
 
         {/* Order Status Distribution */}
-        <div className="bg-white rounded-3xl p-6 border border-[#F5EBDD] shadow-xs">
+        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
           <h3 className="text-sm font-bold text-slate-900 mb-1">Order Status Pipeline</h3>
           <p className="text-xs text-slate-400 mb-6">Distribution across lifecycle states</p>
 
@@ -121,12 +117,12 @@ export const AdminAnalytics = () => {
                     paddingAngle={3}
                   >
                     {data.status_distribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={WARM_COLORS[index % WARM_COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
                     formatter={(v) => [v, 'Orders']}
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #F5EBDD', backgroundColor: '#FAF8F5', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
                   <Legend verticalAlign="bottom" height={36} />
                 </PieChart>
