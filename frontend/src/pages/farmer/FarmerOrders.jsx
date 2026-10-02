@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, CheckCircle2, Clock, AlertCircle, Eye, ArrowRight } from 'lucide-react';
+import { Truck, CheckCircle2, Clock, AlertCircle, Eye, ArrowRight, ShieldAlert } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import OrderTimeline from '../../components/OrderTimeline';
 import LogisticsCard from '../../components/LogisticsCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
+import OrderComplaintModal from '../../components/OrderComplaintModal';
 
 export const FarmerOrders = () => {
   const { showToast } = useToast();
@@ -13,6 +14,7 @@ export const FarmerOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -58,10 +60,22 @@ export const FarmerOrders = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Fulfillment</span>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Orders & Shipments</h1>
-        <p className="text-xs text-slate-500 mt-1">Manage operational status and track carrier delivery</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Fulfillment</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Orders & Shipments</h1>
+          <p className="text-xs text-slate-500 mt-1">Manage operational status and track carrier delivery</p>
+        </div>
+
+        {selectedOrder && (
+          <button
+            onClick={() => setIsComplaintModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-200 text-xs font-bold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+          >
+            <ShieldAlert className="w-4 h-4 text-rose-500" />
+            <span>Report Order Issue</span>
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -149,6 +163,15 @@ export const FarmerOrders = () => {
             )}
           </div>
         </div>
+      )}
+      {/* Order Dispute / Complaint Modal */}
+      {selectedOrder && (
+        <OrderComplaintModal
+          order={selectedOrder}
+          isOpen={isComplaintModalOpen}
+          onClose={() => setIsComplaintModalOpen(false)}
+          role="farmer"
+        />
       )}
     </div>
   );

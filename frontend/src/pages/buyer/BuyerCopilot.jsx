@@ -4,10 +4,12 @@ import {
   Send,
   Languages,
   User,
+  Bot,
+  Activity,
+  Calendar,
+  AlertTriangle,
   ShoppingBag,
-  TrendingDown,
-  ShieldCheck,
-  CheckCircle2,
+  TrendingUp,
 } from 'lucide-react';
 import { copilotAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -19,43 +21,79 @@ export const BuyerCopilot = () => {
   const [loading, setLoading] = useState(false);
 
   const greetings = {
-    en: `Hello ${user?.name || 'Buyer'}! I am your AI Sourcing & Procurement Copilot. Ask me about seasonal crop availability, fair price benchmarks, multi-farm logistics optimization, or supplier trust verification.`,
-    hi: `नमस्ते ${user?.name || 'व्यापारी साथी'}! मैं आपका फार्मडायरेक्ट वाणिज्यिक खरीद सलाहकार (Procurement Copilot) हूँ। थोक फसल उपलब्धता, मंडी भाव, सप्लाई चेन लॉजिस्टिक्स या मोलभाव रणनीति के बारे में पूछें।`,
-    mr: `नमस्कार ${user?.name || 'खरेदीदार मित्र'}! मी आपला फार्मडायरेक्ट व्यावसायिक खरेदी सल्लागार (Procurement Copilot) आहे. शेतीमालाची उपलब्धता, घाऊक दर किंवा लॉजिस्टिक्सबाबत काहीही विचारा.`,
+    en: `Hello ${user?.name || 'Commercial Buyer'}! I am your FarmDirect Procurement AI Copilot. How can I assist with verified live market rates, regional supplier discovery, or contract negotiations today?`,
+    hi: `नमस्ते ${user?.name || 'खरीदार'}! मैं आपका फार्मडायरेक्ट खरीद सहायक (Copilot) हूँ। आज मैं प्रमाणित मंडी भाव, सप्लायर खोज या नेगोशिएशन रणनीति में कैसे सहायता कर सकता हूँ?`,
+    mr: `नमस्कार ${user?.name || 'खरेदीदार'}! मी आपला फार्मडायरेक्ट खरेदी सल्लागार (Copilot) आहे. आज मी प्रमाणित बाजारभाव, पुरवठादार शोध किंवा सौदेबाजीत कशी मदत करू शकतो?`,
   };
 
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
       text: greetings.en,
+      dataType: 'AI ANALYSIS',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
 
   const quickPrompts = {
     en: [
-      'What is the best procurement window for Nashik onions this month?',
-      'How to structure a counter-offer for high volume tomato purchase?',
-      'Which districts currently have surplus organic wheat listings?',
-      'What are the cold chain transit limits for strawberries from Mahabaleshwar?',
+      'What are verified today onion benchmark prices in Nashik?',
+      'How to structure counter-offers for 10-tonne bulk tomato orders?',
+      'Which districts currently have surplus organic wheat supplies?',
+      'What is the cold chain logistics threshold for Mahabaleshwar strawberries?',
     ],
     hi: [
-      'इस महीने नासिक प्याज खरीदने का सबसे अच्छा समय क्या है?',
-      'थोक टमाटर खरीद के लिए काउंटर-ऑफर कैसे तय करें?',
-      'वर्तमान में किन जिलों में जैविक गेहूं का अधिशेष (सरप्लस) उपलब्ध है?',
+      'नासिक में आज के प्रमाणित प्याज थोक भाव क्या हैं?',
+      '10 टन टमाटर के लिए काउंटर-ऑफर कैसे तय करें?',
+      'किन जिलों में वर्तमान में सेंद्रिय गेहूं का अधिशेष है?',
       'महाबलेश्वर स्ट्रॉबेरी के लिए कोल्ड चेन परिवहन सीमा क्या है?',
     ],
     mr: [
-      'या महिन्यात नाशिक कांदा खरेदीसाठी योग्य वेळ कोणती?',
+      'नाशिकमध्ये आजचे प्रमाणित कांदा घाऊक दर काय आहेत?',
       'मोठ्या प्रमाणातील टोमॅटो खरेदीसाठी काउंटर-ऑफर कशी द्यावी?',
       'सध्या कोणत्या जिल्ह्यांत सेंद्रिय गव्हाची मुबलक आवक आहे?',
       'महाबळेश्वर स्ट्रॉबेरीसाठी कोल्ड चेन वाहतूक मर्यादा किती आहे?',
     ],
   };
 
+  const classifyQuery = (q) => {
+    const lower = q.toLowerCase();
+    const isLiveRequest =
+      lower.includes('today') ||
+      lower.includes('current') ||
+      lower.includes('live') ||
+      lower.includes('now') ||
+      lower.includes('price') ||
+      lower.includes('rate') ||
+      lower.includes('mandi') ||
+      lower.includes('apmc') ||
+      lower.includes('आज') ||
+      lower.includes('चालू') ||
+      lower.includes('दर') ||
+      lower.includes('भाव');
+
+    const isForecast =
+      lower.includes('forecast') ||
+      lower.includes('future') ||
+      lower.includes('next week') ||
+      lower.includes('trend');
+
+    const isHistorical =
+      lower.includes('past') ||
+      lower.includes('history') ||
+      lower.includes('last month');
+
+    if (isLiveRequest && !isForecast) return 'LIVE';
+    if (isForecast) return 'FORECAST';
+    if (isHistorical) return 'HISTORICAL';
+    return 'AI ANALYSIS';
+  };
+
   const handleSend = async (textToSend) => {
     const query = (textToSend || inputMessage).trim();
     if (!query || loading) return;
+
+    const detectedType = classifyQuery(query);
 
     const userMsg = {
       sender: 'user',
@@ -68,20 +106,33 @@ export const BuyerCopilot = () => {
     setLoading(true);
 
     try {
-      const procurementContext = {
-        buyer_name: user?.name,
-        business_name: user?.buyer_profile?.business_name,
-        business_type: user?.buyer_profile?.business_type || 'Wholesaler / Retailer',
-      };
-
       const res = await copilotAPI.askBuyer(query, language);
-      if (res.data.success) {
+      if (res.data?.success) {
+        const rawReply = res.data.data.reply || res.data.data.response || 'Procurement intelligence computed successfully.';
+        const grounding = res.data.data.market_grounding;
+
+        let finalType = detectedType;
+        let isLiveUnavailable = false;
+
+        if (detectedType === 'LIVE') {
+          if (grounding?.verified_data) {
+            finalType = 'LIVE';
+          } else {
+            finalType = 'AI ANALYSIS';
+            isLiveUnavailable = true;
+          }
+        }
+
         const botReply = {
           sender: 'bot',
-          text: res.data.data.reply || res.data.data.response || 'Procurement intelligence computed successfully.',
+          text: rawReply,
+          dataType: finalType,
+          liveUnavailable: isLiveUnavailable,
+          sourceName: grounding?.source || 'Agmarknet APMC Feed / FarmDirect Records',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           recommendations: res.data.data.recommendations || [],
         };
+
         setMessages((prev) => [...prev, botReply]);
       }
     } catch (err) {
@@ -91,6 +142,7 @@ export const BuyerCopilot = () => {
         {
           sender: 'bot',
           text: 'Encountered an issue retrieving procurement market intelligence. Please retry.',
+          dataType: 'AI ANALYSIS',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -109,20 +161,20 @@ export const BuyerCopilot = () => {
               Procurement Intelligence
             </span>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-100 text-blue-800">
-              Buyer Copilot
+              Verified Grounding
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
             Buyer Procurement Copilot
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Strategic volume sourcing advisory, supplier credibility verification, and contract negotiation tactics
+            Strategic volume sourcing advisory and supplier verification grounded in verified APMC market data
           </p>
         </div>
 
-        {/* Language Toggle */}
+        {/* Language Selector */}
         <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs self-start sm:self-auto">
-          <Languages className="w-4 h-4 text-emerald-600 ml-2" />
+          <Languages className="w-4 h-4 text-blue-600 ml-2" />
           {[
             { id: 'en', label: 'EN' },
             { id: 'hi', label: 'हिन्दी' },
@@ -170,7 +222,40 @@ export const BuyerCopilot = () => {
                   {isBot ? <Sparkles className="w-4 h-4" /> : <User className="w-4 h-4" />}
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 max-w-full">
+                  {/* Classification Badge (LIVE, HISTORICAL, FORECAST, AI ANALYSIS) */}
+                  {isBot && msg.dataType && (
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {msg.dataType === 'LIVE' ? (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>LIVE DATA</span>
+                        </span>
+                      ) : msg.dataType === 'FORECAST' ? (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1">
+                          <Activity className="w-3 h-3 text-blue-600" />
+                          <span>FORECAST</span>
+                        </span>
+                      ) : msg.dataType === 'HISTORICAL' ? (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-amber-600" />
+                          <span>HISTORICAL DATA</span>
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-purple-600" />
+                          <span>AI ANALYSIS</span>
+                        </span>
+                      )}
+
+                      {msg.sourceName && (
+                        <span className="text-[10px] text-slate-400 font-semibold truncate">
+                          • {msg.sourceName}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div
                     className={`p-4 rounded-3xl text-xs sm:text-sm font-medium leading-relaxed shadow-xs ${
                       isBot
@@ -178,6 +263,19 @@ export const BuyerCopilot = () => {
                         : 'bg-blue-600 text-white rounded-tr-sm'
                     }`}
                   >
+                    {/* Live Data Unavailable Notice if Applicable */}
+                    {isBot && msg.liveUnavailable && (
+                      <div className="mb-3 p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <span>Live data is currently unavailable, so I cannot verify the current value.</span>
+                          <span className="block font-normal text-[11px] text-amber-800 mt-0.5">
+                            Providing procurement advisory below based on regional agricultural benchmarks.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     <p className="whitespace-pre-line">{msg.text}</p>
 
                     {/* Actionable recommendations card */}
@@ -249,10 +347,10 @@ export const BuyerCopilot = () => {
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder={
               language === 'en'
-                ? 'Ask about crop pricing, suppliers, delivery risks, or negotiation tactics...'
+                ? 'Ask about verified crop pricing, suppliers, delivery risks, or negotiation tactics...'
                 : language === 'hi'
-                ? 'फसल मूल्य, सप्लायर या नेगोशिएशन रणनीति के बारे में पूछें...'
-                : 'पिकांचे दर, पुरवठादार किंवा घासाघिस धोरणाबद्दल विचारा...'
+                ? 'प्रमाणित फसल मूल्य, सप्लायर या नेगोशिएशन रणनीति के बारे में पूछें...'
+                : 'प्रमाणित पिकांचे दर, पुरवठादार किंवा घासाघिस धोरणाबद्दल विचारा...'
             }
             className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
           />

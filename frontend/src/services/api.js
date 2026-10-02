@@ -127,7 +127,6 @@ export const aiAPI = {
   getSmartSelling: (data) => api.post('/ai/smart-selling', data),
   getNegotiationCopilot: (requestId, role = 'farmer') =>
     api.post('/ai/negotiation-copilot', { request_id: requestId, role }),
-  optimizeProcurement: (data) => api.post('/ai/procurement-optimizer', data),
   checkDuplicate: (data) => api.post('/ai/duplicate-check', data),
 };
 

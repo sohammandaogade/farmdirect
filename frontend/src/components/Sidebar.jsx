@@ -55,7 +55,6 @@ export const Sidebar = ({ isOpen, onClose }) => {
         { to: '/buyer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { to: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
         { to: '/buyer/smart-match', label: 'AI Smart Match', icon: Sparkles, badge: 'AI' },
-        { to: '/buyer/procurement', label: 'Procurement Optimizer', icon: Layers, badge: 'AI' },
         { to: '/buyer/requests', label: 'My Requests', icon: Inbox },
         { to: '/buyer/orders', label: 'Active Orders', icon: Truck },
         { to: '/buyer/history', label: 'Purchase History', icon: History },

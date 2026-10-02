@@ -31,6 +31,8 @@ export const SmartMatch = () => {
 
   // Requirement form state (prefilled with default demo requirement for seamless hackathon testing)
   const [crop, setCrop] = useState('Tomato');
+  const [isCustomCrop, setIsCustomCrop] = useState(false);
+  const [customCrop, setCustomCrop] = useState('');
   const [quantity, setQuantity] = useState('1500');
   const [maxPrice, setMaxPrice] = useState('30');
   const [location, setLocation] = useState(user?.buyer_profile?.location || 'Pune');
@@ -47,12 +49,19 @@ export const SmartMatch = () => {
 
   const handleFindMatches = async (e) => {
     if (e) e.preventDefault();
+
+    const activeCrop = isCustomCrop ? customCrop.trim() : crop;
+    if (!activeCrop) {
+      showToast('Please specify a crop name to match.', 'error');
+      return;
+    }
+
     setLoading(true);
     setHasSearched(true);
 
     try {
       const payload = {
-        crop,
+        crop: activeCrop,
         quantity: parseFloat(quantity) || 0,
         max_price: parseFloat(maxPrice) || 0,
         location,
@@ -72,6 +81,8 @@ export const SmartMatch = () => {
   };
 
   const handleLoadDemoScenario = () => {
+    setIsCustomCrop(false);
+    setCustomCrop('');
     setCrop('Tomato');
     setQuantity('1500');
     setMaxPrice('30');
@@ -125,18 +136,53 @@ export const SmartMatch = () => {
 
         <form onSubmit={handleFindMatches} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Crop */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Produce / Crop *</label>
-              <select
-                value={crop}
-                onChange={(e) => setCrop(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-              >
-                {CROPS.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+            {/* Crop Selection (Predefined or Custom Crop) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700">Produce / Crop *</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCustomCrop(!isCustomCrop);
+                    if (!isCustomCrop && !customCrop) setCustomCrop('');
+                  }}
+                  className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 hover:underline"
+                >
+                  {isCustomCrop ? '← Choose Standard Crop' : '+ Custom Crop'}
+                </button>
+              </div>
+
+              {isCustomCrop ? (
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={customCrop}
+                    onChange={(e) => setCustomCrop(e.target.value)}
+                    placeholder="Enter crop / produce name (e.g. Dragon Fruit, Sweet Corn)"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                  {customCrop && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomCrop('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <select
+                  value={crop}
+                  onChange={(e) => setCrop(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                >
+                  {CROPS.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             {/* Required Quantity */}

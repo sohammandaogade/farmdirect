@@ -42,6 +42,18 @@ export const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Mandatory Indian Mobile Number Validation
+    const cleanPhone = phone.trim().replace(/^(\+91|91|0)/, '').replace(/\D/g, '');
+    if (!cleanPhone) {
+      setError('Mobile number is required to create an account.');
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setError('Please enter a valid 10-digit Indian mobile number (e.g. 9876543210).');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -49,7 +61,7 @@ export const Register = () => {
         role,
         name: name.trim(),
         email: email.trim().toLowerCase(),
-        phone: phone.trim(),
+        phone: cleanPhone,
         password,
       };
 
@@ -162,12 +174,13 @@ export const Register = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Number *</label>
                 <input
-                  type="text"
+                  type="tel"
+                  required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 98765 43210"
+                  placeholder="10-digit mobile (e.g. 9876543210)"
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 />
               </div>

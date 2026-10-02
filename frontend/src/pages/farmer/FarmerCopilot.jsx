@@ -10,8 +10,11 @@ import {
   ShieldAlert,
   Sprout,
   HelpCircle,
+  Activity,
+  Calendar,
+  AlertTriangle,
 } from 'lucide-react';
-import { copilotAPI } from '../../services/api';
+import { copilotAPI, priceAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 export const FarmerCopilot = () => {
@@ -21,15 +24,16 @@ export const FarmerCopilot = () => {
   const [loading, setLoading] = useState(false);
 
   const greetings = {
-    en: `Hello ${user?.name || 'Farmer'}! I am your FarmDirect AI Agricultural Copilot. How can I assist with your crops, current mandi prices, harvest scheduling, or disease prevention today?`,
-    hi: `नमस्ते ${user?.name || 'किसान साथी'}! मैं आपका फार्मडायरेक्ट एआई कृषि सलाहकार (Copilot) हूँ। आज मैं आपकी फसलों, मंडी भाव, फसल सुरक्षा या रोग नियंत्रण में कैसे सहायता कर सकता हूँ?`,
-    mr: `नमस्कार ${user?.name || 'शेतकरी मित्र'}! मी आपला फार्मडायरेक्ट एआय कृषी सल्लागार (Copilot) आहे. आज मी आपल्या पिकांचे नियोजन, चालू बाजारभाव किंवा रोग व्यवस्थापनात कशी मदत करू शकतो?`,
+    en: `Hello ${user?.name || 'Farmer'}! I am your FarmDirect AI Agricultural Copilot. How can I assist with your crops, current verified mandi prices, harvest scheduling, or disease prevention today?`,
+    hi: `नमस्ते ${user?.name || 'किसान साथी'}! मैं आपका फार्मडायरेक्ट एआई कृषि सलाहकार (Copilot) हूँ। आज मैं आपकी फसलों, प्रमाणित मंडी भाव, फसल सुरक्षा या रोग नियंत्रण में कैसे सहायता कर सकता हूँ?`,
+    mr: `नमस्कार ${user?.name || 'शेतकरी मित्र'}! मी आपला फार्मडायरेक्ट एआय कृषी सल्लागार (Copilot) आहे. आज मी आपल्या पिकांचे नियोजन, प्रमाणित चालू बाजारभाव किंवा रोग व्यवस्थापनात कशी मदत करू शकतो?`,
   };
 
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
       text: greetings.en,
+      dataType: 'AI ANALYSIS',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -55,9 +59,47 @@ export const FarmerCopilot = () => {
     ],
   };
 
+  const classifyQuery = (q) => {
+    const lower = q.toLowerCase();
+    const isLiveRequest =
+      lower.includes('today') ||
+      lower.includes('current') ||
+      lower.includes('live') ||
+      lower.includes('now') ||
+      lower.includes('price') ||
+      lower.includes('rate') ||
+      lower.includes('mandi') ||
+      lower.includes('apmc') ||
+      lower.includes('आज') ||
+      lower.includes('चालू') ||
+      lower.includes('भाव');
+
+    const isForecast =
+      lower.includes('forecast') ||
+      lower.includes('future') ||
+      lower.includes('next week') ||
+      lower.includes('2 weeks') ||
+      lower.includes('हफ्ते') ||
+      lower.includes('आठवडे');
+
+    const isHistorical =
+      lower.includes('past') ||
+      lower.includes('history') ||
+      lower.includes('last month') ||
+      lower.includes('मागील') ||
+      lower.includes('पिछले');
+
+    if (isLiveRequest && !isForecast) return 'LIVE';
+    if (isForecast) return 'FORECAST';
+    if (isHistorical) return 'HISTORICAL';
+    return 'AI ANALYSIS';
+  };
+
   const handleSend = async (textToSend) => {
     const query = (textToSend || inputMessage).trim();
     if (!query || loading) return;
+
+    const detectedType = classifyQuery(query);
 
     const userMsg = {
       sender: 'user',
@@ -70,20 +112,34 @@ export const FarmerCopilot = () => {
     setLoading(true);
 
     try {
-      const farmContext = {
-        farmer_name: user?.name,
-        farm_name: user?.farmer_profile?.farm_name,
-        location: user?.farmer_profile?.location || 'Maharashtra',
-      };
-
       const res = await copilotAPI.askFarmer(query, language);
-      if (res.data.success) {
+      if (res.data?.success) {
+        const rawReply = res.data.data.reply || res.data.data.response || 'Advisory computed successfully.';
+        const grounding = res.data.data.market_grounding;
+
+        let finalType = detectedType;
+        let isLiveUnavailable = false;
+
+        if (detectedType === 'LIVE') {
+          if (grounding?.verified_data) {
+            finalType = 'LIVE';
+          } else {
+            // If live data couldn't be verified by ground truth source
+            finalType = 'AI ANALYSIS';
+            isLiveUnavailable = true;
+          }
+        }
+
         const botReply = {
           sender: 'bot',
-          text: res.data.data.reply || res.data.data.response || 'Advisory computed successfully.',
+          text: rawReply,
+          dataType: finalType,
+          liveUnavailable: isLiveUnavailable,
+          sourceName: grounding?.source || 'Agmarknet / FarmDirect Database',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           recommendations: res.data.data.recommendations || [],
         };
+
         setMessages((prev) => [...prev, botReply]);
       }
     } catch (err) {
@@ -93,6 +149,7 @@ export const FarmerCopilot = () => {
         {
           sender: 'bot',
           text: 'Apologies, I encountered an issue connecting to the agri advisory engine. Please try again.',
+          dataType: 'AI ANALYSIS',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -111,14 +168,14 @@ export const FarmerCopilot = () => {
               AI Agricultural Advisory
             </span>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
-              Farmer Copilot
+              Verified Grounding
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
             Farmer AI Copilot
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Intelligent agronomic advice, price elasticity guidance, and farm decision support
+            Intelligent agronomic advice grounded in verified APMC benchmark data, with zero invented market rates
           </p>
         </div>
 
@@ -144,7 +201,7 @@ export const FarmerCopilot = () => {
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 language === lang.id
                   ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               {lang.label}
@@ -172,7 +229,40 @@ export const FarmerCopilot = () => {
                   {isBot ? <Sparkles className="w-4 h-4" /> : <User className="w-4 h-4" />}
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 max-w-full">
+                  {/* Classification Badge (LIVE, HISTORICAL, FORECAST, AI ANALYSIS) */}
+                  {isBot && msg.dataType && (
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {msg.dataType === 'LIVE' ? (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>LIVE DATA</span>
+                        </span>
+                      ) : msg.dataType === 'FORECAST' ? (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1">
+                          <Activity className="w-3 h-3 text-blue-600" />
+                          <span>FORECAST</span>
+                        </span>
+                      ) : msg.dataType === 'HISTORICAL' ? (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-amber-600" />
+                          <span>HISTORICAL DATA</span>
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-purple-600" />
+                          <span>AI ADVISORY</span>
+                        </span>
+                      )}
+
+                      {msg.sourceName && (
+                        <span className="text-[10px] text-slate-400 font-semibold truncate">
+                          • {msg.sourceName}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div
                     className={`p-4 rounded-3xl text-xs sm:text-sm font-medium leading-relaxed shadow-xs ${
                       isBot
@@ -180,6 +270,19 @@ export const FarmerCopilot = () => {
                         : 'bg-emerald-600 text-white rounded-tr-sm'
                     }`}
                   >
+                    {/* Live Data Unavailable Notice if Applicable */}
+                    {isBot && msg.liveUnavailable && (
+                      <div className="mb-3 p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <span>Live data is currently unavailable, so I cannot verify the current value.</span>
+                          <span className="block font-normal text-[11px] text-amber-800 mt-0.5">
+                            Providing best-estimate advisory below based on regional agronomic baseline.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     <p className="whitespace-pre-line">{msg.text}</p>
 
                     {/* Actionable recommendations card */}
@@ -215,7 +318,7 @@ export const FarmerCopilot = () => {
                 <Sparkles className="w-4 h-4 animate-spin" />
               </div>
               <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 text-xs text-slate-500 font-medium">
-                Analyzing agronomic models and price reference data...
+                Verifying live Agmarknet benchmark data and agronomic intelligence...
               </div>
             </div>
           )}
@@ -251,10 +354,10 @@ export const FarmerCopilot = () => {
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder={
               language === 'en'
-                ? 'Ask about crops, market prices, weather warnings, or harvest scheduling...'
+                ? 'Ask about verified mandi prices, weather warnings, or harvest scheduling...'
                 : language === 'hi'
-                ? 'फसल, मंडी भाव, मौसम या कटाई के बारे में पूछें...'
-                : 'पिके, बाजारभाव, हवामान किंवा काढणीबाबत विचारा...'
+                ? 'प्रमाणित मंडी भाव, मौसम या कटाई के बारे में पूछें...'
+                : 'प्रमाणित बाजारभाव, हवामान किंवा काढणीबाबत विचारा...'
             }
             className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
           />

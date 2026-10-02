@@ -2,7 +2,48 @@ import React from 'react';
 import { Search, Filter, RotateCcw } from 'lucide-react';
 
 const CROPS = ['All', 'Tomato', 'Onion', 'Potato', 'Wheat', 'Rice', 'Carrot', 'Cabbage', 'Capsicum', 'Maize', 'Cauliflower'];
-const LOCATIONS = ['All', 'Pune', 'Nashik', 'Satara', 'Ahmednagar', 'Sangli', 'Mumbai'];
+
+// All 36 Districts of Maharashtra
+export const MAHARASHTRA_DISTRICTS = [
+  { label: 'All Maharashtra', value: '' },
+  { label: 'Ahmednagar / Ahilyanagar', value: 'Ahmednagar' },
+  { label: 'Akola', value: 'Akola' },
+  { label: 'Amravati', value: 'Amravati' },
+  { label: 'Beed', value: 'Beed' },
+  { label: 'Bhandara', value: 'Bhandara' },
+  { label: 'Buldhana', value: 'Buldhana' },
+  { label: 'Chandrapur', value: 'Chandrapur' },
+  { label: 'Chhatrapati Sambhajinagar', value: 'Chhatrapati Sambhajinagar' },
+  { label: 'Dharashiv', value: 'Dharashiv' },
+  { label: 'Dhule', value: 'Dhule' },
+  { label: 'Gadchiroli', value: 'Gadchiroli' },
+  { label: 'Gondia', value: 'Gondia' },
+  { label: 'Hingoli', value: 'Hingoli' },
+  { label: 'Jalgaon', value: 'Jalgaon' },
+  { label: 'Jalna', value: 'Jalna' },
+  { label: 'Kolhapur', value: 'Kolhapur' },
+  { label: 'Latur', value: 'Latur' },
+  { label: 'Mumbai City', value: 'Mumbai' },
+  { label: 'Mumbai Suburban', value: 'Mumbai' },
+  { label: 'Nagpur', value: 'Nagpur' },
+  { label: 'Nanded', value: 'Nanded' },
+  { label: 'Nandurbar', value: 'Nandurbar' },
+  { label: 'Nashik', value: 'Nashik' },
+  { label: 'Palghar', value: 'Palghar' },
+  { label: 'Parbhani', value: 'Parbhani' },
+  { label: 'Pune', value: 'Pune' },
+  { label: 'Raigad', value: 'Raigad' },
+  { label: 'Ratnagiri', value: 'Ratnagiri' },
+  { label: 'Sangli', value: 'Sangli' },
+  { label: 'Satara', value: 'Satara' },
+  { label: 'Sindhudurg', value: 'Sindhudurg' },
+  { label: 'Solapur', value: 'Solapur' },
+  { label: 'Thane', value: 'Thane' },
+  { label: 'Wardha', value: 'Wardha' },
+  { label: 'Washim', value: 'Washim' },
+  { label: 'Yavatmal', value: 'Yavatmal' },
+];
+
 const QUALITIES = ['All', 'Grade A', 'Grade B', 'Organic'];
 
 export const SearchFilters = ({ filters, onChange, onReset }) => {
@@ -36,16 +77,20 @@ export const SearchFilters = ({ filters, onChange, onReset }) => {
           </select>
         </div>
 
-        {/* Location Filter */}
+        {/* Location Filter: All 36 Districts of Maharashtra */}
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Location</label>
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+            District / Region ({MAHARASHTRA_DISTRICTS.length - 1})
+          </label>
           <select
-            value={filters.location || 'All'}
-            onChange={(e) => onChange('location', e.target.value === 'All' ? '' : e.target.value)}
+            value={filters.location || ''}
+            onChange={(e) => onChange('location', e.target.value)}
             className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
           >
-            {LOCATIONS.map((l) => (
-              <option key={l} value={l}>{l}</option>
+            {MAHARASHTRA_DISTRICTS.map((d) => (
+              <option key={d.label} value={d.value}>
+                {d.label}
+              </option>
             ))}
           </select>
         </div>

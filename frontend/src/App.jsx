@@ -31,7 +31,6 @@ import FarmerCopilot from './pages/farmer/FarmerCopilot';
 // Pages - Buyer
 import BuyerDashboard from './pages/buyer/BuyerDashboard';
 import SmartMatch from './pages/buyer/SmartMatch';
-import AIProcurement from './pages/buyer/AIProcurement';
 import BuyerRequests from './pages/buyer/BuyerRequests';
 import BuyerNegotiations from './pages/buyer/BuyerNegotiations';
 import BuyerOrders from './pages/buyer/BuyerOrders';
@@ -223,14 +222,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/buyer/procurement"
-              element={
-                <ProtectedRoute allowedRoles={['buyer']}>
-                  <PortalLayout><AIProcurement /></PortalLayout>
-                </ProtectedRoute>
-              }
-            />
+
             <Route
               path="/buyer/copilot"
               element={

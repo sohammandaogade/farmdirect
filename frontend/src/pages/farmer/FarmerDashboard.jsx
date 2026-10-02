@@ -221,6 +221,37 @@ export const FarmerDashboard = () => {
         </div>
       </div>
 
+      {/* Real-time Order Fulfillment Lifecycle Breakdown */}
+      {analytics?.status_distribution && analytics.status_distribution.length > 0 && (
+        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Order Fulfillment Lifecycle</h3>
+              <p className="text-xs text-slate-400">Current live order stages from database records</p>
+            </div>
+            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
+              {analytics.total_orders} Total Orders
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {analytics.status_distribution.map((st) => (
+              <div key={st.status} className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">
+                  {st.status.replace('_', ' ')}
+                </span>
+                <span className="text-xl font-black text-slate-900 block mt-1">
+                  {st.count}
+                </span>
+                <span className="text-[10px] font-semibold text-emerald-600 block mt-0.5">
+                  {analytics.total_orders > 0 ? Math.round((st.count / analytics.total_orders) * 100) : 0}% of pipeline
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Tables Row: Inbound Purchase Requests & Orders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Purchase Requests */}
