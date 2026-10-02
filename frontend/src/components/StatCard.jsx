@@ -1,56 +1,71 @@
 import React from 'react';
 
-export const StatCard = ({ title, value, subtitle, icon: Icon, color = 'emerald' }) => {
+export const StatCard = ({ title, value, subtitle, icon: Icon, color = 'hawaiian' }) => {
   const colorMap = {
-    emerald: {
-      accent: 'from-emerald-500 to-teal-600',
-      bg: 'bg-emerald-50/80 text-emerald-700',
-      border: 'border-emerald-200/60',
-      glow: 'group-hover:shadow-emerald-500/10',
-      pill: 'bg-emerald-100/70 text-emerald-800',
+    hawaiian: {
+      accent: 'from-[#8B7A66] to-[#FFE5B8]',
+      bg: 'bg-[#FAF8F5] text-[#8B7A66]',
+      border: 'border-[#E8E2D8]',
+      badge: 'bg-[#F5EBDD] text-[#5E5142]',
     },
-    blue: {
-      accent: 'from-blue-500 to-indigo-600',
-      bg: 'bg-blue-50/80 text-blue-700',
-      border: 'border-blue-200/60',
-      glow: 'group-hover:shadow-blue-500/10',
-      pill: 'bg-blue-100/70 text-blue-800',
+    mocassin: {
+      accent: 'from-[#FFE5B8] to-[#E2A74F]',
+      bg: 'bg-[#FFF9ED] text-[#7B4D1B]',
+      border: 'border-[#FED898]',
+      badge: 'bg-[#FFE5B8] text-[#422709]',
+    },
+    coffee: {
+      accent: 'from-[#332A22] to-[#8B7A66]',
+      bg: 'bg-[#F5EBDD] text-[#211C18]',
+      border: 'border-[#D1C6B7]',
+      badge: 'bg-[#FAF8F5] text-[#332A22]',
     },
     amber: {
-      accent: 'from-amber-500 to-orange-600',
-      bg: 'bg-amber-50/80 text-amber-700',
-      border: 'border-amber-200/60',
-      glow: 'group-hover:shadow-amber-500/10',
-      pill: 'bg-amber-100/70 text-amber-800',
+      accent: 'from-[#D97706] to-[#FFE5B8]',
+      bg: 'bg-[#FFF9ED] text-[#B45309]',
+      border: 'border-[#FED898]',
+      badge: 'bg-[#FEF3C7] text-[#92400E]',
+    },
+    // Aliases to handle existing calls gracefully
+    emerald: {
+      accent: 'from-[#8B7A66] to-[#FFE5B8]',
+      bg: 'bg-[#FAF8F5] text-[#8B7A66]',
+      border: 'border-[#E8E2D8]',
+      badge: 'bg-[#F5EBDD] text-[#5E5142]',
+    },
+    blue: {
+      accent: 'from-[#6F655B] to-[#FFE5B8]',
+      bg: 'bg-[#FAF8F5] text-[#332A22]',
+      border: 'border-[#E8E2D8]',
+      badge: 'bg-[#F5EBDD] text-[#332A22]',
     },
     violet: {
-      accent: 'from-purple-500 to-indigo-600',
-      bg: 'bg-purple-50/80 text-purple-700',
-      border: 'border-purple-200/60',
-      glow: 'group-hover:shadow-purple-500/10',
-      pill: 'bg-purple-100/70 text-purple-800',
+      accent: 'from-[#332A22] to-[#8B7A66]',
+      bg: 'bg-[#F5EBDD] text-[#211C18]',
+      border: 'border-[#D1C6B7]',
+      badge: 'bg-[#FAF8F5] text-[#332A22]',
     },
   };
 
-  const theme = colorMap[color] || colorMap.emerald;
+  const theme = colorMap[color] || colorMap.hawaiian;
 
   return (
-    <div className={`group relative bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-0.5 overflow-hidden`}>
+    <div className="group relative bg-white rounded-3xl border border-[#E8E2D8] p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-0.5 overflow-hidden">
       {/* Top subtle color indicator line */}
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${theme.accent} opacity-80`} />
 
       <div className="flex items-start justify-between">
         <div>
-          <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#6F655B] block">
             {title}
           </span>
           <div className="mt-2.5">
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-nums">
+            <h3 className="text-2xl sm:text-3xl font-black text-[#211C18] tracking-tight tabular-nums">
               {value}
             </h3>
             {subtitle && (
-              <p className="text-xs text-slate-500 mt-1 font-medium flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              <p className="text-xs text-[#6F655B] mt-1 font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#AFA190]" />
                 <span>{subtitle}</span>
               </p>
             )}
@@ -58,7 +73,7 @@ export const StatCard = ({ title, value, subtitle, icon: Icon, color = 'emerald'
         </div>
 
         {Icon && (
-          <div className={`p-3 rounded-2xl ${theme.bg} ${theme.border} border shadow-subtle group-hover:scale-110 transition-transform duration-300 shrink-0`}>
+          <div className={`p-3 rounded-2xl ${theme.bg} ${theme.border} border shadow-subtle group-hover:bg-[#FFE5B8] group-hover:text-[#211C18] group-hover:scale-110 transition-all duration-300 shrink-0`}>
             <Icon className="w-5 h-5 stroke-[2]" />
           </div>
         )}
