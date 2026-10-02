@@ -36,4 +36,5 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
     GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-flash-latest')
+    ENABLE_DEMO_SEED = os.environ.get('ENABLE_DEMO_SEED', 'false' if (os.environ.get('FLASK_ENV') == 'production' or os.environ.get('RENDER') == 'true') else 'true').lower() in ('true', '1')
 

@@ -13,10 +13,22 @@ from datetime import date
 digital_twin_bp = Blueprint('digital_twin', __name__, url_prefix='/api/digital-twin')
 
 @digital_twin_bp.route('/farmer/<int:farmer_id>', methods=['GET'])
-def get_farmer_digital_twin(farmer_id):
+@token_required
+def get_farmer_digital_twin(current_user, farmer_id):
     farmer = db.session.get(User, farmer_id)
     if not farmer:
+        from models import FarmerProfile
+        fp = db.session.get(FarmerProfile, farmer_id)
+        if fp:
+            farmer = fp.user
+            farmer_id = farmer.id
+
+    if not farmer:
         return jsonify({'success': False, 'message': 'Farmer not found.'}), 404
+
+    # Security: Only owner or platform admin can view this digital twin telemetry
+    if current_user.role != 'admin' and current_user.id != farmer.id:
+        return jsonify({'success': False, 'message': 'Unauthorized to view this digital twin profile.'}), 403
 
     soil = SoilProfile.query.filter_by(farmer_id=farmer_id).first()
     histories = CropHistory.query.filter_by(farmer_id=farmer_id).order_by(CropHistory.year.desc()).all()

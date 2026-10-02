@@ -60,14 +60,23 @@ def create_app(config_class=Config):
     app.register_blueprint(command_center_bp)
     app.register_blueprint(quality_bp)
 
+    @app.route('/health', methods=['GET'])
     @app.route('/api/health', methods=['GET'])
     def health_check():
+        db_status = 'connected'
+        try:
+            from sqlalchemy import text
+            db.session.execute(text('SELECT 1'))
+        except Exception as e:
+            db_status = f'disconnected: {str(e)}'
+
+        is_connected = (db_status == 'connected')
         return jsonify({
-            'status': 'healthy',
+            'status': 'ok' if is_connected else 'degraded',
+            'database': db_status,
             'service': 'FarmDirect Unified Fullstack Service',
-            'version': '1.0.0',
-            'database': 'connected'
-        }), 200
+            'version': '1.0.0'
+        }), 200 if is_connected else 500
 
     @app.route('/uploads/<path:filename>')
     def serve_uploaded_file(filename):
@@ -133,15 +142,16 @@ def create_app(config_class=Config):
         except Exception as e:
             app.logger.warning(f"Schema column verification warning: {e}")
 
-        # Idempotently seed baseline users and listings if not present
-        try:
-            from models import User
-            if User.query.filter_by(email="admin@farmdirect.demo").first() is None:
-                app.logger.info("Baseline admin user missing. Running idempotent database seeding...")
-                from seed import seed_database
-                seed_database()
-        except Exception as e:
-            app.logger.warning(f"Auto-seed verification warning: {e}")
+        # Idempotently seed baseline users and listings if enabled
+        if app.config.get('ENABLE_DEMO_SEED', True):
+            try:
+                from models import User
+                if User.query.filter_by(email="admin@farmdirect.demo").first() is None:
+                    app.logger.info("Baseline admin user missing. Running idempotent database seeding...")
+                    from seed import seed_database
+                    seed_database()
+            except Exception as e:
+                app.logger.warning(f"Auto-seed verification warning: {e}")
 
     return app
 

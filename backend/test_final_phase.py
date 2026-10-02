@@ -37,7 +37,12 @@ def run_final_phase_tests():
     assert b_res.status_code == 200
     buyer_token = b_res.get_json()['data']['token']
     buyer_headers = {'Authorization': f'Bearer {buyer_token}'}
-    print("[PASS] Farmer and Buyer authenticated.")
+
+    a_res = client.post('/api/auth/login', json={'email': 'admin@farmdirect.demo', 'password': 'admin123'})
+    assert a_res.status_code == 200
+    admin_token = a_res.get_json()['data']['token']
+    admin_headers = {'Authorization': f'Bearer {admin_token}'}
+    print("[PASS] Farmer, Buyer, and Admin authenticated.")
 
     # 3. Hybrid AI Matching
     print("--- Test 3: Hybrid AI Matching (Positive & Negative Factors) ---")
@@ -163,7 +168,7 @@ def run_final_phase_tests():
 
     # 13. Farm Digital Twin
     print("--- Test 13: Farm Digital Twin Telemetry ---")
-    res = client.get('/api/digital-twin/farmer/2')
+    res = client.get('/api/digital-twin/farmer/2', headers=farmer_headers)
     assert res.status_code == 200
     twin_data = res.get_json()
     assert twin_data['soil_profile'] is not None
@@ -209,7 +214,7 @@ def run_final_phase_tests():
         'supply_change': -15.0,
         'transport_change': 10.0,
         'risk_change': 15.0
-    })
+    }, headers=admin_headers)
     assert res.status_code == 200
     sim = res.get_json()['data']
     proj = sim['projections']
@@ -217,7 +222,7 @@ def run_final_phase_tests():
 
     # 19. Anomaly Auditing
     print("--- Test 19: Anomaly Event Auditing ---")
-    res = client.get('/api/command-center/anomalies')
+    res = client.get('/api/command-center/anomalies', headers=admin_headers)
     assert res.status_code == 200
     anomalies = res.get_json()['data']
     assert len(anomalies) > 0

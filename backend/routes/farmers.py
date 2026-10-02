@@ -167,6 +167,9 @@ def create_listing(current_user):
         # 3. IF REVIEW: DO NOT PUBLISH AUTOMATICALLY AS ACTIVE (Requirement 6)
         if inspection.verification_status in ['REVIEW_REQUIRED', 'REVIEW', 'IMAGE_UNSUITABLE', 'UNVERIFIED']:
             initial_status = 'PAUSED'
+    else:
+        # Produce without an AI quality inspection must NOT be auto-published as ACTIVE
+        initial_status = 'PAUSED'
 
     listing = ProduceListing(
         farmer_id=current_user.id,
@@ -315,13 +318,59 @@ def update_listing(current_user, listing_id):
 @token_required
 @role_required('farmer')
 def toggle_status(current_user, listing_id):
-    listing = ProduceListing.query.get(listing_id)
+    listing = db.session.get(ProduceListing, listing_id)
     if not listing or listing.farmer_id != current_user.id:
         return jsonify({'success': False, 'message': 'Listing not found or unauthorized.'}), 404
     data = request.get_json() or {}
     new_status = data.get('status')
     if new_status not in ['ACTIVE', 'PAUSED', 'SOLD']:
         return jsonify({'success': False, 'message': 'Invalid status.'}), 400
+
+    # Anti-bypass verification: Prevent publishing rotten, mismatched, or uninspected listings
+    if new_status == 'ACTIVE':
+        insp = listing.quality_inspections[-1] if listing.quality_inspections else QualityInspection.query.filter_by(listing_id=listing.id).order_by(QualityInspection.created_at.desc()).first()
+        if not insp and listing.image_url:
+            norm_url = listing.image_url.lstrip('/')
+            insp = QualityInspection.query.filter(
+                QualityInspection.farmer_id == current_user.id,
+                (
+                    (QualityInspection.image_url == listing.image_url) | 
+                    (QualityInspection.image_url == f"/{norm_url}") |
+                    (QualityInspection.image_url == norm_url)
+                )
+            ).order_by(QualityInspection.created_at.desc()).first()
+
+        if not insp:
+            return jsonify({
+                'success': False,
+                'status': 'INSPECTION_REQUIRED',
+                'message': 'Cannot activate listing: Listing has no completed AI quality inspection report. Please perform a produce scan first.'
+            }), 422
+
+        if (insp.verification_status in ['REJECTED', 'ROTTEN', 'REJECT'] or
+            insp.visible_defect_level in ['CRITICAL_SPOILAGE', 'ROTTEN'] or
+            getattr(insp, 'ai_assessed_grade', '') in ['Sub-standard / Rotten', 'ROTTEN', 'REJECTED']):
+            return jsonify({
+                'success': False,
+                'status': 'REJECTED',
+                'message': 'Cannot activate listing: The produce photo was verified as rotten, spoiled, or unfit for sale.'
+            }), 422
+
+        is_compat, mismatch_reason = are_crops_compatible(listing.crop, insp.detected_crop)
+        if not is_compat or insp.verification_status == 'CROP_MISMATCH':
+            return jsonify({
+                'success': False,
+                'status': 'CROP_MISMATCH',
+                'message': f'Cannot activate listing: Crop mismatch detected. Listing is "{listing.crop}", but inspection identified "{insp.detected_crop}".'
+            }), 422
+
+        if insp.verification_status in ['REVIEW_REQUIRED', 'REVIEW', 'IMAGE_UNSUITABLE', 'UNVERIFIED']:
+            return jsonify({
+                'success': False,
+                'status': 'REVIEW_REQUIRED',
+                'message': 'Cannot activate listing: Produce inspection is currently flagged for review and cannot be published directly.'
+            }), 422
+
     listing.status = new_status
     db.session.commit()
     return jsonify({

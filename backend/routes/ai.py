@@ -5,7 +5,7 @@ Endpoints for Hybrid Matching, Demand Forecasting, Price/Profit, Selling Time, a
 
 from flask import Blueprint, request, jsonify
 from database import db
-from utils.auth import token_required
+from utils.auth import token_required, role_required
 from models import ProduceListing
 from services.ai.hybrid_matching import HybridMatchingEngine
 from services.ai.demand_forecaster import DemandForecastService
@@ -284,16 +284,18 @@ def get_ai_status():
     }), 200
 
 @ai_bp.route('/diagnose', methods=['GET'])
-def get_ai_diagnose():
+@token_required
+@role_required('admin')
+def get_ai_diagnose(current_user):
     import os, requests
     from services.ai.gemini_client import gemini_client
     results = {}
     results['gemini_model_env'] = os.environ.get('GEMINI_MODEL')
-    results['has_api_key'] = gemini_client.is_available()
-    results['api_key_prefix'] = (gemini_client.current_api_key[:6] + '...') if gemini_client.is_available() else None
+    results['configured'] = gemini_client.is_available()
     results['active_model'] = gemini_client.get_active_model()
+    results['vision_capable'] = True
     
-    test_models = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-pro-latest']
+    test_models = ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash']
     model_tests = {}
     if gemini_client.is_available():
         for m in test_models:
@@ -304,9 +306,9 @@ def get_ai_diagnose():
             }
             try:
                 r = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=8)
-                model_tests[m] = {'status': r.status_code, 'body': r.text[:150]}
+                model_tests[m] = {'status': r.status_code, 'success': r.status_code == 200}
             except Exception as e:
-                model_tests[m] = {'error': str(e)}
+                model_tests[m] = {'status': 'ERROR', 'error': str(e)}
     results['model_tests'] = model_tests
     return jsonify({'success': True, 'diagnostics': results}), 200
 

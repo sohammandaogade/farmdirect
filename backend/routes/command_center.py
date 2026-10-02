@@ -3,7 +3,7 @@ AI Market Command Center, Geographic Heatmap, What-If Simulator, and Anomaly Aud
 """
 
 from flask import Blueprint, request, jsonify
-from utils.auth import token_required
+from utils.auth import token_required, role_required
 from models import ProduceListing, Order, User, AnomalyEvent, CropMarketHistory, db
 from services.ai.simulator_engine import MarketSimulatorEngine
 from services.ai.anomaly_detector import AnomalyDetector
@@ -121,7 +121,9 @@ def get_market_heatmap():
     }), 200
 
 @command_center_bp.route('/simulate', methods=['POST'])
-def run_simulation():
+@token_required
+@role_required('admin')
+def run_simulation(current_user):
     data = request.get_json() or {}
     d_chg = data.get('demand_change', 20.0)
     s_chg = data.get('supply_change', -15.0)
@@ -132,18 +134,22 @@ def run_simulation():
     return jsonify({'success': True, 'data': sim_res}), 200
 
 @command_center_bp.route('/anomalies', methods=['GET'])
-def get_anomalies():
+@token_required
+@role_required('admin')
+def get_anomalies(current_user):
     status = request.args.get('status')
     anomalies = AnomalyDetector.get_all_anomalies(status)
     return jsonify({'success': True, 'count': len(anomalies), 'data': anomalies}), 200
 
 @command_center_bp.route('/anomalies/<int:anomaly_id>', methods=['PUT'])
-def update_anomaly_status(anomaly_id):
+@token_required
+@role_required('admin')
+def update_anomaly_status(current_user, anomaly_id):
     data = request.get_json() or {}
     new_status = data.get('status', 'RESOLVED')
     note = data.get('resolution_note', 'Audit completed by platform administrator.')
 
-    anomaly = AnomalyEvent.query.get(anomaly_id)
+    anomaly = db.session.get(AnomalyEvent, anomaly_id)
     if not anomaly:
         return jsonify({'success': False, 'message': 'Anomaly record not found.'}), 404
 

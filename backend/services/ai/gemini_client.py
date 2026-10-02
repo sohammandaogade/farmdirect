@@ -29,7 +29,7 @@ class GeminiClient:
         self.api_key = os.environ.get('GEMINI_API_KEY')
         self.model = os.environ.get('GEMINI_MODEL', 'gemini-flash-latest')
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models"
-        self.timeout = 15  # 15s request timeout
+        self.timeout = 25  # 25s request timeout
         if self.api_key:
             logger.info(f"GeminiClient initialized with model: {self.model} (API Key configured)")
         else:
@@ -72,8 +72,8 @@ class GeminiClient:
                     self.model = env_model
                     return self._active_model
 
-                # Try modern verified production candidates in order
-                for candidate in ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-pro', 'gemini-pro-latest']:
+                # Try modern verified production candidates in order: gemini-flash-latest first
+                for candidate in ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro']:
                     if candidate in supported:
                         self._active_model = candidate
                         self.model = candidate
@@ -85,8 +85,8 @@ class GeminiClient:
         except Exception as e:
             logger.warning(f"Could not query ListModels: {e}")
 
-        # Fallback to gemini-2.5-flash or self.model
-        self._active_model = 'gemini-2.5-flash'
+        # Fallback to gemini-flash-latest or self.model
+        self._active_model = 'gemini-flash-latest'
         return self._active_model
 
     def _get_cache_key(self, prompt, system_instruction, schema_str=""):
@@ -316,7 +316,7 @@ class GeminiClient:
             
             # Robust model fallback list: try active_model, then other known supported vision models
             models_to_try = [active_model]
-            for candidate in ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-pro', 'gemini-pro-latest']:
+            for candidate in ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro']:
                 if candidate not in models_to_try:
                     models_to_try.append(candidate)
 
@@ -395,10 +395,10 @@ class GeminiClient:
                 ]
             
             # 2. Test generation through candidates until verified
-            preferred_order = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-pro', 'gemini-pro-latest']
+            preferred_order = ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro']
             candidates_to_try = [m for m in preferred_order if m in available_models]
             if not candidates_to_try:
-                candidates_to_try = [m for m in available_models if 'flash' in m or 'pro' in m] or available_models or ['gemini-2.5-flash', 'gemini-flash-latest']
+                candidates_to_try = [m for m in available_models if 'flash' in m or 'pro' in m] or available_models or ['gemini-flash-latest', 'gemini-pro-latest']
 
             working_model = None
             last_resp = None

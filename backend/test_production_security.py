@@ -79,6 +79,17 @@ class TestProductionSecurityAndGrounding(unittest.TestCase):
             cls.buyer_token = generate_token(b)
             cls.buyer_auth = {'Authorization': f'Bearer {cls.buyer_token}'}
 
+            # Create Admin
+            adm = User.query.filter_by(email="admin_security@farmdirect.io").first()
+            if not adm:
+                adm = User(name="Security Admin", email="admin_security@farmdirect.io", role="admin", phone="9822007788")
+                adm.set_password("SecurePass123!")
+                db.session.add(adm)
+                db.session.commit()
+            cls.admin_id = adm.id
+            cls.admin_token = generate_token(adm)
+            cls.admin_auth = {'Authorization': f'Bearer {cls.admin_token}'}
+
     # -------------------------------------------------------------------------
     # TEST 1: Quality Inspection Endpoint Authentication & Role Enforcement
     # -------------------------------------------------------------------------
@@ -310,6 +321,235 @@ class TestProductionSecurityAndGrounding(unittest.TestCase):
                 f"Response was: {reply}"
             )
             print("  [PASS] Market Data Test 6: Farmer Copilot produces verified grounded market responses.")
+
+    # -------------------------------------------------------------------------
+    # TEST 7: Listing Status Toggle Anti-Bypass Protection
+    # -------------------------------------------------------------------------
+    def test_07_listing_status_toggle_anti_bypass(self):
+        with self.app.app_context():
+            # 1. Uninspected listing cannot be toggled to ACTIVE
+            uninspected_listing = ProduceListing(
+                farmer_id=self.farmer1_id,
+                crop="Onion",
+                quantity=800,
+                available_quantity=800,
+                unit="kg",
+                expected_price=24,
+                location="Nashik",
+                quality_grade="Grade A",
+                availability_date=date(2026, 10, 12),
+                image_url="/uploads/no_inspection_pic.jpg",
+                status="PAUSED"
+            )
+            db.session.add(uninspected_listing)
+            db.session.commit()
+
+            resp = self.client.put(
+                f'/api/farmers/listings/{uninspected_listing.id}/status',
+                json={'status': 'ACTIVE'},
+                headers=self.auth1
+            )
+            self.assertEqual(resp.status_code, 422)
+            self.assertEqual(resp.get_json()['status'], 'INSPECTION_REQUIRED')
+
+            # 2. Rotten produce listing cannot be toggled to ACTIVE
+            rotten_insp = QualityInspection(
+                farmer_id=self.farmer1_id,
+                image_url="/uploads/rotten_toggle.jpg",
+                image_hash="rottentogglehash",
+                declared_grade="Grade A",
+                ai_assessed_grade="Sub-standard / Rotten",
+                expected_crop="Tomato",
+                detected_crop="Tomato",
+                verification_status="REJECTED",
+                visible_defect_level="CRITICAL_SPOILAGE",
+                assessment_notes="Extensive rot detected."
+            )
+            db.session.add(rotten_insp)
+            db.session.commit()
+
+            rotten_listing = ProduceListing(
+                farmer_id=self.farmer1_id,
+                crop="Tomato",
+                quantity=500,
+                available_quantity=500,
+                unit="kg",
+                expected_price=20,
+                location="Pune",
+                quality_grade="Grade A",
+                availability_date=date(2026, 10, 12),
+                image_url="/uploads/rotten_toggle.jpg",
+                status="PAUSED"
+            )
+            db.session.add(rotten_listing)
+            db.session.flush()
+            rotten_insp.listing_id = rotten_listing.id
+            db.session.commit()
+
+            resp_rotten = self.client.put(
+                f'/api/farmers/listings/{rotten_listing.id}/status',
+                json={'status': 'ACTIVE'},
+                headers=self.auth1
+            )
+            self.assertEqual(resp_rotten.status_code, 422)
+            self.assertEqual(resp_rotten.get_json()['status'], 'REJECTED')
+
+            # 3. Mismatched crop listing cannot be toggled to ACTIVE
+            mismatch_insp = QualityInspection(
+                farmer_id=self.farmer1_id,
+                image_url="/uploads/onion_not_tomato.jpg",
+                image_hash="mismatchhash1",
+                declared_grade="Grade A",
+                ai_assessed_grade="Grade A",
+                expected_crop="Tomato",
+                detected_crop="Onion",
+                verification_status="CROP_MISMATCH",
+                visible_defect_level="LOW"
+            )
+            db.session.add(mismatch_insp)
+            db.session.commit()
+
+            mismatch_listing = ProduceListing(
+                farmer_id=self.farmer1_id,
+                crop="Tomato",
+                quantity=600,
+                available_quantity=600,
+                unit="kg",
+                expected_price=22,
+                location="Pune",
+                quality_grade="Grade A",
+                availability_date=date(2026, 10, 12),
+                image_url="/uploads/onion_not_tomato.jpg",
+                status="PAUSED"
+            )
+            db.session.add(mismatch_listing)
+            db.session.flush()
+            mismatch_insp.listing_id = mismatch_listing.id
+            db.session.commit()
+
+            resp_mismatch = self.client.put(
+                f'/api/farmers/listings/{mismatch_listing.id}/status',
+                json={'status': 'ACTIVE'},
+                headers=self.auth1
+            )
+            self.assertEqual(resp_mismatch.status_code, 422)
+            self.assertEqual(resp_mismatch.get_json()['status'], 'CROP_MISMATCH')
+
+            # 4. Valid inspected listing CAN be toggled to ACTIVE
+            valid_insp = QualityInspection(
+                farmer_id=self.farmer1_id,
+                image_url="/uploads/sound_potato.jpg",
+                image_hash="validtogg123",
+                declared_grade="Grade A",
+                ai_assessed_grade="Grade A",
+                expected_crop="Potato",
+                detected_crop="Potato",
+                verification_status="VERIFIED_ALIGNED",
+                visible_defect_level="LOW"
+            )
+            db.session.add(valid_insp)
+            db.session.commit()
+
+            valid_listing = ProduceListing(
+                farmer_id=self.farmer1_id,
+                crop="Potato",
+                quantity=1200,
+                available_quantity=1200,
+                unit="kg",
+                expected_price=22,
+                location="Satara",
+                quality_grade="Grade A",
+                availability_date=date(2026, 10, 12),
+                image_url="/uploads/sound_potato.jpg",
+                status="PAUSED"
+            )
+            db.session.add(valid_listing)
+            db.session.flush()
+            valid_insp.listing_id = valid_listing.id
+            db.session.commit()
+
+            resp_valid = self.client.put(
+                f'/api/farmers/listings/{valid_listing.id}/status',
+                json={'status': 'ACTIVE'},
+                headers=self.auth1
+            )
+            self.assertEqual(resp_valid.status_code, 200)
+            self.assertEqual(resp_valid.get_json()['data']['status'], 'ACTIVE')
+            print("  [PASS] Security Test 7: Listing status toggle anti-bypass strictly enforces inspection status.")
+
+    # -------------------------------------------------------------------------
+    # TEST 8: Digital Twin Telemetry Access Control
+    # -------------------------------------------------------------------------
+    def test_08_digital_twin_access_control(self):
+        with self.app.app_context():
+            # 1. Unauthenticated request -> HTTP 401
+            resp1 = self.client.get(f'/api/digital-twin/farmer/{self.farmer1_id}')
+            self.assertEqual(resp1.status_code, 401)
+
+            # 2. Distinct farmer request -> HTTP 403 (Cannot inspect rival farmer finances)
+            resp2 = self.client.get(f'/api/digital-twin/farmer/{self.farmer1_id}', headers=self.auth2)
+            self.assertEqual(resp2.status_code, 403)
+
+            # 3. Owner farmer request -> HTTP 200
+            resp3 = self.client.get(f'/api/digital-twin/farmer/{self.farmer1_id}', headers=self.auth1)
+            self.assertEqual(resp3.status_code, 200)
+            self.assertEqual(resp3.get_json()['farmer_id'], self.farmer1_id)
+
+            # 4. Platform Admin request -> HTTP 200
+            resp4 = self.client.get(f'/api/digital-twin/farmer/{self.farmer1_id}', headers=self.admin_auth)
+            self.assertEqual(resp4.status_code, 200)
+            print("  [PASS] Security Test 8: Digital Twin telemetry access strictly restricted to owner or admin.")
+
+    # -------------------------------------------------------------------------
+    # TEST 9: Command Center and AI Diagnostics Protection
+    # -------------------------------------------------------------------------
+    def test_09_command_center_and_diagnose_admin_protection(self):
+        with self.app.app_context():
+            # 1. Simulator without admin token -> HTTP 401 or 403
+            resp_sim_noauth = self.client.post('/api/command-center/simulate', json={'demand_change': 10})
+            self.assertEqual(resp_sim_noauth.status_code, 401)
+
+            resp_sim_farmer = self.client.post('/api/command-center/simulate', json={'demand_change': 10}, headers=self.auth1)
+            self.assertEqual(resp_sim_farmer.status_code, 403)
+
+            resp_sim_admin = self.client.post('/api/command-center/simulate', json={'demand_change': 10}, headers=self.admin_auth)
+            self.assertEqual(resp_sim_admin.status_code, 200)
+
+            # 2. Anomalies route without admin token -> HTTP 401 or 403
+            resp_ano_farmer = self.client.get('/api/command-center/anomalies', headers=self.auth1)
+            self.assertEqual(resp_ano_farmer.status_code, 403)
+
+            resp_ano_admin = self.client.get('/api/command-center/anomalies', headers=self.admin_auth)
+            self.assertEqual(resp_ano_admin.status_code, 200)
+
+            # 3. /api/ai/diagnose must require admin and NEVER leak api_key_prefix
+            resp_diag_unauth = self.client.get('/api/ai/diagnose')
+            self.assertEqual(resp_diag_unauth.status_code, 401)
+
+            resp_diag_farmer = self.client.get('/api/ai/diagnose', headers=self.auth1)
+            self.assertEqual(resp_diag_farmer.status_code, 403)
+
+            resp_diag_admin = self.client.get('/api/ai/diagnose', headers=self.admin_auth)
+            self.assertEqual(resp_diag_admin.status_code, 200)
+            diag_body = resp_diag_admin.get_json()['diagnostics']
+            self.assertNotIn('api_key_prefix', diag_body)
+            self.assertNotIn('GEMINI_API_KEY', str(diag_body))
+            print("  [PASS] Security Test 9: Command Center and AI Diagnostics protected with zero credential leakage.")
+
+    # -------------------------------------------------------------------------
+    # TEST 10: Health Route Database Ping
+    # -------------------------------------------------------------------------
+    def test_10_health_route_database_connectivity(self):
+        resp = self.client.get('/health')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertEqual(data['status'], 'ok')
+        self.assertEqual(data['database'], 'connected')
+
+        resp_api = self.client.get('/api/health')
+        self.assertEqual(resp_api.status_code, 200)
+        self.assertEqual(resp_api.get_json()['status'], 'ok')
+        print("  [PASS] Operational Test 10: /health and /api/health verify active database connectivity.")
 
 
 if __name__ == '__main__':
