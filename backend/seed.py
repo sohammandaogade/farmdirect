@@ -42,15 +42,18 @@ def _execute_seed_logic():
         ensure_schema_columns()
 
         print("Checking & seeding baseline users...")
-        # Helper to get or create demo user
         def get_or_create_user(name, email, phone, role, password):
             user = User.query.filter_by(email=email).first()
             if not user:
-                user = User(name=name, email=email, phone=phone, role=role)
+                user = User(name=name, email=email, phone=phone, role=role, is_active=True)
                 user.set_password(password)
                 db.session.add(user)
                 db.session.flush()
                 print(f"Created demo user: {email} ({role})")
+            else:
+                # Ensure demo users remain active for evaluation
+                if not user.is_active:
+                    user.is_active = True
             return user
 
         # 1. Admin
