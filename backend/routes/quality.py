@@ -78,7 +78,7 @@ def upload_and_inspect(current_user):
         result['farmer_id'] = authenticated_farmer_id
     except Exception as e:
         db.session.rollback()
-        # Non-fatal if standalone test without valid FK
+        current_app.logger.warning(f"Could not persist QualityInspection to database: {e}")
 
     return jsonify(result), 200
 

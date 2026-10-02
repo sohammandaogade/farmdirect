@@ -132,7 +132,8 @@ def create_app(config_class=Config):
                     ('visible_defect_level', "VARCHAR(50) DEFAULT 'LOW'"),
                     ('defect_confidence', 'FLOAT DEFAULT 0.0'),
                     ('model_name', "VARCHAR(100) DEFAULT 'FarmDirect-AgriVision-ColorTextureEngine'"),
-                    ('model_version', "VARCHAR(50) DEFAULT '2.0.0'")
+                    ('model_version', "VARCHAR(50) DEFAULT '2.0.0'"),
+                    ('image_hash', 'VARCHAR(64)')
                 ]
                 with db.engine.connect() as conn:
                     for col_name, col_type in new_cols:
