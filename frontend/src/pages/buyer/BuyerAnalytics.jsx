@@ -12,6 +12,7 @@ import {
   Pie,
   Cell,
   Legend,
+  CartesianGrid,
 } from 'recharts';
 import {
   TrendingUp,
@@ -22,6 +23,8 @@ import {
   Scale,
   Calendar,
   AlertCircle,
+  PieChart as PieIcon,
+  LineChart
 } from 'lucide-react';
 import { analyticsAPI } from '../../services/api';
 import StatCard from '../../components/StatCard';
@@ -79,17 +82,17 @@ export const BuyerAnalytics = () => {
   const hasPriceData = data?.avg_prices_by_crop && data.avg_prices_by_crop.length > 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Page Title */}
-      <div>
-        <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+      <div className="pb-2 border-b border-slate-200/80">
+        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
           Commercial Procurement Intelligence
         </span>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
+        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-1.5">
           Spend Analysis & Budget Summary
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Real-time expenditure tracking, commodity volume distribution, and direct contract unit rates
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Real-time expenditure tracking, commodity volume distribution, and direct contract unit rates in Indian Rupee (₹).
         </p>
       </div>
 
@@ -128,60 +131,70 @@ export const BuyerAnalytics = () => {
       {/* Primary Graphs Row: Spend Timeline & Spending by Crop */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Spending Over Time (Area Chart) */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
+        <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Cumulative Spend Timeline</h3>
-              <p className="text-xs text-slate-400">Total expenditure from finalized farm contracts over dates</p>
+              <div className="flex items-center gap-2">
+                <LineChart className="w-4 h-4 text-emerald-600" />
+                <h3 className="text-base font-bold text-slate-900">Cumulative Spend Timeline</h3>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Total expenditure from finalized farm contracts over dates</p>
             </div>
-            <span className="text-[11px] font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100">
+            <span className="text-[11px] font-bold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/60">
               Verified Order Data
             </span>
           </div>
 
-          <div className="h-64 w-full">
+          <div className="h-64 sm:h-72 w-full">
             {hasSpendingData ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data.spending_timeline}>
+                <AreaChart data={data.spending_timeline} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="buyerSpendGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis
                     stroke="#94a3b8"
                     fontSize={11}
                     tickLine={false}
+                    axisLine={false}
                     tickFormatter={(v) => `₹${Number(v).toLocaleString('en-IN')}`}
                   />
                   <Tooltip
                     formatter={(v) => [`₹${Number(v).toLocaleString('en-IN')}`, 'Expenditure']}
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
                   <Area
                     type="monotone"
                     dataKey="spending"
                     stroke="#059669"
-                    strokeWidth={2.5}
+                    strokeWidth={3}
                     fillOpacity={1}
                     fill="url(#buyerSpendGrad)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                Expenditure curve will populate after orders are confirmed.
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                <LineChart className="w-8 h-8 stroke-[1.5] mb-2 text-slate-300" />
+                <p className="text-xs font-semibold text-slate-600">No expenditure records yet</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Expenditure curve will populate after orders are confirmed.</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Spending Allocation by Crop (Donut Pie Chart) */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Spending by Commodity</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <PieIcon className="w-4 h-4 text-emerald-600" />
+              <h3 className="text-base font-bold text-slate-900">Spending by Commodity</h3>
+            </div>
             <p className="text-xs text-slate-400">Portfolio allocation across crops</p>
           </div>
 
@@ -195,8 +208,8 @@ export const BuyerAnalytics = () => {
                     nameKey="crop"
                     cx="50%"
                     cy="50%"
-                    innerRadius={45}
-                    outerRadius={75}
+                    innerRadius={50}
+                    outerRadius={80}
                     paddingAngle={3}
                   >
                     {data.spending_by_crop.map((entry, index) => (
@@ -205,28 +218,30 @@ export const BuyerAnalytics = () => {
                   </Pie>
                   <Tooltip
                     formatter={(v) => [`₹${Number(v).toLocaleString('en-IN')}`, 'Expenditure']}
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                No commodity purchases recorded yet.
+              <div className="h-full flex flex-col items-center justify-center text-center p-4 text-slate-400">
+                <PieIcon className="w-7 h-7 stroke-[1.5] mb-2 text-slate-300" />
+                <p className="text-xs font-semibold text-slate-600">No commodity purchases yet</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Crop portfolio appears here</p>
               </div>
             )}
           </div>
 
-          <div className="space-y-1.5 pt-2 border-t border-slate-100 max-h-28 overflow-y-auto text-xs">
+          <div className="space-y-2 pt-3 border-t border-slate-100 max-h-28 overflow-y-auto text-xs">
             {data?.spending_by_crop?.map((item, idx) => (
               <div key={item.crop} className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span
                     className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: COLORS[idx % COLORS.length] }}
                   />
-                  <span className="font-semibold text-slate-700 capitalize truncate">{item.crop}</span>
+                  <span className="font-bold text-slate-800 capitalize truncate max-w-[120px]">{item.crop}</span>
                 </div>
-                <span className="text-slate-600 font-bold shrink-0">
+                <span className="text-slate-600 font-extrabold tabular-nums shrink-0">
                   ₹{Number(item.spending).toLocaleString('en-IN')}
                 </span>
               </div>
@@ -238,75 +253,93 @@ export const BuyerAnalytics = () => {
       {/* Secondary Graphs Row: Purchase Volumes & Average Negotiated Prices */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quantity Traded by Crop */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Procured Volume by Crop (kg)</h3>
-              <p className="text-xs text-slate-400">Total volume purchased per agricultural category</p>
+              <div className="flex items-center gap-2">
+                <Scale className="w-4 h-4 text-blue-600" />
+                <h3 className="text-base font-bold text-slate-900">Procured Volume by Crop (kg)</h3>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Total volume purchased per agricultural category</p>
             </div>
-            <Scale className="w-4 h-4 text-blue-500" />
+            <span className="text-[11px] font-bold px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-200/60">
+              Volume Sourced
+            </span>
           </div>
 
-          <div className="h-64 w-full">
+          <div className="h-64 sm:h-72 w-full">
             {hasCropData ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.spending_by_crop}>
-                  <XAxis dataKey="crop" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                <BarChart data={data.spending_by_crop} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="crop" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis
                     stroke="#94a3b8"
                     fontSize={11}
                     tickLine={false}
-                    tickFormatter={(v) => `${Number(v).toLocaleString('en-IN')} kg`}
+                    axisLine={false}
+                    tickFormatter={(v) => `${Number(v).toLocaleString('en-IN')}kg`}
                   />
                   <Tooltip
                     formatter={(v, name) => [
                       name === 'quantity' ? `${Number(v).toLocaleString('en-IN')} kg` : v,
                       name === 'quantity' ? 'Volume' : 'Orders',
                     ]}
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
                   <Bar dataKey="quantity" fill="#3b82f6" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                No volume fulfilled yet.
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                <Scale className="w-8 h-8 stroke-[1.5] mb-2 text-slate-300" />
+                <p className="text-xs font-semibold text-slate-600">No volume fulfilled yet</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Volume metrics appear after fulfilled orders</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Average Purchase Price (₹/kg) */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Average Unit Price Achieved (₹/kg)</h3>
-              <p className="text-xs text-slate-400">Effective unit costs achieved via direct farmer negotiations</p>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-600" />
+                <h3 className="text-base font-bold text-slate-900">Average Unit Price Achieved (₹/kg)</h3>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Effective unit costs achieved via direct farmer negotiations</p>
             </div>
-            <TrendingUp className="w-4 h-4 text-emerald-500" />
+            <span className="text-[11px] font-bold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/60">
+              Unit Rate (₹/kg)
+            </span>
           </div>
 
-          <div className="h-64 w-full">
+          <div className="h-64 sm:h-72 w-full">
             {hasPriceData ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.avg_prices_by_crop}>
-                  <XAxis dataKey="crop" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                <BarChart data={data.avg_prices_by_crop} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="crop" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis
                     stroke="#94a3b8"
                     fontSize={11}
                     tickLine={false}
+                    axisLine={false}
                     tickFormatter={(v) => `₹${v}`}
                   />
                   <Tooltip
                     formatter={(v) => [`₹${Number(v).toLocaleString('en-IN')}/kg`, 'Average Price']}
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                   />
                   <Bar dataKey="avg_price" fill="#10b981" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">
-                Unit price records will appear after transactions.
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                <TrendingUp className="w-8 h-8 stroke-[1.5] mb-2 text-slate-300" />
+                <p className="text-xs font-semibold text-slate-600">No unit price records</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Price benchmarks will calculate after purchases</p>
               </div>
             )}
           </div>

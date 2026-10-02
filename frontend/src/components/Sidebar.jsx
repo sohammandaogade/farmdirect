@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Sprout,
@@ -21,12 +21,15 @@ import {
   ShieldAlert,
   Bot,
   MapPin,
+  ChevronRight,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const Sidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   if (!user) return null;
 
@@ -35,50 +38,90 @@ export const Sidebar = ({ isOpen, onClose }) => {
     navigate('/login');
   };
 
-  const getLinks = () => {
+  const getNavigationGroups = () => {
     if (user.role === 'farmer') {
       return [
-        { to: '/farmer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/farmer/listings', label: 'My Listings', icon: Sprout },
-        { to: '/farmer/listings/new', label: 'Add Produce', icon: PlusCircle },
-        { to: '/farmer/inventory-intelligence', label: 'Inventory & Timing', icon: Sparkles, badge: 'AI' },
-        { to: '/farmer/digital-twin', label: 'Farm Digital Twin', icon: Activity, badge: 'AI' },
-        { to: '/farmer/requests', label: 'Purchase Requests', icon: Inbox },
-        { to: '/farmer/orders', label: 'Orders & Shipments', icon: Truck },
-        { to: '/waste-marketplace', label: 'Waste Marketplace', icon: Recycle },
-        { to: '/farmer/analytics', label: 'Sales Analytics', icon: LineChart },
-        { to: '/farmer/copilot', label: 'Farmer AI Copilot', icon: Bot, badge: 'AI' },
-        { to: '/farmer/profile', label: 'Farm Profile', icon: User },
+        {
+          groupTitle: 'Core Workspace',
+          links: [
+            { to: '/farmer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { to: '/farmer/listings', label: 'My Listings', icon: Sprout },
+            { to: '/farmer/listings/new', label: 'Add Produce', icon: PlusCircle },
+            { to: '/farmer/requests', label: 'Purchase Requests', icon: Inbox },
+            { to: '/farmer/orders', label: 'Orders & Shipments', icon: Truck },
+          ]
+        },
+        {
+          groupTitle: 'Agritech AI & Twin',
+          links: [
+            { to: '/farmer/inventory-intelligence', label: 'Inventory & Timing', icon: Sparkles, badge: 'AI' },
+            { to: '/farmer/digital-twin', label: 'Farm Digital Twin', icon: Activity, badge: 'AI' },
+            { to: '/farmer/copilot', label: 'Farmer AI Copilot', icon: Bot, badge: 'AI' },
+          ]
+        },
+        {
+          groupTitle: 'Ecosystem & Insights',
+          links: [
+            { to: '/waste-marketplace', label: 'Waste Marketplace', icon: Recycle, badge: 'Eco' },
+            { to: '/farmer/analytics', label: 'Sales Analytics', icon: LineChart },
+            { to: '/farmer/profile', label: 'Farm Profile', icon: User },
+          ]
+        }
       ];
     } else if (user.role === 'buyer') {
       return [
-        { to: '/buyer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
-        { to: '/buyer/smart-match', label: 'AI Smart Match', icon: Sparkles, badge: 'AI' },
-        { to: '/buyer/requests', label: 'My Requests', icon: Inbox },
-        { to: '/buyer/orders', label: 'Active Orders', icon: Truck },
-        { to: '/buyer/history', label: 'Purchase History', icon: History },
-        { to: '/waste-marketplace', label: 'Waste Marketplace', icon: Recycle },
-        { to: '/buyer/analytics', label: 'Spend Analytics', icon: LineChart },
-        { to: '/buyer/copilot', label: 'Buyer AI Copilot', icon: Bot, badge: 'AI' },
-        { to: '/buyer/profile', label: 'Business Profile', icon: User },
+        {
+          groupTitle: 'Procurement Desk',
+          links: [
+            { to: '/buyer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { to: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
+            { to: '/buyer/requests', label: 'My Requests', icon: Inbox },
+            { to: '/buyer/orders', label: 'Active Orders', icon: Truck },
+            { to: '/buyer/history', label: 'Purchase History', icon: History },
+          ]
+        },
+        {
+          groupTitle: 'AI Procurement & Copilot',
+          links: [
+            { to: '/buyer/smart-match', label: 'AI Smart Match', icon: Sparkles, badge: 'AI' },
+            { to: '/buyer/copilot', label: 'Buyer AI Copilot', icon: Bot, badge: 'AI' },
+          ]
+        },
+        {
+          groupTitle: 'Intelligence & Waste',
+          links: [
+            { to: '/waste-marketplace', label: 'Waste Marketplace', icon: Recycle, badge: 'Eco' },
+            { to: '/buyer/analytics', label: 'Spend Analytics', icon: LineChart },
+            { to: '/buyer/profile', label: 'Business Profile', icon: User },
+          ]
+        }
       ];
     } else {
       // Admin
       return [
-        { to: '/admin/dashboard', label: 'Command Center', icon: LayoutDashboard },
-        { to: '/admin/market-intelligence', label: 'Regional Heatmap', icon: MapPin, badge: 'AI' },
-        { to: '/admin/simulator', label: 'What-If Simulator', icon: Sliders, badge: 'AI' },
-        { to: '/admin/anomalies', label: 'Fraud & Anomalies', icon: ShieldAlert, badge: 'Audit' },
-        { to: '/admin/users', label: 'User Directory', icon: Users },
-        { to: '/admin/listings', label: 'All Listings', icon: Layers },
-        { to: '/admin/orders', label: 'All Orders', icon: Truck },
-        { to: '/admin/analytics', label: 'Platform Analytics', icon: LineChart },
+        {
+          groupTitle: 'Command Center',
+          links: [
+            { to: '/admin/dashboard', label: 'Command Center', icon: LayoutDashboard },
+            { to: '/admin/users', label: 'User Directory', icon: Users },
+            { to: '/admin/listings', label: 'All Listings', icon: Layers },
+            { to: '/admin/orders', label: 'All Orders', icon: Truck },
+          ]
+        },
+        {
+          groupTitle: 'Macro Intelligence',
+          links: [
+            { to: '/admin/market-intelligence', label: 'Regional Heatmap', icon: MapPin, badge: 'AI' },
+            { to: '/admin/simulator', label: 'What-If Simulator', icon: Sliders, badge: 'AI' },
+            { to: '/admin/anomalies', label: 'Fraud & Anomalies', icon: ShieldAlert, badge: 'Audit' },
+            { to: '/admin/analytics', label: 'Platform Analytics', icon: LineChart },
+          ]
+        }
       ];
     }
   };
 
-  const links = getLinks();
+  const navGroups = getNavigationGroups();
 
   return (
     <>
@@ -86,76 +129,98 @@ export const Sidebar = ({ isOpen, onClose }) => {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-xs lg:hidden transition-opacity"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-16 bottom-0 left-0 z-40 w-64 bg-white border-r border-slate-200/80 p-4 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-16 bottom-0 left-0 z-40 w-68 bg-white border-r border-slate-200/80 p-4 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isOpen ? 'translate-x-0 shadow-elevated' : '-translate-x-full'
         }`}
       >
-        <div className="flex-1 overflow-y-auto space-y-1">
+        <div className="flex-1 overflow-y-auto space-y-6 pr-1">
           {/* User info banner */}
-          <div className="p-3 mb-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/80 border border-slate-200/70 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-black text-sm shadow-subtle shrink-0">
               {user.name?.charAt(0) || 'U'}
             </div>
-            <div className="overflow-hidden">
-              <h4 className="text-xs font-bold text-slate-800 truncate">{user.name}</h4>
-              <p className="text-[11px] text-slate-500 capitalize">
+            <div className="overflow-hidden min-w-0">
+              <h4 className="text-xs font-bold text-slate-900 truncate">{user.name}</h4>
+              <p className="text-[11px] text-slate-500 font-medium truncate capitalize">
                 {user.role === 'farmer'
                   ? user.farmer_profile?.farm_name || 'Farmer Account'
                   : user.role === 'buyer'
-                  ? user.buyer_profile?.business_name || 'Buyer Account'
+                  ? user.buyer_profile?.business_name || 'Commercial Buyer'
                   : 'Platform Admin'}
               </p>
             </div>
           </div>
 
-          <div className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            {user.role} Navigation
-          </div>
+          {/* Grouped Nav Links */}
+          {navGroups.map((group, gIdx) => (
+            <div key={gIdx} className="space-y-1">
+              <div className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                {group.groupTitle}
+              </div>
 
-          {/* Navigation Links */}
-          {links.map((link) => {
-            const Icon = link.icon;
-            return (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                    isActive
-                      ? 'bg-emerald-50 text-emerald-700 shadow-xs'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`
-                }
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{link.label}</span>
-                </div>
-                {link.badge && (
-                  <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-600 text-white shadow-xs">
-                    {link.badge}
-                  </span>
-                )}
-              </NavLink>
-            );
-          })}
+              {group.links.map((link) => {
+                const Icon = link.icon;
+                const isActive = location.pathname === link.to;
+
+                return (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    onClick={onClose}
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 group ${
+                      isActive
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                        : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Icon
+                        className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-105 ${
+                          isActive ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'
+                        }`}
+                      />
+                      <span className="truncate">{link.label}</span>
+                    </div>
+
+                    {link.badge && (
+                      <span
+                        className={`px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight ${
+                          isActive
+                            ? 'bg-white/20 text-white'
+                            : link.badge === 'AI'
+                            ? 'bg-purple-100 text-purple-800'
+                            : link.badge === 'Eco'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}
+                      >
+                        {link.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         {/* Bottom signout */}
-        <div className="pt-4 border-t border-slate-100">
+        <div className="pt-3 border-t border-slate-100 mt-2">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
           >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
+            <div className="flex items-center gap-2.5">
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 opacity-50" />
           </button>
         </div>
       </aside>

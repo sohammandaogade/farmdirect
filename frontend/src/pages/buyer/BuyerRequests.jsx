@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Inbox, ArrowUpRight, Check, X, Clock, MessageSquare } from 'lucide-react';
+import { Inbox, ArrowUpRight, Check, X, Clock, MessageSquare, Sparkles } from 'lucide-react';
 import { requestsAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -19,8 +19,8 @@ export const BuyerRequests = () => {
     try {
       setLoading(true);
       const res = await requestsAPI.getRequests();
-      if (res.data.success) {
-        setRequests(res.data.data);
+      if (res.data?.success) {
+        setRequests(res.data.data || []);
       }
     } catch (e) {
       showToast('Failed to load your purchase requests', 'error');
@@ -33,7 +33,7 @@ export const BuyerRequests = () => {
     if (!window.confirm('Cancel this purchase request?')) return;
     try {
       const res = await requestsAPI.cancelRequest(id);
-      if (res.data.success) {
+      if (res.data?.success) {
         showToast('Request cancelled.');
         fetchRequests();
       }
@@ -43,66 +43,73 @@ export const BuyerRequests = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Procurement</span>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">My Purchase Requests</h1>
-          <p className="text-xs text-slate-500 mt-1">Track offers sent to farmers and counter-offer status</p>
+          <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200/60">
+            Outbound Procurement Demands
+          </span>
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-1.5">
+            My Purchase Requests
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Track proposals dispatched to farm suppliers and counter-offer status.
+          </p>
         </div>
 
         <Link
           to="/buyer/smart-match"
-          className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 active:scale-95 transition-all self-start"
+          className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-md shadow-emerald-700/20 active:scale-95 transition-all flex items-center gap-1.5 self-start sm:self-auto"
         >
-          New Requirement Search
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>New AI Smart Match</span>
         </Link>
       </div>
 
       {loading ? (
-        <LoadingSpinner text="Fetching your requests..." />
+        <LoadingSpinner text="Fetching your purchase requests..." />
       ) : requests.length === 0 ? (
         <EmptyState
           icon={Inbox}
           title="No Purchase Requests Sent"
           message="You haven't submitted any offers to farmers yet. Use the marketplace or Smart Match to find produce."
-          actionText="Find Produce"
+          actionText="Explore Marketplace"
           onAction={() => window.location.href = '/marketplace'}
         />
       ) : (
-        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
+        <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold text-[10px]">
+              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-400 uppercase tracking-wider font-extrabold text-[10px]">
                 <tr>
-                  <th className="py-3.5 px-4">Farmer / Farm</th>
-                  <th className="py-3.5 px-4">Produce</th>
-                  <th className="py-3.5 px-4">Quantity</th>
-                  <th className="py-3.5 px-4">Listed vs Offer</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-4 px-5">Farmer / Farm</th>
+                  <th className="py-4 px-5">Produce</th>
+                  <th className="py-4 px-5">Quantity</th>
+                  <th className="py-4 px-5">Listed Rate vs Offer</th>
+                  <th className="py-4 px-5">Status</th>
+                  <th className="py-4 px-5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                 {requests.map((req) => (
                   <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-5">
                       <div className="font-bold text-slate-900">{req.farm_name || req.farmer_name}</div>
-                      <div className="text-[11px] text-slate-400">{req.listing_location}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">{req.listing_location}</div>
                     </td>
-                    <td className="py-4 px-4 font-bold text-slate-800 capitalize">
+                    <td className="py-4 px-5 font-bold text-slate-900 capitalize">
                       {req.crop}
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-5 font-semibold text-slate-800">
                       {req.requested_quantity?.toLocaleString()} {req.unit || 'kg'}
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-5">
                       <div className="text-slate-400 line-through text-[11px]">₹{req.farmer_listed_price}/kg</div>
-                      <div className="font-black text-emerald-700 text-sm">₹{req.offered_price}/kg</div>
+                      <div className="font-black text-emerald-700 text-sm mt-0.5">Offer: ₹{req.offered_price}/kg</div>
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-5">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                        className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                           req.status === 'ACCEPTED'
                             ? 'bg-emerald-100 text-emerald-800'
                             : req.status === 'NEGOTIATING'
@@ -115,11 +122,11 @@ export const BuyerRequests = () => {
                         {req.status}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-right">
+                    <td className="py-4 px-5 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Link
                           to={`/buyer/negotiations/${req.id}`}
-                          className="py-1.5 px-3 rounded-xl bg-slate-900 hover:bg-black text-white font-semibold text-[11px] transition-colors flex items-center gap-1"
+                          className="py-2 px-3.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-[11px] transition-colors flex items-center gap-1.5 shadow-sm"
                         >
                           <span>Negotiate</span>
                           <ArrowUpRight className="w-3.5 h-3.5" />
@@ -128,7 +135,7 @@ export const BuyerRequests = () => {
                         {req.status === 'PENDING' && (
                           <button
                             onClick={() => handleCancel(req.id)}
-                            className="py-1.5 px-2.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 text-[11px] font-semibold"
+                            className="py-2 px-3 rounded-xl border border-slate-200 text-slate-500 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-[11px] font-bold transition-colors"
                           >
                             Cancel
                           </button>

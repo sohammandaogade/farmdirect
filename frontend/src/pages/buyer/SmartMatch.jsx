@@ -10,6 +10,10 @@ import {
   ArrowRight,
   Send,
   HelpCircle,
+  Zap,
+  ArrowUpRight,
+  ShieldCheck,
+  Truck
 } from 'lucide-react';
 import { matchingAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -70,8 +74,8 @@ export const SmartMatch = () => {
       };
 
       const res = await matchingAPI.findMatches(payload);
-      if (res.data.success) {
-        setMatches(res.data.data);
+      if (res.data?.success) {
+        setMatches(res.data.data || []);
       }
     } catch (err) {
       showToast('Failed to compute AI matches', 'error');
@@ -102,53 +106,67 @@ export const SmartMatch = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-3">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 text-white p-6 sm:p-8 shadow-elevated border border-emerald-900/40">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 max-w-3xl space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-black uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>AI Recommendation Engine</span>
+            <span>AI Agricultural Recommendation Engine</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-            Find Best Agricultural Matches
+
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+            Algorithmic Direct-Farm Matching
           </h1>
-          <p className="text-xs sm:text-sm text-emerald-100/80 mt-1 leading-relaxed">
-            Specify your commercial procurement volume, target price ceiling, and delivery window. Our explainable matching algorithm evaluates crop compatibility, quantity fulfillment, geographic distance, and harvest freshness.
+          <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
+            Specify your commercial procurement volume, target budget ceiling, and delivery window. Our explainable matching engine evaluates crop compatibility, quantity fulfillment, geographic distance, and harvest freshness to find optimal supplier farms.
           </p>
 
-          <button
-            type="button"
-            onClick={handleLoadDemoScenario}
-            className="mt-4 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-xs font-semibold text-white transition-colors inline-flex items-center gap-1.5"
-          >
-            <span>⚡ Load Critical Demo Scenario (Rajesh Farms 🍅)</span>
-          </button>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={handleLoadDemoScenario}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-xs font-bold text-white transition-all inline-flex items-center gap-2 backdrop-blur-md active:scale-95"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-300" />
+              <span>Load Hackathon Demo Scenario (Rajesh Farms 🍅)</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Requirement Input Form */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
-          <Search className="w-4 h-4 text-emerald-600" />
-          <span>Enter Buyer Procurement Requirements</span>
-        </h3>
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-card">
+        <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
+              <Search className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Procurement Specifications</h3>
+              <p className="text-xs text-slate-400">Configure parameters for algorithmic matching</p>
+            </div>
+          </div>
+        </div>
 
-        <form onSubmit={handleFindMatches} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <form onSubmit={handleFindMatches} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Crop Selection (Predefined or Custom Crop) */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-700">Produce / Crop *</label>
+                <label className="block text-xs font-bold text-slate-800">Produce / Crop *</label>
                 <button
                   type="button"
                   onClick={() => {
                     setIsCustomCrop(!isCustomCrop);
                     if (!isCustomCrop && !customCrop) setCustomCrop('');
                   }}
-                  className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 hover:underline"
+                  className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
                 >
-                  {isCustomCrop ? '← Choose Standard Crop' : '+ Custom Crop'}
+                  {isCustomCrop ? '← Standard Crops' : '+ Custom Produce'}
                 </button>
               </div>
 
@@ -159,8 +177,8 @@ export const SmartMatch = () => {
                     required
                     value={customCrop}
                     onChange={(e) => setCustomCrop(e.target.value)}
-                    placeholder="Enter crop / produce name (e.g. Dragon Fruit, Sweet Corn)"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    placeholder="e.g. Dragon Fruit, Sweet Corn, Organic Turmeric"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                   />
                   {customCrop && (
                     <button
@@ -176,7 +194,7 @@ export const SmartMatch = () => {
                 <select
                   value={crop}
                   onChange={(e) => setCrop(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 >
                   {CROPS.map((c) => (
                     <option key={c} value={c}>{c}</option>
@@ -187,20 +205,20 @@ export const SmartMatch = () => {
 
             {/* Required Quantity */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Required Quantity (kg) *</label>
+              <label className="block text-xs font-bold text-slate-800 mb-1.5">Required Quantity (kg) *</label>
               <input
                 type="number"
                 required
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="e.g. 1500"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
 
             {/* Maximum Price */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Maximum Budget Price (₹/kg) *</label>
+              <label className="block text-xs font-bold text-slate-800 mb-1.5">Target Budget Ceiling (₹/kg) *</label>
               <input
                 type="number"
                 step="0.1"
@@ -208,30 +226,30 @@ export const SmartMatch = () => {
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 placeholder="e.g. 30"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
 
             {/* Location */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Delivery Destination Location *</label>
+              <label className="block text-xs font-bold text-slate-800 mb-1.5">Delivery Destination District *</label>
               <input
                 type="text"
                 required
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. Pune"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
 
             {/* Quality Grade */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Desired Quality Grade *</label>
+              <label className="block text-xs font-bold text-slate-800 mb-1.5">Target Quality Grade *</label>
               <select
                 value={quality}
                 onChange={(e) => setQuality(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               >
                 {QUALITIES.map((q) => (
                   <option key={q} value={q}>{q}</option>
@@ -241,25 +259,25 @@ export const SmartMatch = () => {
 
             {/* Required By Date */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Required By Date *</label>
+              <label className="block text-xs font-bold text-slate-800 mb-1.5">Required Delivery Date *</label>
               <input
                 type="date"
                 required
                 value={requiredByDate}
                 onChange={(e) => setRequiredByDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
           </div>
 
-          <div className="pt-3 flex justify-end">
+          <div className="pt-2 flex justify-end">
             <button
               type="submit"
               disabled={loading}
-              className="py-3 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/25 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
+              className="py-3 px-7 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-lg shadow-emerald-600/25 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>{loading ? 'Analyzing Listings...' : 'Find Matches via AI'}</span>
+              <Sparkles className="w-4 h-4 text-emerald-200" />
+              <span>{loading ? 'Evaluating Agricultural Matches...' : 'Find Matches via AI'}</span>
             </button>
           </div>
         </form>
@@ -267,22 +285,22 @@ export const SmartMatch = () => {
 
       {/* Results Section */}
       {loading ? (
-        <LoadingSpinner text="Running Explainable AI Recommendation Model..." />
+        <LoadingSpinner text="Computing multi-variable compatibility, logistics, and fair price benchmarks..." />
       ) : hasSearched && matches.length === 0 ? (
         <EmptyState
           icon={Search}
-          title="No Strong Matches Found"
-          message="We couldn't find an exact match for your requirement. Try increasing your budget ceiling or expanding your destination location."
+          title="No Direct Matches Found"
+          message="No active listings fit all strict parameters. Try broadening your budget ceiling or adjusting your destination location."
         />
       ) : matches.length > 0 ? (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-1">
             <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-emerald-600" />
-              <span>AI Recommended Farmers & Listings ({matches.length})</span>
+              <span>Ranked Farm Matches ({matches.length})</span>
             </h2>
-            <span className="text-xs text-slate-500">
-              Ranked descending by weighted suitability score
+            <span className="text-xs font-semibold text-slate-400">
+              Ranked by weighted composite score
             </span>
           </div>
 
@@ -293,47 +311,53 @@ export const SmartMatch = () => {
               return (
                 <div
                   key={listing.id}
-                  className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs hover:shadow-lg transition-all"
+                  className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-7 shadow-card hover:shadow-card-hover transition-all duration-300"
                 >
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-4 border-b border-slate-100">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-5 border-b border-slate-100">
                     {/* Produce & Farmer Info */}
                     <div className="flex items-start gap-4">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
+                      <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 shrink-0 shadow-subtle">
                         <img
                           src={listing.image_url || 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400'}
                           alt={listing.crop}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=400';
+                          }}
                         />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200/80">
                             Rank #{index + 1}
                           </span>
-                          <span className="text-xs text-slate-400">•</span>
+                          <span className="text-xs text-slate-300">•</span>
                           <span className="text-xs font-bold text-slate-600">{listing.quality_grade}</span>
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900 capitalize mt-0.5">
+                        <h3 className="text-xl font-black text-slate-900 capitalize mt-1">
                           {listing.crop}
                         </h3>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          Farmer: <strong className="text-slate-800">{listing.farm_name || listing.farmer_name}</strong> • {listing.location}
+                        <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>{listing.location}</span>
+                          <span>•</span>
+                          <strong className="text-slate-800">{listing.farm_name || listing.farmer_name}</strong>
                         </p>
                       </div>
                     </div>
 
                     {/* Stock & Price */}
-                    <div className="flex items-center gap-6">
+                    <div className="flex flex-wrap items-center gap-6">
                       <div>
-                        <span className="text-[11px] text-slate-400 block font-medium">Available</span>
-                        <span className="text-base font-bold text-slate-800">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Available Harvest</span>
+                        <span className="text-base font-black text-slate-900 tabular-nums">
                           {listing.available_quantity?.toLocaleString()} kg
                         </span>
                       </div>
 
                       <div className="text-right">
-                        <span className="text-[11px] text-slate-400 block font-medium">Listed Price</span>
-                        <span className="text-2xl font-black text-emerald-700">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Gate Price</span>
+                        <span className="text-2xl font-black text-emerald-700 tabular-nums">
                           ₹{listing.expected_price}/kg
                         </span>
                       </div>
@@ -346,10 +370,12 @@ export const SmartMatch = () => {
                   </div>
 
                   {/* Explainable AI Checklist Component */}
-                  <MatchExplanation
-                    explanation={match.explanation}
-                    breakdown={match.breakdown}
-                  />
+                  <div className="my-4">
+                    <MatchExplanation
+                      explanation={match.explanation}
+                      breakdown={match.breakdown}
+                    />
+                  </div>
 
                   {/* Quick summary of price and logistics if available */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -357,9 +383,14 @@ export const SmartMatch = () => {
                       <FairPriceInsight insight={price_insight} compact={true} />
                     )}
                     {logistics_estimate && (
-                      <div className="p-2.5 bg-blue-50/60 rounded-xl border border-blue-100 flex items-center justify-between text-xs text-slate-700">
-                        <span>Est. Freight: <strong>₹{logistics_estimate.estimated_transport_cost?.toLocaleString()}</strong> (~{logistics_estimate.distance_km} km)</span>
-                        <span className="text-[11px] text-blue-700 font-semibold">{logistics_estimate.estimated_delivery_time}</span>
+                      <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-center justify-between text-xs text-slate-700">
+                        <div className="flex items-center gap-2">
+                          <Truck className="w-4 h-4 text-blue-600 shrink-0" />
+                          <span>Est. Freight: <strong>₹{logistics_estimate.estimated_transport_cost?.toLocaleString()}</strong> (~{logistics_estimate.distance_km} km)</span>
+                        </div>
+                        <span className="text-[11px] text-blue-700 font-bold bg-white px-2 py-0.5 rounded-lg border border-blue-200">
+                          {logistics_estimate.estimated_delivery_time}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -370,9 +401,10 @@ export const SmartMatch = () => {
                       href={`/marketplace/${listing.id}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                      className="py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-1.5"
                     >
-                      View Details
+                      <span>Produce Details</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
                     </a>
 
                     <button
@@ -380,7 +412,7 @@ export const SmartMatch = () => {
                       className="py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-1.5"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      <span>Request Purchase</span>
+                      <span>Request Direct Purchase</span>
                     </button>
                   </div>
                 </div>

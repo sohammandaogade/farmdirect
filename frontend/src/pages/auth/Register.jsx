@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Sprout, Store, AlertCircle, ArrowRight, UserPlus } from 'lucide-react';
+import { Sprout, Store, AlertCircle, ArrowRight, UserPlus, ShieldCheck, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 
@@ -90,24 +90,30 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-white to-slate-50 flex items-center justify-center p-4 py-12">
-      <div className="max-w-xl w-full">
+    <div className="min-h-screen bg-[#F8FAF9] flex items-center justify-center p-4 py-12 relative overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="max-w-xl w-full relative z-10">
         {/* Brand logo */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2.5">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-600/20">
-              <Sprout className="w-7 h-7" />
+          <Link to="/" className="inline-flex items-center gap-3 group">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center shadow-lg shadow-emerald-700/25 group-hover:scale-105 transition-transform duration-300">
+              <Sprout className="w-6 h-6 stroke-[2.2]" />
             </div>
+            <span className="text-2xl font-black text-slate-900 tracking-tight">
+              Farm<span className="text-emerald-600">Direct</span>
+            </span>
           </Link>
-          <h2 className="text-2xl font-black text-slate-900 mt-4 tracking-tight">
-            Create your Farm<span className="text-emerald-600">Direct</span> Account
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-4 tracking-tight">
+            Create Your Trading Account
           </h2>
           <p className="text-xs text-slate-500 mt-1 font-medium">
-            Join the smart digital agricultural network
+            Join Maharashtra's direct-to-buyer agricultural marketplace
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xl shadow-slate-200/50">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-elevated">
           {/* Role selector tabs */}
           <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl mb-6">
             <button
@@ -138,7 +144,7 @@ export const Register = () => {
           </div>
 
           {error && (
-            <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+            <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -146,63 +152,63 @@ export const Register = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Common Account Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Name *</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Rajesh Patil"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Email Address *</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@domain.com"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Number *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Mobile Number *</label>
                 <input
                   type="tel"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="10-digit mobile (e.g. 9876543210)"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Password (min 6 chars) *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Password (min 6 chars) *</label>
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900"
                 />
               </div>
             </div>
 
             {/* Role-specific fields */}
             {role === 'farmer' ? (
-              <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100 space-y-3">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 block">
-                  Farmer Details
+              <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-200/60 space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 block">
+                  Producer & Farm Details
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -214,19 +220,19 @@ export const Register = () => {
                       value={farmName}
                       onChange={(e) => setFarmName(e.target.value)}
                       placeholder="e.g. Rajesh Farms"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-900"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Farm Location (City/District) *</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Farm Location (District) *</label>
                     <input
                       type="text"
                       required
                       value={farmLocation}
                       onChange={(e) => setFarmLocation(e.target.value)}
                       placeholder="e.g. Pune, Nashik, Satara"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-900"
                     />
                   </div>
                 </div>
@@ -239,7 +245,7 @@ export const Register = () => {
                       value={farmSize}
                       onChange={(e) => setFarmSize(e.target.value)}
                       placeholder="e.g. 25 acres"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-900"
                     />
                   </div>
 
@@ -250,15 +256,15 @@ export const Register = () => {
                       value={primaryCrops}
                       onChange={(e) => setPrimaryCrops(e.target.value)}
                       placeholder="e.g. Tomato, Onion, Potato"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-900"
                     />
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-3">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-900 block">
-                  Buyer Profile Details
+              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-200/60 space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-blue-900 block">
+                  Commercial Buyer Profile
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -269,8 +275,8 @@ export const Register = () => {
                       required
                       value={businessName}
                       onChange={(e) => setBusinessName(e.target.value)}
-                      placeholder="e.g. ABC Restaurant"
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      placeholder="e.g. ABC Restaurant / Hotel"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900"
                     />
                   </div>
 
@@ -279,25 +285,25 @@ export const Register = () => {
                     <select
                       value={buyerType}
                       onChange={(e) => setBuyerType(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900"
                     >
-                      <option value="Restaurant">Restaurant</option>
+                      <option value="Restaurant">Restaurant / Hotel</option>
                       <option value="Retailer">Retailer / Supermarket</option>
-                      <option value="Wholesaler">Wholesaler</option>
-                      <option value="Food Processor">Food Processor</option>
+                      <option value="Wholesaler">Wholesaler / Trader</option>
+                      <option value="Food Processor">Food Processing Unit</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Operating Location *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Operating Location (City/District) *</label>
                   <input
                     type="text"
                     required
                     value={businessLocation}
                     onChange={(e) => setBusinessLocation(e.target.value)}
-                    placeholder="e.g. Pune, Mumbai"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    placeholder="e.g. Pune, Mumbai, Nagpur"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-900"
                   />
                 </div>
               </div>
@@ -306,20 +312,20 @@ export const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3.5 px-4 text-white font-bold text-sm rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-4 ${
+              className={`w-full py-3.5 px-4 text-white font-bold text-xs rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-4 ${
                 role === 'farmer'
-                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
-                  : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
+                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-700/25'
+                  : 'bg-blue-600 hover:bg-blue-700 shadow-blue-700/25'
               }`}
             >
               <UserPlus className="w-4 h-4" />
-              <span>{loading ? 'Creating Account...' : `Register as ${role === 'farmer' ? 'Farmer' : 'Buyer'}`}</span>
+              <span>{loading ? 'Creating Account...' : `Register as ${role === 'farmer' ? 'Farmer' : 'Commercial Buyer'}`}</span>
             </button>
           </form>
 
           <div className="mt-6 pt-5 border-t border-slate-100 text-center text-xs text-slate-500">
             Already registered?{' '}
-            <Link to="/login" className="text-emerald-600 font-bold hover:underline">
+            <Link to="/login" className="text-emerald-700 font-bold hover:underline">
               Sign In here
             </Link>
           </div>

@@ -3,12 +3,57 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   body {
-    @apply bg-slate-50 text-slate-900 antialiased font-sans;
+    @apply bg-[#F8FAF9] text-slate-900 antialiased font-sans selection:bg-emerald-600 selection:text-white;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-bold text-slate-900;
   }
 }
 
-/* Custom scrollbar for clean dashboard UI */
+@layer utilities {
+  /* Modern Glass Effect */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+  }
+
+  .glass-panel-dark {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Agritech Gradient Accents */
+  .gradient-agri {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
+  }
+
+  .gradient-card-hero {
+    background: linear-gradient(135deg, #0b1f16 0%, #123e2c 50%, #064e3b 100%);
+  }
+
+  /* Text Gradients */
+  .text-gradient-emerald {
+    background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-dark {
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
