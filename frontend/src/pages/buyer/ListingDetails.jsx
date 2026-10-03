@@ -289,20 +289,40 @@ export const ListingDetails = () => {
             />
           )}
 
-          {/* Farmer Contact Info */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-              Farmer Verification
-            </h4>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm">
-                <Sprout className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-slate-800">{listing.farm_name || listing.farmer_name}</div>
-                <div className="text-xs text-slate-500">{listing.location} • Verified Farmer</div>
+          {/* Origin & Agent Verification Info (Section 11 Traceability) */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                Producer Information
+              </h4>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm">
+                  <Sprout className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-slate-800">{listing.farm_name || listing.farmer_name}</div>
+                  <div className="text-xs text-slate-500">{listing.location} • Verified Producer</div>
+                </div>
               </div>
             </div>
+
+            {listing.reviewed_by_name && (
+              <div className="pt-3 border-t border-slate-100">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-teal-600 mb-2 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Managed & Published By</span>
+                </h4>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-sm">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-slate-800">{listing.agent_agency || listing.reviewed_by_name}</div>
+                    <div className="text-xs text-slate-500">Accredited Quality Agent • {listing.reviewed_at ? new Date(listing.reviewed_at).toLocaleDateString() : 'Verified'}</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

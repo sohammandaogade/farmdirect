@@ -10,7 +10,13 @@ export const Register = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [role, setRole] = useState(searchParams.get('role') === 'buyer' ? 'buyer' : 'farmer');
+  const [role, setRole] = useState(
+    searchParams.get('role') === 'buyer'
+      ? 'buyer'
+      : searchParams.get('role') === 'agent'
+      ? 'agent'
+      : 'farmer'
+  );
 
   // Common fields
   const [name, setName] = useState('');
@@ -29,12 +35,17 @@ export const Register = () => {
   const [buyerType, setBuyerType] = useState('Restaurant');
   const [businessLocation, setBusinessLocation] = useState('Pune');
 
+  // Agent specific fields
+  const [agencyName, setAgencyName] = useState('');
+  const [operatingDistrict, setOperatingDistrict] = useState('Pune & Western Maharashtra');
+  const [licenseNumber, setLicenseNumber] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const roleParam = searchParams.get('role');
-    if (roleParam === 'buyer' || roleParam === 'farmer') {
+    if (roleParam === 'buyer' || roleParam === 'farmer' || roleParam === 'agent') {
       setRole(roleParam);
     }
   }, [searchParams]);
@@ -70,16 +81,21 @@ export const Register = () => {
         payload.farm_location = farmLocation;
         payload.farm_size = farmSize;
         payload.primary_crops = primaryCrops;
-      } else {
+      } else if (role === 'buyer') {
         payload.business_name = businessName || `${name} Enterprise`;
         payload.buyer_type = buyerType;
         payload.business_location = businessLocation;
+      } else if (role === 'agent') {
+        payload.agency_name = agencyName || `${name} Quality Services`;
+        payload.operating_district = operatingDistrict || 'Pune & Western Maharashtra';
+        payload.license_number = licenseNumber || 'AGY-MH-2026-REG';
       }
 
       const user = await register(payload);
       showToast('Registration successful! Welcome to FarmDirect.');
       if (user.role === 'farmer') navigate('/farmer/dashboard');
-      else navigate('/buyer/dashboard');
+      else if (user.role === 'buyer') navigate('/buyer/dashboard');
+      else if (user.role === 'agent') navigate('/agent/dashboard');
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Registration failed. Please check your inputs.';
       setError(msg);
@@ -115,31 +131,44 @@ export const Register = () => {
 
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-elevated">
           {/* Role selector tabs */}
-          <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-2xl mb-6">
             <button
               type="button"
               onClick={() => setRole('farmer')}
-              className={`py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`py-3 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 role === 'farmer'
                   ? 'bg-white text-emerald-800 shadow-sm'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <Sprout className="w-4 h-4 text-emerald-600" />
-              <span>I am a Farmer</span>
+              <span>Farmer</span>
             </button>
 
             <button
               type="button"
               onClick={() => setRole('buyer')}
-              className={`py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`py-3 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 role === 'buyer'
                   ? 'bg-white text-blue-800 shadow-sm'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <Store className="w-4 h-4 text-blue-600" />
-              <span>I am a Commercial Buyer</span>
+              <span>Commercial Buyer</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setRole('agent')}
+              className={`py-3 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                role === 'agent'
+                  ? 'bg-white text-indigo-800 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <span>Verification Agent</span>
             </button>
           </div>
 
@@ -261,7 +290,7 @@ export const Register = () => {
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : role === 'buyer' ? (
               <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-200/60 space-y-3">
                 <span className="text-[10px] font-black uppercase tracking-wider text-blue-900 block">
                   Commercial Buyer Profile
@@ -307,6 +336,51 @@ export const Register = () => {
                   />
                 </div>
               </div>
+            ) : (
+              <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-200/60 space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-indigo-900 block flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+                  Quality Verification Agent Credentials
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Agency / Certification Body *</label>
+                    <input
+                      type="text"
+                      required
+                      value={agencyName}
+                      onChange={(e) => setAgencyName(e.target.value)}
+                      placeholder="e.g. MahaAgri Quality Verifiers"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Operating District / Region *</label>
+                    <input
+                      type="text"
+                      required
+                      value={operatingDistrict}
+                      onChange={(e) => setOperatingDistrict(e.target.value)}
+                      placeholder="e.g. Pune & Western Maharashtra"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Inspector License / Badge Number *</label>
+                  <input
+                    type="text"
+                    required
+                    value={licenseNumber}
+                    onChange={(e) => setLicenseNumber(e.target.value)}
+                    placeholder="e.g. AGY-MH-2026-8841"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-slate-900"
+                  />
+                </div>
+              </div>
             )}
 
             <button
@@ -315,11 +389,23 @@ export const Register = () => {
               className={`w-full py-3.5 px-4 text-white font-bold text-xs rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-4 ${
                 role === 'farmer'
                   ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-700/25'
-                  : 'bg-blue-600 hover:bg-blue-700 shadow-blue-700/25'
+                  : role === 'buyer'
+                  ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-700/25'
+                  : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-700/25'
               }`}
             >
               <UserPlus className="w-4 h-4" />
-              <span>{loading ? 'Creating Account...' : `Register as ${role === 'farmer' ? 'Farmer' : 'Commercial Buyer'}`}</span>
+              <span>
+                {loading
+                  ? 'Creating Account...'
+                  : `Register as ${
+                      role === 'farmer'
+                        ? 'Farmer'
+                        : role === 'buyer'
+                        ? 'Commercial Buyer'
+                        : 'Verification Agent'
+                    }`}
+              </span>
             </button>
           </form>
 

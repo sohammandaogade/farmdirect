@@ -52,6 +52,9 @@ import MarketIntelligence from './pages/admin/MarketIntelligence';
 import WhatIfSimulator from './pages/admin/WhatIfSimulator';
 import AnomalyDetection from './pages/admin/AnomalyDetection';
 
+// Pages - Agent
+import AgentVerificationPortal from './pages/agent/AgentVerificationPortal';
+
 // Protected Route Guard
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -68,6 +71,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     // Redirect to user's assigned dashboard
     if (user.role === 'farmer') return <Navigate to="/farmer/dashboard" replace />;
     if (user.role === 'buyer') return <Navigate to="/buyer/dashboard" replace />;
+    if (user.role === 'agent') return <Navigate to="/agent/dashboard" replace />;
     if (user.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
     return <Navigate to="/" replace />;
   }
@@ -342,6 +346,16 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <PortalLayout><AdminAnalytics /></PortalLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Agent Verification Routes */}
+            <Route
+              path="/agent/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={['agent', 'admin']}>
+                  <PortalLayout><AgentVerificationPortal /></PortalLayout>
                 </ProtectedRoute>
               }
             />

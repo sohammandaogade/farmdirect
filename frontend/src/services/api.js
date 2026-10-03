@@ -179,4 +179,12 @@ export const qualityAPI = {
   getListingInspection: (listingId) => api.get(`/quality/listing/${listingId}`),
 };
 
+export const agentAPI = {
+  getListings: (status) => api.get('/agent/listings', { params: { status } }),
+  getListingDetail: (id) => api.get(`/agent/listings/${id}`),
+  reviewListing: (id, data) => api.post(`/agent/listings/${id}/review`, data),
+  getProfile: () => api.get('/agent/profile'),
+  updateProfile: (data) => api.put('/agent/profile', data),
+};
+
 export default api;

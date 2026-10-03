@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sprout, PlusCircle, Edit3, PauseCircle, PlayCircle, CheckCircle, Trash2, Eye } from 'lucide-react';
+import { Sprout, PlusCircle, Edit3, PauseCircle, PlayCircle, CheckCircle, Trash2, Eye, AlertTriangle, Clock } from 'lucide-react';
 import { farmerAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
+
+const FILTER_TABS = [
+  { id: 'ALL', label: 'All Requests' },
+  { id: 'PENDING_AGENT_REVIEW', label: 'Pending Agent Review' },
+  { id: 'PUBLISHED', label: 'Accepted & Published' },
+  { id: 'REJECTED', label: 'Rejected' },
+  { id: 'ACTIVE', label: 'Active' },
+  { id: 'PAUSED', label: 'Paused' },
+  { id: 'SOLD', label: 'Sold' },
+];
 
 export const FarmerListings = () => {
   const { showToast } = useToast();
@@ -31,7 +41,7 @@ export const FarmerListings = () => {
   };
 
   const handleToggleStatus = async (id, currentStatus) => {
-    const nextStatus = currentStatus === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+    const nextStatus = (currentStatus === 'ACTIVE' || currentStatus === 'PUBLISHED' || currentStatus === 'APPROVED') ? 'PAUSED' : 'ACTIVE';
     try {
       const res = await farmerAPI.toggleStatus(id, nextStatus);
       if (res.data.success) {
@@ -39,7 +49,7 @@ export const FarmerListings = () => {
         fetchListings();
       }
     } catch (e) {
-      showToast('Failed to update status', 'error');
+      showToast(e.response?.data?.message || 'Failed to update status', 'error');
     }
   };
 
@@ -51,7 +61,7 @@ export const FarmerListings = () => {
         fetchListings();
       }
     } catch (e) {
-      showToast('Failed to mark sold', 'error');
+      showToast(e.response?.data?.message || 'Failed to mark sold', 'error');
     }
   };
 
@@ -68,14 +78,63 @@ export const FarmerListings = () => {
     }
   };
 
+  const renderStatusBadge = (status) => {
+    switch (status) {
+      case 'PENDING_AGENT_REVIEW':
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 text-amber-800">
+            Pending Agent Review
+          </span>
+        );
+      case 'PUBLISHED':
+      case 'ACCEPTED':
+      case 'APPROVED':
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+            Accepted & Published
+          </span>
+        );
+      case 'ACTIVE':
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+            Active
+          </span>
+        );
+      case 'PAUSED':
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-700">
+            Paused
+          </span>
+        );
+      case 'REJECTED':
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-rose-100 text-rose-800">
+            Rejected
+          </span>
+        );
+      case 'SOLD':
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-100 text-blue-800">
+            Sold
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-200 text-slate-700">
+            {status}
+          </span>
+        );
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Inventory</span>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">My Produce Listings</h1>
-          <p className="text-xs text-slate-500 mt-1">Manage crop availability, prices, and stock</p>
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Farmer Desk</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">My Produce Requests & Inventory</h1>
+          <p className="text-xs text-slate-500 mt-1">Manage crop requests, quality verification status, and market availability</p>
         </div>
 
         <Link
@@ -83,23 +142,23 @@ export const FarmerListings = () => {
           className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2 self-start"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>Add Produce</span>
+          <span>Create Produce Request</span>
         </Link>
       </div>
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200">
-        {['ALL', 'ACTIVE', 'PAUSED', 'SOLD'].map((st) => (
+        {FILTER_TABS.map((tab) => (
           <button
-            key={st}
-            onClick={() => setStatusFilter(st)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
-              statusFilter === st
+            key={tab.id}
+            onClick={() => setStatusFilter(tab.id)}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
+              statusFilter === tab.id
                 ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-100'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/60'
             }`}
           >
-            {st}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -130,17 +189,7 @@ export const FarmerListings = () => {
                     <h3 className="text-xl font-bold text-slate-900 capitalize mt-1">{item.crop}</h3>
                     <p className="text-xs text-slate-400">{item.location} • Ready: {item.availability_date}</p>
                   </div>
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
-                      item.status === 'ACTIVE'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : item.status === 'PAUSED'
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-slate-200 text-slate-700'
-                    }`}
-                  >
-                    {item.status}
-                  </span>
+                  {renderStatusBadge(item.status)}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 my-4 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-xs">
@@ -159,19 +208,54 @@ export const FarmerListings = () => {
                 </div>
 
                 {item.description && (
-                  <p className="text-xs text-slate-500 line-clamp-2 mb-4">{item.description}</p>
+                  <p className="text-xs text-slate-500 line-clamp-2 mb-3">{item.description}</p>
+                )}
+
+                {/* Rejection Alert Box */}
+                {item.status === 'REJECTED' && (
+                  <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800">
+                    <div className="font-bold flex items-center gap-1.5 mb-1">
+                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                      <span>Listing Rejected by Agent</span>
+                    </div>
+                    <p className="text-rose-700 text-[11px] leading-relaxed">
+                      {item.rejection_reason || 'Listing was rejected during quality verification.'}
+                    </p>
+                    {item.reviewed_at && (
+                      <span className="block text-[10px] text-rose-500 mt-1.5 font-medium">
+                        Reviewed on {new Date(item.reviewed_at).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Pending Agent Review Notice */}
+                {item.status === 'PENDING_AGENT_REVIEW' && (
+                  <div className="mb-4 p-2.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span className="text-[11px] font-medium">Pending Agent Review — Hidden from marketplace until approved.</span>
+                  </div>
                 )}
               </div>
 
               {/* Action Buttons */}
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-1 text-xs">
-                <Link
-                  to={`/marketplace/${item.id}`}
-                  className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
-                  title="View in Marketplace"
-                >
-                  <Eye className="w-4 h-4" />
-                </Link>
+                {(item.status === 'ACTIVE' || item.status === 'APPROVED' || item.status === 'SOLD') ? (
+                  <Link
+                    to={`/marketplace/${item.id}`}
+                    className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+                    title="View in Marketplace"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Link>
+                ) : (
+                  <span
+                    className="p-2 rounded-xl text-slate-300 cursor-not-allowed"
+                    title="Not visible in marketplace until approved"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </span>
+                )}
 
                 <Link
                   to={`/farmer/listings/edit/${item.id}`}
@@ -181,7 +265,7 @@ export const FarmerListings = () => {
                   <Edit3 className="w-4 h-4" />
                 </Link>
 
-                {item.status !== 'SOLD' && (
+                {item.status !== 'SOLD' && item.status !== 'PENDING_AGENT_REVIEW' && item.status !== 'REJECTED' && (
                   <button
                     onClick={() => handleToggleStatus(item.id, item.status)}
                     className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
@@ -195,7 +279,7 @@ export const FarmerListings = () => {
                   </button>
                 )}
 
-                {item.status !== 'SOLD' && (
+                {item.status !== 'SOLD' && item.status !== 'REJECTED' && item.status !== 'PENDING_AGENT_REVIEW' && (
                   <button
                     onClick={() => handleMarkSold(item.id)}
                     className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"

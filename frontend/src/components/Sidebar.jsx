@@ -96,6 +96,16 @@ export const Sidebar = ({ isOpen, onClose }) => {
           ]
         }
       ];
+    } else if (user.role === 'agent') {
+      return [
+        {
+          groupTitle: 'Verification Workspace',
+          links: [
+            { to: '/agent/dashboard', label: 'Crop Verifications', icon: ShieldCheck, badge: 'Agent' },
+            { to: '/marketplace', label: 'Marketplace View', icon: ShoppingBag },
+          ]
+        }
+      ];
     } else {
       // Admin
       return [
@@ -103,6 +113,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           groupTitle: 'Command Center',
           links: [
             { to: '/admin/dashboard', label: 'Command Center', icon: LayoutDashboard },
+            { to: '/agent/dashboard', label: 'Crop Verifications', icon: ShieldCheck, badge: 'Agent' },
             { to: '/admin/users', label: 'User Directory', icon: Users },
             { to: '/admin/listings', label: 'All Listings', icon: Layers },
             { to: '/admin/orders', label: 'All Orders', icon: Truck },
@@ -152,6 +163,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
                   ? user.farmer_profile?.farm_name || 'Farmer Account'
                   : user.role === 'buyer'
                   ? user.buyer_profile?.business_name || 'Commercial Buyer'
+                  : user.role === 'agent'
+                  ? 'Verification Agent'
                   : 'Platform Admin'}
               </p>
             </div>
@@ -210,8 +223,24 @@ export const Sidebar = ({ isOpen, onClose }) => {
           ))}
         </div>
 
-        {/* Bottom signout */}
-        <div className="pt-3 border-t border-slate-100 mt-2">
+        {/* Bottom actions */}
+        <div className="pt-3 border-t border-slate-100 mt-2 space-y-1.5">
+          {user.role !== 'agent' && (
+            <button
+              onClick={() => {
+                handleLogout();
+                navigate('/register?role=agent');
+              }}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                <span>Create Agent Account</span>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5 opacity-50" />
+            </button>
+          )}
+
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"

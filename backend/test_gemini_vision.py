@@ -256,8 +256,8 @@ class TestGeminiVisionLayer(unittest.TestCase):
             self.assertEqual(resp.status_code, 201)
             body = resp.get_json()
             self.assertTrue(body['success'])
-            self.assertEqual(body['data']['status'], 'ACTIVE')
-            print("  [PASS] TEST 4: Fresh produce verified (quality: ACCEPTABLE, decision: APPROVE, listing published as ACTIVE).")
+            self.assertEqual(body['data']['status'], 'PENDING_AGENT_REVIEW')
+            print("  [PASS] TEST 4: Fresh produce verified (quality: ACCEPTABLE, listing created as PENDING_AGENT_REVIEW for agent verification).")
 
     # -------------------------------------------------------------------------
     # TEST 5: Unrelated Non-Agricultural Image

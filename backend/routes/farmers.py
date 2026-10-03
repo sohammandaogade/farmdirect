@@ -137,8 +137,6 @@ def create_listing(current_user):
             )
         ).order_by(QualityInspection.created_at.desc()).first()
 
-    initial_status = 'ACTIVE'
-
     if inspection:
         # 1. ROTTEN PRODUCE MUST BE BLOCKED SERVER-SIDE (Requirement 6)
         if (inspection.verification_status in ['REJECTED', 'ROTTEN', 'REJECT'] or
@@ -164,12 +162,8 @@ def create_listing(current_user):
                 'selected_crop': crop
             }), 422
 
-        # 3. IF REVIEW: DO NOT PUBLISH AUTOMATICALLY AS ACTIVE (Requirement 6)
-        if inspection.verification_status in ['REVIEW_REQUIRED', 'REVIEW', 'IMAGE_UNSUITABLE', 'UNVERIFIED']:
-            initial_status = 'PAUSED'
-    else:
-        # Produce without an AI quality inspection must NOT be auto-published as ACTIVE
-        initial_status = 'PAUSED'
+    # New farmer listings require Agent review before appearing in Buyer Marketplace
+    initial_status = 'PENDING_AGENT_REVIEW'
 
     qty_val = float(quantity)
     if qty_val < 5000:
@@ -341,8 +335,20 @@ def toggle_status(current_user, listing_id):
     if new_status not in ['ACTIVE', 'PAUSED', 'SOLD']:
         return jsonify({'success': False, 'message': 'Invalid status.'}), 400
 
-    # Anti-bypass verification: Prevent publishing rotten, mismatched, or uninspected listings
+    # Anti-bypass verification: Prevent publishing unreviewed, rotten, mismatched, or uninspected listings
     if new_status == 'ACTIVE':
+        if listing.status == 'PENDING_AGENT_REVIEW':
+            return jsonify({
+                'success': False,
+                'message': 'Cannot activate listing: Listing is pending verification by Quality Agent.'
+            }), 400
+
+        if listing.status == 'REJECTED':
+            return jsonify({
+                'success': False,
+                'message': f'Cannot activate listing: Listing was rejected by Quality Agent ({listing.rejection_reason or "Unapproved"}).'
+            }), 400
+
         insp = listing.quality_inspections[-1] if listing.quality_inspections else QualityInspection.query.filter_by(listing_id=listing.id).order_by(QualityInspection.created_at.desc()).first()
         if not insp and listing.image_url:
             norm_url = listing.image_url.lstrip('/')

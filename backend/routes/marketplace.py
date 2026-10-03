@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from database import db
 from models import ProduceListing, User
 from services.price_engine import PriceEngine
 from services.logistics import LogisticsService
@@ -9,7 +10,7 @@ marketplace_bp = Blueprint('marketplace', __name__, url_prefix='/api/marketplace
 @marketplace_bp.route('', methods=['GET'])
 def get_listings():
     query = ProduceListing.query.filter(
-        ProduceListing.status == 'ACTIVE',
+        ProduceListing.status.in_(['PUBLISHED', 'ACTIVE', 'APPROVED']),
         ProduceListing.available_quantity > 0
     )
 
@@ -74,9 +75,12 @@ def get_listings():
 
 @marketplace_bp.route('/<int:listing_id>', methods=['GET'])
 def get_listing_detail(listing_id):
-    listing = ProduceListing.query.get(listing_id)
+    listing = db.session.get(ProduceListing, listing_id)
     if not listing:
         return jsonify({'success': False, 'message': 'Listing not found.'}), 404
+
+    if listing.status not in ['PUBLISHED', 'ACTIVE', 'APPROVED']:
+        return jsonify({'success': False, 'message': 'This produce listing is not publicly published.'}), 404
 
     data = listing.to_dict(include_farmer=True)
     

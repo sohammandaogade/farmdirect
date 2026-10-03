@@ -36,6 +36,8 @@ export const ListingCard = ({
     farm_name,
     farmer_name,
     image_url,
+    reviewed_by_name,
+    agent_agency,
   } = listing;
 
   const cropKey = (crop || '').toLowerCase();
@@ -130,6 +132,13 @@ export const ListingCard = ({
               </div>
             </div>
           </div>
+
+          {reviewed_by_name && (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-xl border border-teal-200/60 mb-1 truncate">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+              <span className="truncate">Verified by {agent_agency || reviewed_by_name}</span>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}

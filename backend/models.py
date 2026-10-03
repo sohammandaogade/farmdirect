@@ -16,7 +16,8 @@ class User(db.Model):
 
     farmer_profile = db.relationship('FarmerProfile', back_populates='user', uselist=False, cascade='all, delete-orphan')
     buyer_profile = db.relationship('BuyerProfile', back_populates='user', uselist=False, cascade='all, delete-orphan')
-    listings = db.relationship('ProduceListing', back_populates='farmer', cascade='all, delete-orphan')
+    agent_profile = db.relationship('AgentProfile', back_populates='user', uselist=False, cascade='all, delete-orphan')
+    listings = db.relationship('ProduceListing', foreign_keys='ProduceListing.farmer_id', back_populates='farmer', cascade='all, delete-orphan')
     purchase_requests = db.relationship('PurchaseRequest', back_populates='buyer', cascade='all, delete-orphan')
     notifications = db.relationship('Notification', back_populates='user', cascade='all, delete-orphan', order_by='Notification.created_at.desc()')
 
@@ -40,6 +41,8 @@ class User(db.Model):
             data['farmer_profile'] = self.farmer_profile.to_dict()
         elif self.role == 'buyer' and self.buyer_profile:
             data['buyer_profile'] = self.buyer_profile.to_dict()
+        elif self.role == 'agent' and self.agent_profile:
+            data['agent_profile'] = self.agent_profile.to_dict()
         return data
 
 
@@ -99,6 +102,31 @@ class BuyerProfile(db.Model):
         }
 
 
+class AgentProfile(db.Model):
+    __tablename__ = 'agent_profiles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
+    agency_name = db.Column(db.String(150), nullable=False)
+    operating_district = db.Column(db.String(150), nullable=False, default='Pune')
+    license_number = db.Column(db.String(100), nullable=True)
+    verification_badge = db.Column(db.String(50), default='VERIFIED_AGENT')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', back_populates='agent_profile')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'agency_name': self.agency_name,
+            'operating_district': self.operating_district,
+            'license_number': self.license_number,
+            'verification_badge': self.verification_badge,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
 class ProduceListing(db.Model):
     __tablename__ = 'produce_listings'
 
@@ -116,11 +144,15 @@ class ProduceListing(db.Model):
     quality_grade = db.Column(db.String(50), nullable=False)  # Grade A, Grade B, Organic, etc.
     description = db.Column(db.Text, nullable=True)
     image_url = db.Column(db.String(500), nullable=True)
-    status = db.Column(db.String(20), default='ACTIVE', nullable=False)  # ACTIVE, PAUSED, SOLD, EXPIRED
+    status = db.Column(db.String(50), default='PENDING_AGENT_REVIEW', nullable=False)  # PENDING_AGENT_REVIEW, APPROVED, ACTIVE, REJECTED, PAUSED, SOLD, EXPIRED
+    rejection_reason = db.Column(db.Text, nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    reviewed_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    farmer = db.relationship('User', back_populates='listings')
+    farmer = db.relationship('User', foreign_keys=[farmer_id], back_populates='listings')
+    reviewed_by = db.relationship('User', foreign_keys=[reviewed_by_id])
     purchase_requests = db.relationship('PurchaseRequest', back_populates='listing', cascade='all, delete-orphan')
     orders = db.relationship('Order', back_populates='listing')
     quality_inspections = db.relationship('QualityInspection', back_populates='listing', cascade='all, delete-orphan')
@@ -142,6 +174,12 @@ class ProduceListing(db.Model):
             'description': self.description,
             'image_url': self.image_url,
             'status': self.status,
+            'rejection_reason': self.rejection_reason,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
+            'reviewed_by_id': self.reviewed_by_id,
+            'reviewed_by_name': self.reviewed_by.name if self.reviewed_by else None,
+            'agent_name': self.reviewed_by.name if self.reviewed_by else None,
+            'agent_agency': (self.reviewed_by.agent_profile.agency_name if (self.reviewed_by and self.reviewed_by.agent_profile) else None),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

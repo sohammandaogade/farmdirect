@@ -2,7 +2,7 @@ from datetime import datetime, date, timedelta
 from flask import current_app
 from database import db
 from models import (
-    User, FarmerProfile, BuyerProfile, ProduceListing, PurchaseRequest, Negotiation,
+    User, FarmerProfile, BuyerProfile, AgentProfile, ProduceListing, PurchaseRequest, Negotiation,
     Order, OrderStatusHistory, PriceReference, Notification,
     SoilProfile, CropHistory, FarmExpense, FarmerPerformance, BuyerPerformance,
     QualityInspection, WasteListing, WasteOrder, AnomalyEvent, CropMarketHistory
@@ -56,8 +56,17 @@ def _execute_seed_logic():
                     user.is_active = True
             return user
 
-        # 1. Admin
+        # 1. Admin & Agent
         admin = get_or_create_user("System Administrator", "admin@farmdirect.demo", "+91 98765 43210", "admin", "admin123")
+        agent = get_or_create_user("Quality Verification Agent", "agent@farmdirect.demo", "+91 98440 11223", "agent", "agent123")
+        if not AgentProfile.query.filter_by(user_id=agent.id).first():
+            db.session.add(AgentProfile(
+                user_id=agent.id,
+                agency_name="MahaAgri Quality Verifiers & Certifications",
+                operating_district="Pune & Western Maharashtra",
+                license_number="AGY-MH-2026-8841",
+                verification_badge="VERIFIED_GOV_AGENT"
+            ))
 
         # 2. Farmers
         f1 = get_or_create_user("Rajesh Patil", "farmer@farmdirect.demo", "+91 98220 11223", "farmer", "password123")

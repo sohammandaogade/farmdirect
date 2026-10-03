@@ -24,6 +24,7 @@ from routes.digital_twin import digital_twin_bp
 from routes.waste import waste_bp
 from routes.command_center import command_center_bp
 from routes.quality import quality_bp
+from routes.agent import agent_bp
 
 frontend_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'))
 uploads_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), 'uploads'))
@@ -59,6 +60,7 @@ def create_app(config_class=Config):
     app.register_blueprint(waste_bp)
     app.register_blueprint(command_center_bp)
     app.register_blueprint(quality_bp)
+    app.register_blueprint(agent_bp)
 
     @app.route('/health', methods=['GET'])
     @app.route('/api/health', methods=['GET'])
@@ -146,7 +148,10 @@ def create_app(config_class=Config):
             if 'produce_listings' in table_names:
                 existing_cols = {c['name'] for c in inspector.get_columns('produce_listings')}
                 produce_cols = [
-                    ('available_quantity', 'FLOAT')
+                    ('available_quantity', 'FLOAT'),
+                    ('rejection_reason', 'TEXT'),
+                    ('reviewed_at', 'TIMESTAMP' if is_pg else 'DATETIME'),
+                    ('reviewed_by_id', 'INTEGER')
                 ]
                 with db.engine.connect() as conn:
                     for col_name, col_type in produce_cols:
@@ -188,6 +193,15 @@ def create_app(config_class=Config):
                     app.logger.info("Explicitly created missing table 'order_complaints'.")
                 except Exception as ex:
                     app.logger.warning(f"OrderComplaint table creation notice: {ex}")
+
+            # Verify 'agent_profiles' table
+            if 'agent_profiles' not in table_names:
+                try:
+                    from models import AgentProfile
+                    AgentProfile.__table__.create(db.engine)
+                    app.logger.info("Explicitly created missing table 'agent_profiles'.")
+                except Exception as ex:
+                    app.logger.warning(f"AgentProfile table creation notice: {ex}")
         except Exception as e:
             app.logger.warning(f"Schema column verification warning: {e}")
 

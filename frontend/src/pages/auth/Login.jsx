@@ -18,6 +18,7 @@ export const Login = () => {
   const redirectUser = (role) => {
     if (role === 'farmer') navigate('/farmer/dashboard');
     else if (role === 'buyer') navigate('/buyer/dashboard');
+    else if (role === 'agent') navigate('/agent/dashboard');
     else if (role === 'admin') navigate('/admin/dashboard');
     else navigate('/');
   };
@@ -85,7 +86,7 @@ export const Login = () => {
             <span>1-Click Hackathon Demo Logins</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               type="button"
               onClick={() => handleQuickDemoLogin('farmer@farmdirect.demo', 'password123')}
@@ -104,6 +105,16 @@ export const Login = () => {
               <span className="text-[10px] font-black uppercase tracking-wider text-blue-800 block">Buyer</span>
               <span className="text-xs font-bold text-slate-900 block truncate mt-0.5">ABC Enterprise</span>
               <span className="text-[10px] text-slate-500 block truncate">Commercial</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleQuickDemoLogin('agent@farmdirect.demo', 'agent123')}
+              className="p-3 bg-teal-50/70 hover:bg-teal-100/70 border border-teal-200/80 rounded-2xl text-left transition-all active:scale-95"
+            >
+              <span className="text-[10px] font-black uppercase tracking-wider text-teal-800 block">Agent</span>
+              <span className="text-xs font-bold text-slate-900 block truncate mt-0.5">Verifier</span>
+              <span className="text-[10px] text-slate-500 block truncate">Quality Officer</span>
             </button>
 
             <button

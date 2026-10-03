@@ -66,6 +66,14 @@ export const Landing = () => {
             </Link>
 
             <Link
+              to="/register?role=agent"
+              className="px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-indigo-700/25 active:scale-95 transition-all flex items-center gap-2.5"
+            >
+              <ShieldCheck className="w-4 h-4 text-indigo-200" />
+              <span>Join as Quality Agent</span>
+            </Link>
+
+            <Link
               to="/marketplace"
               className="px-6 py-4 bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm rounded-2xl border border-slate-200 shadow-subtle transition-all flex items-center gap-2"
             >

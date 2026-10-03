@@ -2,7 +2,7 @@ import logging
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
 from database import db
-from models import User, FarmerProfile, BuyerProfile
+from models import User, FarmerProfile, BuyerProfile, AgentProfile
 from utils.auth import generate_token, token_required
 from utils.validation import validate_email, validate_indian_phone
 
@@ -21,8 +21,8 @@ def register():
     if not name or not email or not password or not role:
         return jsonify({'success': False, 'message': 'Name, email, password, and role are required.'}), 400
 
-    if role not in ['farmer', 'buyer']:
-        return jsonify({'success': False, 'message': 'Role must be either "farmer" or "buyer".'}), 400
+    if role not in ['farmer', 'buyer', 'agent']:
+        return jsonify({'success': False, 'message': 'Role must be "farmer", "buyer", or "agent".'}), 400
 
     if not validate_email(email):
         return jsonify({'success': False, 'message': 'Invalid email address format.'}), 400
@@ -83,6 +83,20 @@ def register():
                 business_name=business_name,
                 buyer_type=buyer_type,
                 location=location
+            )
+            db.session.add(profile)
+
+        elif role == 'agent':
+            agency_name = data.get('agency_name', '').strip() or f"{name} Quality Verification Services"
+            operating_district = data.get('operating_district', '').strip() or data.get('location', '').strip() or 'Pune & Western Maharashtra'
+            license_number = data.get('license_number', '').strip() or 'AGY-MH-2026-REG'
+
+            profile = AgentProfile(
+                user_id=user.id,
+                agency_name=agency_name,
+                operating_district=operating_district,
+                license_number=license_number,
+                verification_badge='VERIFIED_GOV_AGENT'
             )
             db.session.add(profile)
 
