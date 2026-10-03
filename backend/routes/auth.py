@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from database import db
 from models import User, FarmerProfile, BuyerProfile
 from utils.auth import generate_token, token_required
-from utils.validation import validate_email
+from utils.validation import validate_email, validate_indian_phone
 
 logger = logging.getLogger('farmdirect.auth')
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -26,6 +26,12 @@ def register():
 
     if not validate_email(email):
         return jsonify({'success': False, 'message': 'Invalid email address format.'}), 400
+
+    if not phone:
+        return jsonify({'success': False, 'message': 'Phone number is required.'}), 400
+
+    if not validate_indian_phone(phone):
+        return jsonify({'success': False, 'message': 'Valid 10-digit Indian mobile number is required (starting with 6, 7, 8, or 9).'}), 400
 
     if len(password) < 6:
         return jsonify({'success': False, 'message': 'Password must be at least 6 characters long.'}), 400

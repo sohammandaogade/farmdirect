@@ -237,6 +237,15 @@ export const ListingDetails = () => {
                 <Edit3 className="w-4 h-4" />
                 <span>Edit My Listing</span>
               </Link>
+            ) : (listing.available_quantity <= 0 || listing.status === 'SOLD') ? (
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-center space-y-2">
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-600 text-white">
+                  Sold Out
+                </span>
+                <p className="text-xs text-rose-700 font-medium">
+                  This harvest lot has been fully procured. Further purchase orders are closed.
+                </p>
+              </div>
             ) : isBuyer ? (
               <button
                 onClick={() => setIsModalOpen(true)}

@@ -130,3 +130,45 @@ class AnomalyDetector:
         if status_filter:
             query = query.filter_by(status=status_filter)
         return [a.to_dict() for a in query.all()]
+
+    @staticmethod
+    def audit_complaint_fraud(farmer_id):
+        """
+        Monitors dispute clusters across orders. If a supplier accumulates
+        2 or more active, unresolved complaints, flags an AnomalyEvent
+        for immediate human admin investigation.
+        """
+        try:
+            from models import OrderComplaint, Order
+            complaint_count = db.session.query(OrderComplaint).join(
+                Order, OrderComplaint.order_id == Order.id
+            ).filter(
+                Order.farmer_id == farmer_id,
+                OrderComplaint.status.in_(['SUBMITTED', 'UNDER REVIEW', 'INVESTIGATING'])
+            ).count()
+
+            if complaint_count >= 2:
+                existing = AnomalyEvent.query.filter_by(
+                    entity_type='FARMER',
+                    entity_id=farmer_id,
+                    anomaly_type='REPEATED_COMPLAINTS',
+                    status='NEEDS_REVIEW'
+                ).first()
+
+                if not existing:
+                    anomaly = AnomalyEvent(
+                        entity_type='FARMER',
+                        entity_id=farmer_id,
+                        anomaly_type='REPEATED_COMPLAINTS',
+                        severity='HIGH',
+                        title=f'Supplier Reliability Alert: {complaint_count} Active Complaints',
+                        details=f'Farmer #{farmer_id} has accumulated {complaint_count} unresolved quality/fulfillment disputes requiring administrative mediation.',
+                        status='NEEDS_REVIEW'
+                    )
+                    db.session.add(anomaly)
+                    db.session.commit()
+                    return {'flagged': True, 'count': complaint_count, 'severity': 'HIGH'}
+            return {'flagged': False, 'count': complaint_count}
+        except Exception:
+            return {'flagged': False, 'count': 0}
+

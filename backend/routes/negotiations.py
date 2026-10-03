@@ -128,12 +128,18 @@ def accept_offer(current_user, request_id):
     if purchase_req.status in ['ACCEPTED', 'REJECTED', 'CANCELLED']:
         return jsonify({'success': False, 'message': f'This request is already {purchase_req.status.lower()}.'}), 400
 
-    listing = purchase_req.listing
+    listing = ProduceListing.query.with_for_update().filter_by(id=purchase_req.listing_id).first() if hasattr(ProduceListing.query, 'with_for_update') else purchase_req.listing
+    if not listing:
+        return jsonify({'success': False, 'message': 'Listing not found.'}), 404
+
     is_farmer = (current_user.id == listing.farmer_id)
     is_buyer = (current_user.id == purchase_req.buyer_id)
 
     if not (is_farmer or is_buyer):
         return jsonify({'success': False, 'message': 'Unauthorized to accept this request.'}), 403
+
+    if listing.status == 'SOLD' or listing.available_quantity <= 0:
+        return jsonify({'success': False, 'message': 'Listing is out of stock / sold out.'}), 400
 
     # Get the latest negotiation offer
     latest_negotiation = Negotiation.query.filter_by(request_id=request_id).order_by(Negotiation.created_at.desc()).first()

@@ -57,27 +57,64 @@ export const BuyerOrders = () => {
     }
   };
 
-  const handleRatingSubmit = (e) => {
+  const handleRatingSubmit = async (e) => {
     e.preventDefault();
     if (!selectedOrder) return;
 
     setSubmittingRating(true);
-    setTimeout(() => {
-      setRatedOrders((prev) => ({
-        ...prev,
-        [selectedOrder.id]: {
-          stars: activeRating,
-          review: reviewNote.trim() || 'Great harvest quality and timely delivery.',
-          timestamp: new Date().toLocaleDateString(),
-        },
-      }));
+    try {
+      const res = await ordersAPI.rateOrder(selectedOrder.id, {
+        rating: activeRating,
+        review_text: reviewNote.trim() || 'Great harvest quality and timely delivery.'
+      });
+      if (res.data?.success) {
+        setRatedOrders((prev) => ({
+          ...prev,
+          [selectedOrder.id]: {
+            stars: activeRating,
+            review: reviewNote.trim() || 'Great harvest quality and timely delivery.',
+            timestamp: new Date().toLocaleDateString(),
+          },
+        }));
+        setSelectedOrder((prev) => ({
+          ...prev,
+          status: 'COMPLETED',
+          rating: activeRating,
+          review_text: reviewNote.trim() || 'Great harvest quality and timely delivery.',
+          rated_at: new Date().toISOString()
+        }));
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === selectedOrder.id
+              ? {
+                  ...o,
+                  status: 'COMPLETED',
+                  rating: activeRating,
+                  review_text: reviewNote.trim() || 'Great harvest quality and timely delivery.',
+                  rated_at: new Date().toISOString()
+                }
+              : o
+          )
+        );
+        setReviewNote('');
+        showToast(`Thank you! Rating submitted for order ${selectedOrder.order_number}.`, 'success');
+      } else {
+        showToast(res.data?.error || 'Failed to submit rating', 'error');
+      }
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Failed to submit rating', 'error');
+    } finally {
       setSubmittingRating(false);
-      setReviewNote('');
-      showToast(`Thank you! Rating submitted for order ${selectedOrder.order_number}.`, 'success');
-    }, 300);
+    }
   };
 
-  const currentOrderRating = selectedOrder ? ratedOrders[selectedOrder.id] : null;
+  const currentOrderRating = selectedOrder?.rating
+    ? {
+        stars: selectedOrder.rating,
+        review: selectedOrder.review_text,
+        timestamp: selectedOrder.rated_at ? new Date(selectedOrder.rated_at).toLocaleDateString() : 'Recorded',
+      }
+    : (selectedOrder ? ratedOrders[selectedOrder.id] : null);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -188,8 +225,8 @@ export const BuyerOrders = () => {
               <>
                 <OrderTimeline order={selectedOrder} isFarmer={false} />
 
-                {/* POST-DELIVERY RATING UI (Strictly for Delivered Orders Only) */}
-                {selectedOrder.status === 'DELIVERED' && (
+                {/* POST-DELIVERY RATING UI (For Delivered or Completed Orders) */}
+                {(selectedOrder.status === 'DELIVERED' || selectedOrder.status === 'COMPLETED') && (
                   <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-card space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
                       <div className="flex items-center gap-3">

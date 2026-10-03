@@ -20,8 +20,11 @@ def create_request(current_user):
         return jsonify({'success': False, 'message': 'Listing ID is required.'}), 400
 
     listing = ProduceListing.query.get(listing_id)
-    if not listing or listing.status != 'ACTIVE':
-        return jsonify({'success': False, 'message': 'Produce listing is unavailable or inactive.'}), 404
+    if not listing:
+        return jsonify({'success': False, 'message': 'Produce listing not found.'}), 404
+
+    if listing.status != 'ACTIVE' or listing.available_quantity <= 0:
+        return jsonify({'success': False, 'message': 'Produce listing is out of stock or inactive.'}), 400
 
     if not validate_positive_number(requested_quantity):
         return jsonify({'success': False, 'message': 'Requested quantity must be greater than 0.'}), 400

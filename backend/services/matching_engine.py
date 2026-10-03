@@ -48,10 +48,38 @@ class MatchingEngine:
     def calculate_crop_score(self, listing_crop, req_crop):
         if not req_crop:
             return 100.0, "Any crop selected"
-        l_crop = listing_crop.strip().lower()
-        r_crop = req_crop.strip().lower()
-        if l_crop == r_crop:
+
+        l_raw = (listing_crop or '').strip()
+        r_raw = (req_crop or '').strip()
+
+        if l_raw.lower() == r_raw.lower():
             return 100.0, f"Exact crop match ({listing_crop})"
+
+        try:
+            from services.ai.validators import normalize_crop_name, SYNONYM_MAP
+            l_norm = normalize_crop_name(l_raw)
+            r_norm = normalize_crop_name(r_raw)
+
+            if l_norm == r_norm:
+                return 100.0, f"Exact normalized crop match ({listing_crop})"
+
+            # Substring matching (e.g., 'Dragon Fruit' in 'Red Dragon Fruit' or 'Wheat' in 'Sharbati Wheat')
+            if r_norm in l_norm or l_norm in r_norm:
+                return 95.0, f"Close crop match ({listing_crop} matches {req_crop})"
+
+            # Token overlap check (e.g., 'Shimla Green Capsicum' vs 'Capsicum')
+            l_tokens = set(l_norm.split())
+            r_tokens = set(r_norm.split())
+            if l_tokens.intersection(r_tokens):
+                return 85.0, f"Related crop match ({listing_crop} matches {req_crop})"
+
+            # Synonym dictionary check
+            for canonical, syns in SYNONYM_MAP.items():
+                if (any(s in l_norm for s in syns)) and (any(s in r_norm for s in syns)):
+                    return 80.0, f"Crop synonym match under {canonical} ({listing_crop} matches {req_crop})"
+        except Exception:
+            pass
+
         return 0.0, f"Crop mismatch ({listing_crop} vs {req_crop})"
 
     def calculate_quantity_score(self, available_qty, req_qty):

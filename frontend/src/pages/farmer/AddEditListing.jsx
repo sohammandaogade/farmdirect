@@ -207,8 +207,19 @@ export const AddEditListing = () => {
       return;
     }
 
-    if (parseFloat(quantity) <= 0) {
+    const qtyVal = parseFloat(quantity);
+    if (isNaN(qtyVal) || qtyVal <= 0) {
       setError('Quantity must be greater than 0.');
+      return;
+    }
+    if (qtyVal < 5000) {
+      setError('Minimum listing quantity is 5,000 kg.');
+      showToast('Minimum listing quantity is 5,000 kg.', 'error');
+      return;
+    }
+    if (qtyVal > 50000) {
+      setError('Maximum listing quantity is 50,000 kg.');
+      showToast('Maximum listing quantity is 50,000 kg.', 'error');
       return;
     }
 
@@ -647,16 +658,22 @@ export const AddEditListing = () => {
           {/* Quantity & Unit & Expected Price */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Harvest Quantity *</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-700">Harvest Quantity *</label>
+                <span className="text-[10px] text-slate-400 font-semibold">5,000 – 50,000 kg</span>
+              </div>
               <input
                 type="number"
                 step="any"
+                min="5000"
+                max="50000"
                 required
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                placeholder="e.g. 2000"
+                placeholder="5000 – 50000"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
+              <p className="text-[10px] text-slate-400 mt-1">Listing quantity must be between 5,000 kg and 50,000 kg.</p>
             </div>
 
             <div>

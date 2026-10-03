@@ -143,3 +143,63 @@ def update_soil(current_user):
 
     db.session.commit()
     return jsonify({'success': True, 'data': soil.to_dict()}), 200
+
+@digital_twin_bp.route('/soil/analyze-report', methods=['POST'])
+@token_required
+def analyze_soil_report(current_user):
+    if current_user.role not in ['farmer', 'admin']:
+        return jsonify({'success': False, 'message': 'Only farmers can submit soil fertility reports.'}), 403
+
+    file_obj = None
+    if 'file' in request.files:
+        file_obj = request.files['file']
+    elif 'report_image' in request.files:
+        file_obj = request.files['report_image']
+
+    if not file_obj or file_obj.filename == '':
+        return jsonify({
+            'success': False,
+            'message': 'Laboratory report photo or PDF is required. Please upload your soil test report.',
+            'error_code': 'FILE_REQUIRED'
+        }), 400
+
+    from services.ai.soil_report_service import SoilReportService
+    from flask import current_app
+    upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
+
+    result = SoilReportService.analyze_lab_report(file_obj, filename=file_obj.filename, upload_folder=upload_folder)
+    if not result.get('success'):
+        return jsonify(result), 400
+
+    # Persist extracted values into SoilProfile for farmer
+    farmer_id = current_user.id
+    soil = SoilProfile.query.filter_by(farmer_id=farmer_id).first()
+    if not soil:
+        soil = SoilProfile(farmer_id=farmer_id)
+        db.session.add(soil)
+
+    raw_vals = result.get('raw_db_values', {})
+    rep_meta = result.get('report_metadata', {})
+    if 'ph_level' in raw_vals:
+        soil.ph_level = raw_vals['ph_level']
+    if 'nitrogen_kg_ha' in raw_vals:
+        soil.nitrogen_kg_ha = raw_vals['nitrogen_kg_ha']
+    if 'phosphorus_kg_ha' in raw_vals:
+        soil.phosphorus_kg_ha = raw_vals['phosphorus_kg_ha']
+    if 'potassium_kg_ha' in raw_vals:
+        soil.potassium_kg_ha = raw_vals['potassium_kg_ha']
+    if 'organic_carbon_pct' in raw_vals:
+        soil.organic_carbon_pct = raw_vals['organic_carbon_pct']
+    if 'moisture_pct' in raw_vals:
+        soil.moisture_pct = raw_vals['moisture_pct']
+    if rep_meta.get('soil_type'):
+        soil.soil_type = rep_meta['soil_type']
+
+    interp = result.get('ai_interpretation', {})
+    if interp.get('corrective_actions'):
+        soil.recommendations = "; ".join(interp['corrective_actions'])
+    soil.last_tested_date = date.today()
+
+    db.session.commit()
+    result['saved_soil_profile'] = soil.to_dict()
+    return jsonify(result), 200

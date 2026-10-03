@@ -244,7 +244,7 @@ class TestGeminiVisionLayer(unittest.TestCase):
             # Attempt creation with approved inspection
             create_payload = {
                 'crop': 'Potato',
-                'quantity': 2500,
+                'quantity': 5000,
                 'expected_price': 18,
                 'location': 'Pune',
                 'quality_grade': 'Grade A',

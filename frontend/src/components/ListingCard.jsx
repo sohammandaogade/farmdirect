@@ -41,8 +41,10 @@ export const ListingCard = ({
   const cropKey = (crop || '').toLowerCase();
   const displayImage = image_url || CROP_FALLBACKS[cropKey] || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&auto=format&fit=crop&q=80';
 
+  const isOutOfStock = (available_quantity <= 0) || (listing.status === 'SOLD');
+
   return (
-    <div className="group bg-white rounded-3xl border border-slate-200/80 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden">
+    <div className={`group bg-white rounded-3xl border ${isOutOfStock ? 'border-rose-200/60 opacity-90' : 'border-slate-200/80'} shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden`}>
       {/* Produce Image Header */}
       <div className="relative h-48 w-full bg-slate-100 overflow-hidden">
         <img
@@ -55,12 +57,18 @@ export const ListingCard = ({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
 
-        {/* Quality Badge */}
+        {/* Quality / Out of Stock Badge */}
         <div className="absolute top-3 left-3">
-          <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wide bg-white/95 text-slate-900 backdrop-blur-md shadow-subtle flex items-center gap-1.5 border border-white/40">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-            {quality_grade || 'Standard Grade'}
-          </span>
+          {isOutOfStock ? (
+            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white shadow-md flex items-center gap-1.5 border border-rose-500">
+              Sold Out
+            </span>
+          ) : (
+            <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wide bg-white/95 text-slate-900 backdrop-blur-md shadow-subtle flex items-center gap-1.5 border border-white/40">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+              {quality_grade || 'Standard Grade'}
+            </span>
+          )}
         </div>
 
         {/* Match score pill if available */}
@@ -106,10 +114,12 @@ export const ListingCard = ({
 
           <div className="grid grid-cols-2 gap-2 my-3 text-xs bg-slate-50/80 p-3 rounded-2xl border border-slate-100">
             <div className="flex items-center gap-2 text-slate-600 min-w-0">
-              <Package className="w-4 h-4 text-emerald-600 shrink-0" />
+              <Package className={`w-4 h-4 ${isOutOfStock ? 'text-rose-500' : 'text-emerald-600'} shrink-0`} />
               <div className="truncate">
                 <span className="text-[10px] text-slate-400 block uppercase font-bold">Available</span>
-                <span className="font-bold text-slate-900">{available_quantity?.toLocaleString()} {unit}</span>
+                <span className={`font-bold ${isOutOfStock ? 'text-rose-600' : 'text-slate-900'}`}>
+                  {isOutOfStock ? '0 kg (Sold Out)' : `${available_quantity?.toLocaleString()} ${unit}`}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-2 text-slate-600 min-w-0">
@@ -133,12 +143,21 @@ export const ListingCard = ({
           </Link>
 
           {!isOwner && showRequestButton && (
-            <button
-              onClick={() => onRequestPurchase && onRequestPurchase(listing)}
-              className="flex-1 py-2.5 px-3 text-center text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
-            >
-              Order Produce
-            </button>
+            isOutOfStock ? (
+              <button
+                disabled
+                className="flex-1 py-2.5 px-3 text-center text-xs font-bold rounded-xl bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+              >
+                Out of Stock
+              </button>
+            ) : (
+              <button
+                onClick={() => onRequestPurchase && onRequestPurchase(listing)}
+                className="flex-1 py-2.5 px-3 text-center text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
+              >
+                Order Produce
+              </button>
+            )
           )}
 
           {isOwner && (

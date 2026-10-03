@@ -171,11 +171,18 @@ def create_listing(current_user):
         # Produce without an AI quality inspection must NOT be auto-published as ACTIVE
         initial_status = 'PAUSED'
 
+    qty_val = float(quantity)
+    if qty_val < 5000:
+        return jsonify({'success': False, 'message': 'Minimum listing quantity is 5,000 kg.'}), 400
+
+    if qty_val > 50000:
+        return jsonify({'success': False, 'message': 'Maximum listing quantity is 50,000 kg.'}), 400
+
     listing = ProduceListing(
         farmer_id=current_user.id,
         crop=crop,
-        quantity=float(quantity),
-        available_quantity=float(quantity),
+        quantity=qty_val,
+        available_quantity=qty_val,
         unit=unit,
         expected_price=float(expected_price),
         location=location,
@@ -277,9 +284,17 @@ def update_listing(current_user, listing_id):
     if 'quantity' in data:
         if not validate_positive_number(data['quantity']):
             return jsonify({'success': False, 'message': 'Quantity must be greater than 0.'}), 400
-        diff = float(data['quantity']) - listing.quantity
-        listing.quantity = float(data['quantity'])
+        qty_val = float(data['quantity'])
+        if qty_val < 5000:
+            return jsonify({'success': False, 'message': 'Minimum listing quantity is 5,000 kg.'}), 400
+        if qty_val > 50000:
+            return jsonify({'success': False, 'message': 'Maximum listing quantity is 50,000 kg.'}), 400
+        diff = qty_val - listing.quantity
+        listing.quantity = qty_val
         listing.available_quantity = max(0.0, listing.available_quantity + diff)
+        if listing.available_quantity <= 0.0001:
+            listing.available_quantity = 0.0
+            listing.status = 'SOLD'
     if 'expected_price' in data:
         if not validate_positive_number(data['expected_price']):
             return jsonify({'success': False, 'message': 'Expected price must be greater than 0.'}), 400

@@ -637,6 +637,10 @@ class CopilotService:
         # Grounded Gemini Buyer Copilot
         from services.ai.gemini_client import gemini_client
         from services.ai.prompts import SYSTEM_BUYER_COPILOT
+        from services.market_data_service import MarketDataService
+
+        market_summary = MarketDataService.get_market_summary(crop, region)
+        price_trend = MarketDataService.get_price_trend(crop)
 
         if gemini_client.is_available() and len(q) > 4:
             active_listings = ProduceListing.query.filter_by(status='ACTIVE').limit(5).all()
@@ -646,20 +650,35 @@ class CopilotService:
                 "location": buyer.buyer_profile.location if (buyer and buyer.buyer_profile) else "Pune",
                 "queried_crop": crop,
                 "region": region,
+                "verified_live_apmc_market_data": market_summary,
+                "verified_price_trend": price_trend,
                 "marketplace_available_crops": list({l.crop for l in active_listings}),
                 "preferred_language": "Marathi" if lang == 'mr' else ("Hindi" if lang == 'hi' else "English")
             }
             prompt = (
                 f"Buyer inquiry: \"{query_text}\"\n\n"
-                f"Verified marketplace context:\n{buyer_context}\n\n"
-                f"Respond in {buyer_context['preferred_language']}. Guide the procurement process concisely."
+                f"Verified Market & Procurement Context:\n"
+                f"1. Verified Live APMC Market Data (Official Agmarknet Source): {market_summary}\n"
+                f"2. Verified Mandi Price Trend: {price_trend}\n"
+                f"3. Buyer Context: {buyer_context}\n\n"
+                f"Instructions:\n"
+                f"- Respond in {buyer_context['preferred_language']}.\n"
+                f"- MANDATORY ZERO-HALLUCINATION RULE: Quote ONLY the exact verified APMC rates and trends provided above. Do NOT invent prices or trends.\n"
+                f"- If asked for mandi rates or current price, quote the exact modal price in ₹/kg and range from the verified data.\n"
+                f"- If live data is unavailable, state clearly: 'Live market data is currently unavailable for this commodity.'\n"
+                f"- Distinguish classification tags if relevant: [LIVE], [HISTORICAL], [FORECAST], [AI ANALYSIS]."
             )
-            gemini_res = gemini_client.generate_text(prompt, system_instruction=SYSTEM_BUYER_COPILOT, temperature=0.3)
+            gemini_res = gemini_client.generate_text(prompt, system_instruction=SYSTEM_BUYER_COPILOT, temperature=0.2)
             if gemini_res.get('success') and gemini_res.get('content'):
                 return {
                     'reply': gemini_res['content'],
                     'category': 'AI_PROCUREMENT_COPILOT',
                     'source': 'gemini_grounded',
+                    'market_grounding': {
+                        'verified_data': market_summary.get('has_data', False),
+                        'source': market_summary.get('source'),
+                        'trend': price_trend.get('direction', 'STABLE')
+                    },
                     'action_suggestion': '/buyer/marketplace'
                 }
 

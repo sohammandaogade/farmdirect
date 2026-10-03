@@ -74,17 +74,24 @@ export const AdminOrders = () => {
                       ₹{o.total_amount?.toLocaleString()}
                     </td>
                     <td className="py-4 px-4">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
-                          o.status === 'DELIVERED'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : o.status === 'IN_TRANSIT'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {o.status.replace('_', ' ')}
-                      </span>
+                      <div className="flex flex-col gap-1 items-start">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                            o.status === 'DELIVERED'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : o.status === 'IN_TRANSIT'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {o.status.replace('_', ' ')}
+                        </span>
+                        {o.complaints && o.complaints.length > 0 && (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-200">
+                            {o.complaints.length} Dispute Ticket{o.complaints.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 px-4 text-slate-400 text-[11px]">
                       {o.created_at ? new Date(o.created_at).toLocaleDateString() : 'N/A'}

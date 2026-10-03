@@ -257,6 +257,9 @@ class Order(db.Model):
     actual_delivery_date = db.Column(db.Date, nullable=True)
     distance_km = db.Column(db.Float, nullable=True)
     estimated_transport_cost = db.Column(db.Float, nullable=True)
+    rating = db.Column(db.Integer, nullable=True)  # 1 to 5 stars
+    review_text = db.Column(db.Text, nullable=True)
+    rated_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -265,6 +268,7 @@ class Order(db.Model):
     buyer = db.relationship('User', foreign_keys=[buyer_id])
     listing = db.relationship('ProduceListing', back_populates='orders')
     status_history = db.relationship('OrderStatusHistory', back_populates='order', cascade='all, delete-orphan', order_by='OrderStatusHistory.created_at.asc()')
+    complaints = db.relationship('OrderComplaint', back_populates='order', cascade='all, delete-orphan', order_by='OrderComplaint.created_at.asc()')
 
     def to_dict(self):
         return {
@@ -285,6 +289,9 @@ class Order(db.Model):
             'agreed_price': self.agreed_price,
             'total_amount': self.total_amount,
             'status': self.status,
+            'rating': self.rating,
+            'review_text': self.review_text,
+            'rated_at': self.rated_at.isoformat() if self.rated_at else None,
             'pickup_date': self.pickup_date.isoformat() if isinstance(self.pickup_date, (date, datetime)) else str(self.pickup_date) if self.pickup_date else None,
             'estimated_delivery_date': self.estimated_delivery_date.isoformat() if isinstance(self.estimated_delivery_date, (date, datetime)) else str(self.estimated_delivery_date) if self.estimated_delivery_date else None,
             'actual_delivery_date': self.actual_delivery_date.isoformat() if isinstance(self.actual_delivery_date, (date, datetime)) else str(self.actual_delivery_date) if self.actual_delivery_date else None,
@@ -292,7 +299,51 @@ class Order(db.Model):
             'estimated_transport_cost': self.estimated_transport_cost,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'history': [h.to_dict() for h in self.status_history] if self.status_history else []
+            'history': [h.to_dict() for h in self.status_history] if self.status_history else [],
+            'complaints': [c.to_dict() for c in self.complaints] if self.complaints else []
+        }
+
+
+class OrderComplaint(db.Model):
+    __tablename__ = 'order_complaints'
+
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_number = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    listing_id = db.Column(db.Integer, db.ForeignKey('produce_listings.id'), nullable=True)
+    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    reporter_role = db.Column(db.String(20), nullable=False)  # 'buyer', 'farmer'
+    category = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    evidence_path = db.Column(db.String(255), nullable=True)
+    status = db.Column(db.String(30), default='SUBMITTED', nullable=False)  # SUBMITTED, UNDER REVIEW, INVESTIGATING, RESOLVED, REJECTED
+    resolution_note = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    order = db.relationship('Order', back_populates='complaints')
+    reporter = db.relationship('User', foreign_keys=[reporter_id])
+
+    def to_dict(self):
+        order_num = self.order.order_number if self.order else None
+        return {
+            'id': self.id,
+            'ticket_number': self.ticket_number,
+            'ticketId': self.ticket_number,
+            'order_id': self.order_id,
+            'order_number': order_num,
+            'orderNumber': order_num,
+            'listing_id': self.listing_id,
+            'reporter_id': self.reporter_id,
+            'reporter_name': self.reporter.name if self.reporter else None,
+            'reporter_role': self.reporter_role,
+            'category': self.category,
+            'description': self.description,
+            'evidence_path': self.evidence_path,
+            'status': self.status,
+            'resolution_note': self.resolution_note,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
 

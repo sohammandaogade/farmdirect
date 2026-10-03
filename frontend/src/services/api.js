@@ -85,6 +85,11 @@ export const ordersAPI = {
   getOrder: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, data) => api.put(`/orders/${id}/status`, data),
   getHistory: (id) => api.get(`/orders/${id}/history`),
+  rateOrder: (id, data) => api.post(`/orders/${id}/rate`, data),
+  submitComplaint: (id, data) => api.post(`/orders/${id}/complaints`, data),
+  getComplaints: (id) => api.get(`/orders/${id}/complaints`),
+  getAllComplaints: () => api.get('/orders/complaints'),
+  updateComplaintStatus: (id, data) => api.put(`/orders/complaints/${id}/status`, data),
 };
 
 export const priceAPI = {
@@ -140,6 +145,10 @@ export const digitalTwinAPI = {
   getTwin: (farmerId) => api.get(`/digital-twin/farmer/${farmerId}`),
   getInventoryIntelligence: () => api.get('/digital-twin/inventory-intelligence'),
   updateSoil: (data) => api.post('/digital-twin/soil', data),
+  analyzeSoilReport: (formData) =>
+    api.post('/digital-twin/soil/analyze-report', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 };
 
 export const wasteAPI = {

@@ -181,7 +181,7 @@ class TestProductionSecurityAndGrounding(unittest.TestCase):
             # Create first listing
             payload1 = {
                 'crop': 'Potato',
-                'quantity': 2000,
+                'quantity': 5000,
                 'expected_price': 18,
                 'location': 'Satara',
                 'quality_grade': 'Grade A',
@@ -195,7 +195,7 @@ class TestProductionSecurityAndGrounding(unittest.TestCase):
             # Attempt to create second listing reusing the SAME inspection
             payload2 = {
                 'crop': 'Potato',
-                'quantity': 1500,
+                'quantity': 5000,
                 'expected_price': 20,
                 'location': 'Satara',
                 'quality_grade': 'Grade A',

@@ -1,18 +1,32 @@
 import React, { useState } from 'react';
 import { AlertCircle, X, CheckCircle2, ShieldAlert, FileText, Upload } from 'lucide-react';
+import { ordersAPI } from '../services/api';
 
-const COMPLAINT_CATEGORIES = [
-  'Payment Issue',
-  'Delivery Issue',
-  'Quantity Issue',
-  'Quality Issue',
-  'Suspicious / Fraudulent Activity',
-  'Misleading Listing',
+const BUYER_CATEGORIES = [
+  'Wrong quantity',
+  'Poor quality',
+  'Damaged produce',
+  'Wrong crop',
+  'Missing delivery',
+  'Late delivery',
+  'Payment problem',
+  'Seller issue',
+  'Other',
+];
+
+const FARMER_CATEGORIES = [
+  'Buyer payment issue',
+  'Buyer cancellation',
+  'Incorrect order',
+  'Delivery dispute',
+  'Buyer misconduct',
+  'Suspicious buyer',
   'Other',
 ];
 
 export const OrderComplaintModal = ({ order, isOpen, onClose, role = 'buyer' }) => {
-  const [category, setCategory] = useState(COMPLAINT_CATEGORIES[0]);
+  const categories = role === 'farmer' ? FARMER_CATEGORIES : BUYER_CATEGORIES;
+  const [category, setCategory] = useState(categories[0]);
   const [description, setDescription] = useState('');
   const [evidenceName, setEvidenceName] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -21,33 +35,34 @@ export const OrderComplaintModal = ({ order, isOpen, onClose, role = 'buyer' }) 
 
   if (!isOpen || !order) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!description.trim()) {
-      setError('Please provide a description of the issue.');
+    if (!description.trim() || description.trim().length < 5) {
+      setError('Please provide a detailed description (minimum 5 characters).');
       return;
     }
 
     setSubmitting(true);
     setError('');
 
-    // Simulate standard ticket receipt with initial status
-    const ticket = {
-      ticketId: `CMP-${Date.now().toString().slice(-6)}`,
-      category,
-      orderNumber: order.order_number,
-      crop: order.crop,
-      role,
-      description: description.trim(),
-      evidence: evidenceName || 'None attached',
-      status: 'SUBMITTED',
-      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
+    try {
+      const res = await ordersAPI.submitComplaint(order.id, {
+        category,
+        description: description.trim(),
+        evidence_path: evidenceName || null,
+      });
 
-    setTimeout(() => {
-      setSubmittedComplaint(ticket);
+      if (res.data?.success) {
+        setSubmittedComplaint(res.data.data);
+      } else {
+        setError(res.data?.message || 'Failed to submit complaint ticket.');
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Error submitting complaint ticket.';
+      setError(msg);
+    } finally {
       setSubmitting(false);
-    }, 400);
+    }
   };
 
   const handleReset = () => {
@@ -98,7 +113,7 @@ export const OrderComplaintModal = ({ order, isOpen, onClose, role = 'buyer' }) 
                   {submittedComplaint.status}
                 </span>
                 <h4 className="text-base font-black text-slate-900 mt-2">
-                  Complaint Filed: {submittedComplaint.ticketId}
+                  Complaint Filed: {submittedComplaint.ticket_number || submittedComplaint.ticketId}
                 </h4>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Platform administrators have been alerted to review this transaction inquiry.
@@ -112,7 +127,7 @@ export const OrderComplaintModal = ({ order, isOpen, onClose, role = 'buyer' }) 
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Order:</span>
-                  <span className="text-slate-800 font-bold">{submittedComplaint.orderNumber}</span>
+                  <span className="text-slate-800 font-bold">{submittedComplaint.order_number || submittedComplaint.orderNumber || ('#' + (submittedComplaint.order_id || ''))}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Current Lifecycle:</span>
@@ -146,7 +161,7 @@ export const OrderComplaintModal = ({ order, isOpen, onClose, role = 'buyer' }) 
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
                 >
-                  {COMPLAINT_CATEGORIES.map((cat) => (
+                  {categories.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>
