@@ -22,7 +22,8 @@ import {
   Edit,
   TrendingUp,
   Package,
-  ShoppingBag
+  ShoppingBag,
+  Key
 } from 'lucide-react';
 import { agentAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -46,7 +47,10 @@ export const AgentVerificationPortal = () => {
 
   // Review Modal State
   const [selectedListing, setSelectedListing] = useState(null);
+  const [approvalModalListing, setApprovalModalListing] = useState(null);
   const [rejectionModalListing, setRejectionModalListing] = useState(null);
+  const [verificationKey, setVerificationKey] = useState('');
+  const [agentReview, setAgentReview] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const [processing, setProcessing] = useState(false);
 
@@ -113,19 +117,42 @@ export const AgentVerificationPortal = () => {
     }
   };
 
-  const handleAccept = async (listingId) => {
+  const openApprovalModal = (listing) => {
+    setApprovalModalListing(listing);
+    setVerificationKey('');
+    setAgentReview('Physical on-site inspection completed. Moisture content confirmed optimal, Grade specifications verified, and produce approved for public trading.');
+  };
+
+  const handleApprovalSubmit = async (e) => {
+    e.preventDefault();
+    if (!verificationKey.trim()) {
+      showToast('Farmer verification security key is compulsory.', 'error');
+      return;
+    }
+    if (!agentReview.trim() || agentReview.trim().length < 10) {
+      showToast('Official agent inspection notes are compulsory (minimum 10 characters).', 'error');
+      return;
+    }
+
     try {
       setProcessing(true);
-      const res = await agentAPI.reviewListing(listingId, { action: 'ACCEPT' });
+      const res = await agentAPI.reviewListing(approvalModalListing.id, {
+        action: 'ACCEPT',
+        verification_key: verificationKey.trim().toUpperCase(),
+        agent_review: agentReview.trim()
+      });
       if (res.data.success) {
-        showToast(res.data.message || 'Request accepted and published to Marketplace!');
-        if (selectedListing && selectedListing.id === listingId) {
+        showToast(res.data.message || 'Request verified and published to Marketplace!');
+        setApprovalModalListing(null);
+        setVerificationKey('');
+        setAgentReview('');
+        if (selectedListing && selectedListing.id === approvalModalListing.id) {
           setSelectedListing(null);
         }
         fetchListings();
       }
     } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to accept request', 'error');
+      showToast(err.response?.data?.message || 'Verification failed. Please check the security key.', 'error');
     } finally {
       setProcessing(false);
     }
@@ -133,6 +160,10 @@ export const AgentVerificationPortal = () => {
 
   const handleRejectSubmit = async (e) => {
     e.preventDefault();
+    if (!verificationKey.trim()) {
+      showToast('Farmer verification security key is compulsory.', 'error');
+      return;
+    }
     if (!rejectionReason.trim() || rejectionReason.trim().length < 3) {
       showToast('Please provide a specific rejection reason.', 'error');
       return;
@@ -142,19 +173,22 @@ export const AgentVerificationPortal = () => {
       setProcessing(true);
       const res = await agentAPI.reviewListing(rejectionModalListing.id, {
         action: 'REJECT',
+        verification_key: verificationKey.trim().toUpperCase(),
         rejection_reason: rejectionReason.trim(),
+        agent_review: rejectionReason.trim()
       });
       if (res.data.success) {
         showToast(res.data.message || 'Request rejected and farmer notified.');
         setRejectionModalListing(null);
         setRejectionReason('');
+        setVerificationKey('');
         if (selectedListing && selectedListing.id === rejectionModalListing.id) {
           setSelectedListing(null);
         }
         fetchListings();
       }
     } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to reject request', 'error');
+      showToast(err.response?.data?.message || 'Failed to reject request. Please check the security key.', 'error');
     } finally {
       setProcessing(false);
     }
@@ -635,6 +669,7 @@ export const AgentVerificationPortal = () => {
                           onClick={() => {
                             setRejectionModalListing(item);
                             setRejectionReason('');
+                            setVerificationKey('');
                           }}
                           className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                         >
@@ -645,11 +680,11 @@ export const AgentVerificationPortal = () => {
                         <button
                           type="button"
                           disabled={processing}
-                          onClick={() => handleAccept(item.id)}
+                          onClick={() => openApprovalModal(item)}
                           className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs shadow-teal-600/20 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50"
                         >
                           <Check className="w-3.5 h-3.5" />
-                          <span>Accept</span>
+                          <span>Accept & Review</span>
                         </button>
                       </div>
                     )}
@@ -658,6 +693,106 @@ export const AgentVerificationPortal = () => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Official Approval & Public Certification Modal */}
+      {approvalModalListing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2 text-teal-700 font-black text-sm uppercase">
+                <ShieldCheck className="w-5 h-5 text-teal-600" />
+                <span>Verify & Publish Produce Lot</span>
+              </div>
+              <button
+                onClick={() => setApprovalModalListing(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-xs text-slate-600 bg-teal-50/60 p-3.5 rounded-2xl border border-teal-100">
+              <strong className="text-slate-900 block font-bold mb-0.5">
+                {approvalModalListing.crop} ({approvalModalListing.quantity?.toLocaleString()} {approvalModalListing.unit})
+              </strong>
+              <span>Producer: {approvalModalListing.farm_name || approvalModalListing.farmer_name} • {approvalModalListing.location}</span>
+            </div>
+
+            <form onSubmit={handleApprovalSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-slate-900">
+                    <Key className="w-3.5 h-3.5 text-teal-600" />
+                    <span>Farmer Security Verification Key *</span>
+                  </span>
+                  <span className="text-[10px] text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">Compulsory</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={verificationKey}
+                  onChange={(e) => setVerificationKey(e.target.value.toUpperCase())}
+                  placeholder="e.g. VRF-94B2C1"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-black text-slate-900 tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Obtain this unique key directly from the farmer. Verification is blocked without matching security key.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span>Official Agent Inspection Review & Quality Notes *</span>
+                  <span className="text-[10px] text-teal-700 font-bold">Visible to All Buyers</span>
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  minLength={10}
+                  value={agentReview}
+                  onChange={(e) => setAgentReview(e.target.value)}
+                  placeholder="Document physical on-site inspection findings, moisture analysis, batch uniformity, grade confirmation, and packaging standards..."
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                />
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setAgentReview('Physical on-site inspection passed. Moisture levels (11.5%) and Grade A specifications confirmed. Recommended for commercial procurement.')}
+                    className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors"
+                  >
+                    + Standard Grade A Certified
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAgentReview('Verified on-site: Premium harvest batch, uniform color distribution, no visible pest damage, compliant jute packaging.')}
+                    className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors"
+                  >
+                    + Premium Fresh Lot
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setApprovalModalListing(null)}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={processing || !verificationKey.trim() || agentReview.trim().length < 10}
+                  className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-all disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>{processing ? 'Verifying...' : 'Authorize & Publish to Marketplace'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -687,6 +822,24 @@ export const AgentVerificationPortal = () => {
 
             <form onSubmit={handleRejectSubmit} className="space-y-4">
               <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-slate-900">
+                    <Key className="w-3.5 h-3.5 text-rose-600" />
+                    <span>Farmer Security Verification Key *</span>
+                  </span>
+                  <span className="text-[10px] text-rose-700 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Compulsory</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={verificationKey}
+                  onChange={(e) => setVerificationKey(e.target.value.toUpperCase())}
+                  placeholder="e.g. VRF-94B2C1"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-black text-slate-900 tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Rejection Reason (displayed directly to farmer under My Requests) *
                 </label>
@@ -710,7 +863,7 @@ export const AgentVerificationPortal = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={processing}
+                  disabled={processing || !verificationKey.trim()}
                   className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-all disabled:opacity-50"
                 >
                   {processing ? 'Rejecting...' : 'Confirm Rejection'}
@@ -895,6 +1048,7 @@ export const AgentVerificationPortal = () => {
                   onClick={() => {
                     setRejectionModalListing(selectedListing);
                     setRejectionReason('');
+                    setVerificationKey('');
                   }}
                   className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-colors flex items-center gap-1.5"
                 >
@@ -905,11 +1059,11 @@ export const AgentVerificationPortal = () => {
                 <button
                   type="button"
                   disabled={processing}
-                  onClick={() => handleAccept(selectedListing.id)}
+                  onClick={() => openApprovalModal(selectedListing)}
                   className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5"
                 >
                   <Check className="w-4 h-4" />
-                  <span>Accept & Publish to Marketplace</span>
+                  <span>Verify Key & Publish</span>
                 </button>
               </div>
             )}

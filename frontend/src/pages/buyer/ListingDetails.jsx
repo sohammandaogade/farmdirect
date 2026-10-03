@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   Sparkles,
+  FileText,
 } from 'lucide-react';
 import { marketplaceAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -218,6 +219,53 @@ export const ListingDetails = () => {
               </p>
             </div>
           )}
+
+          {/* Official Agent Quality Certification & Inspection Review (Visible to All) */}
+          {listing.agent_review && (
+            <div className="bg-gradient-to-br from-teal-50/90 via-emerald-50/50 to-white rounded-3xl p-6 sm:p-7 border border-teal-200/90 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-teal-200/60">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-md shadow-teal-700/20">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-black text-slate-900">Official Agent Quality Certification</h3>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-teal-100 text-teal-800 border border-teal-200">
+                        Agent Verified
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Certified by <strong className="text-slate-800">{listing.agent_agency || listing.reviewed_by_name || 'MahaAgri Quality Verifiers'}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                {listing.reviewed_at && (
+                  <span className="text-[11px] font-bold text-teal-800 bg-white/95 px-3 py-1 rounded-xl border border-teal-200/80 shadow-xs self-start sm:self-auto">
+                    Inspected on {new Date(listing.reviewed_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+
+              {/* Public Inspection Review Notes */}
+              <div className="p-4 bg-white/90 rounded-2xl border border-teal-100 shadow-xs space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-teal-900 block flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-teal-600" />
+                  Agent Verification Remarks & Quality Assessment
+                </span>
+                <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-semibold">
+                  "{listing.agent_review}"
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 px-1 pt-1 font-medium">
+                <span>✓ Authorized via secure farmer key exchange</span>
+                <span>✓ Inspected and published by certified regional agent</span>
+                <span>✓ 100% Traceable Producer to Market</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Farmer info, Logistics, Purchase action */}
@@ -307,8 +355,8 @@ export const ListingDetails = () => {
             </div>
 
             {listing.reviewed_by_name && (
-              <div className="pt-3 border-t border-slate-100">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-teal-600 mb-2 flex items-center gap-1.5">
+              <div className="pt-3 border-t border-slate-100 space-y-2.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-teal-600 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
                   <span>Managed & Published By</span>
                 </h4>
@@ -321,6 +369,11 @@ export const ListingDetails = () => {
                     <div className="text-xs text-slate-500">Accredited Quality Agent • {listing.reviewed_at ? new Date(listing.reviewed_at).toLocaleDateString() : 'Verified'}</div>
                   </div>
                 </div>
+                {listing.agent_review && (
+                  <div className="p-3 bg-teal-50/70 border border-teal-200/70 rounded-xl text-xs text-slate-700 italic">
+                    "{listing.agent_review.length > 120 ? listing.agent_review.slice(0, 120) + '...' : listing.agent_review}"
+                  </div>
+                )}
               </div>
             )}
           </div>

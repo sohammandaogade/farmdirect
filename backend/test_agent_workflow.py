@@ -63,6 +63,9 @@ class TestAgentWorkflow(unittest.TestCase):
         listing_data = res.get_json()['data']
         listing_id = listing_data['id']
         self.assertEqual(listing_data['status'], 'PENDING_AGENT_REVIEW')
+        self.assertIn('verification_key', listing_data, "Farmer must receive unique verification key")
+        key_1 = listing_data['verification_key']
+        self.assertTrue(key_1.startswith('VRF-'), "Verification key should follow VRF-XXXXXX format")
 
         # 3. Verify PENDING_AGENT_REVIEW does NOT appear in Buyer Marketplace
         res = self.client.get('/api/marketplace')
@@ -85,20 +88,40 @@ class TestAgentWorkflow(unittest.TestCase):
         self.assertGreaterEqual(res_json['metrics']['pending'], 1)
         found_in_agent_queue = any(l['id'] == listing_id for l in res_json['data'])
         self.assertTrue(found_in_agent_queue, "Pending listing must appear in agent review queue")
+        
+        # Verify the agent does NOT see the secret verification key in the browse queue
+        agent_item = next(l for l in res_json['data'] if l['id'] == listing_id)
+        self.assertNotIn('verification_key', agent_item, "Agent browse queue must NOT leak farmer verification key")
 
-        # 6. Agent rejects listing WITHOUT reason -> should fail with 400
+        # 6. Agent rejects listing WITHOUT verification key -> should fail with 400
         res = self.client.post(
             f'/api/agent/listings/{listing_id}/review',
-            json={'decision': 'REJECT'},
+            json={'decision': 'REJECT', 'rejection_reason': 'Invalid quality docs.'},
+            headers=agent_headers
+        )
+        self.assertEqual(res.status_code, 400, "Review without verification key must fail with 400")
+
+        # 7. Agent rejects listing WITH WRONG verification key -> should fail with 403
+        res = self.client.post(
+            f'/api/agent/listings/{listing_id}/review',
+            json={'decision': 'REJECT', 'verification_key': 'VRF-WRONG99', 'rejection_reason': 'Invalid quality docs.'},
+            headers=agent_headers
+        )
+        self.assertEqual(res.status_code, 403, "Review with incorrect verification key must fail with 403")
+
+        # 8. Agent rejects listing WITH valid key but WITHOUT reason -> should fail with 400
+        res = self.client.post(
+            f'/api/agent/listings/{listing_id}/review',
+            json={'decision': 'REJECT', 'verification_key': key_1},
             headers=agent_headers
         )
         self.assertEqual(res.status_code, 400, "Rejection without reason must fail with 400")
 
-        # 7. Agent rejects listing WITH reason
+        # 9. Agent rejects listing WITH valid key AND reason
         rejection_reason = "Quality certificate missing moisture content test results."
         res = self.client.post(
             f'/api/agent/listings/{listing_id}/review',
-            json={'decision': 'REJECT', 'rejection_reason': rejection_reason},
+            json={'decision': 'REJECT', 'verification_key': key_1, 'rejection_reason': rejection_reason},
             headers=agent_headers
         )
         self.assertEqual(res.status_code, 200)
@@ -107,13 +130,13 @@ class TestAgentWorkflow(unittest.TestCase):
         self.assertEqual(rejected_data['rejection_reason'], rejection_reason)
         self.assertEqual(rejected_data['reviewed_by_id'], agent_user['id'])
 
-        # 8. Verify REJECTED listing is NOT in marketplace
+        # 10. Verify REJECTED listing is NOT in marketplace
         res = self.client.get('/api/marketplace')
         self.assertEqual(res.status_code, 200)
         marketplace_listings = res.get_json()['data']
         self.assertFalse(any(l['id'] == listing_id for l in marketplace_listings))
 
-        # 9. Verify Farmer cannot toggle status of REJECTED listing
+        # 11. Verify Farmer cannot toggle status of REJECTED listing
         res = self.client.put(
             f'/api/farmers/listings/{listing_id}/status',
             json={'status': 'ACTIVE'},
@@ -121,7 +144,7 @@ class TestAgentWorkflow(unittest.TestCase):
         )
         self.assertEqual(res.status_code, 400, "Farmer must not be able to activate rejected listing")
 
-        # 10. Farmer creates a second listing to test APPROVE
+        # 12. Farmer creates a second listing to test APPROVE
         new_listing_data2 = {
             'crop': 'Tomato',
             'variety': 'Roma Grade A',
@@ -136,37 +159,77 @@ class TestAgentWorkflow(unittest.TestCase):
         }
         res = self.client.post('/api/farmers/listings', json=new_listing_data2, headers=farmer_headers)
         self.assertEqual(res.status_code, 201)
-        listing_id_2 = res.get_json()['data']['id']
+        listing_data_2 = res.get_json()['data']
+        listing_id_2 = listing_data_2['id']
+        key_2 = listing_data_2['verification_key']
+        self.assertTrue(key_2.startswith('VRF-'))
 
-        # 11. Agent APPROVES listing
+        # 13. Agent APPROVE fails without verification key -> 400
         res = self.client.post(
             f'/api/agent/listings/{listing_id_2}/review',
-            json={'decision': 'APPROVE'},
+            json={'decision': 'APPROVE', 'agent_review': 'Verified Grade A+ tomatoes at field inspection.'},
+            headers=agent_headers
+        )
+        self.assertEqual(res.status_code, 400, "Approval without verification key must fail with 400")
+
+        # 14. Agent APPROVE fails with invalid verification key -> 403
+        res = self.client.post(
+            f'/api/agent/listings/{listing_id_2}/review',
+            json={'decision': 'APPROVE', 'verification_key': 'VRF-INVALID', 'agent_review': 'Verified Grade A+ tomatoes at field inspection.'},
+            headers=agent_headers
+        )
+        self.assertEqual(res.status_code, 403, "Approval with wrong verification key must fail with 403")
+
+        # 15. Agent APPROVE fails with valid key but missing/short review notes -> 400
+        res = self.client.post(
+            f'/api/agent/listings/{listing_id_2}/review',
+            json={'decision': 'APPROVE', 'verification_key': key_2, 'agent_review': 'Good'},
+            headers=agent_headers
+        )
+        self.assertEqual(res.status_code, 400, "Approval with review note < 10 chars must fail with 400")
+
+        # 16. Agent successfully APPROVES listing with valid key and thorough inspection review
+        inspection_review_text = "Inspected on-site at Nashik farm. Moisture content 92%, brix 4.8%, Grade A+ certified under MahaAgri standards."
+        res = self.client.post(
+            f'/api/agent/listings/{listing_id_2}/review',
+            json={
+                'decision': 'APPROVE',
+                'verification_key': key_2,
+                'agent_review': inspection_review_text
+            },
             headers=agent_headers
         )
         self.assertEqual(res.status_code, 200)
         approved_data = res.get_json()['data']
         self.assertEqual(approved_data['status'], 'PUBLISHED')
+        self.assertEqual(approved_data['agent_review'], inspection_review_text)
         self.assertIsNotNone(approved_data['reviewed_at'])
         self.assertEqual(approved_data['reviewed_by_id'], agent_user['id'])
 
-        # 12. Verify APPROVED listing IS now visible in the Buyer Marketplace!
+        # 17. Verify APPROVED listing IS now visible in the Buyer Marketplace!
         res = self.client.get('/api/marketplace')
         self.assertEqual(res.status_code, 200)
         marketplace_listings = res.get_json()['data']
         found_in_marketplace = any(l['id'] == listing_id_2 for l in marketplace_listings)
         self.assertTrue(found_in_marketplace, "Approved listing MUST be visible in Buyer Marketplace")
 
-        # 13. Verify direct detail access to published listing has traceability
+        # Verify public marketplace listing includes agent_review but NOT verification_key
+        mp_item = next(l for l in marketplace_listings if l['id'] == listing_id_2)
+        self.assertEqual(mp_item['agent_review'], inspection_review_text, "Public marketplace must show agent inspection review")
+        self.assertNotIn('verification_key', mp_item, "Public marketplace listing must NEVER contain verification key")
+
+        # 18. Verify direct detail access to published listing has traceability and agent_review
         res = self.client.get(f'/api/marketplace/{listing_id_2}')
         self.assertEqual(res.status_code, 200)
         detail_data = res.get_json()['data']
+        self.assertEqual(detail_data['agent_review'], inspection_review_text)
+        self.assertNotIn('verification_key', detail_data, "Listing detail must NEVER contain verification key")
         self.assertIn('agent_agency', detail_data)
         self.assertIn('agent_name', detail_data)
         self.assertIn('farm_name', detail_data)
         self.assertIn('farmer_name', detail_data)
 
-        # 14. Verify direct detail access to REJECTED listing returns 404
+        # 19. Verify direct detail access to REJECTED listing returns 404
         res = self.client.get(f'/api/marketplace/{listing_id}')
         self.assertEqual(res.status_code, 404, "Unpublished/rejected listing detail must return 404 to public buyer")
 

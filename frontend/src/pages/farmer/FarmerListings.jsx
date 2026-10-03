@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sprout, PlusCircle, Edit3, PauseCircle, PlayCircle, CheckCircle, Trash2, Eye, AlertTriangle, Clock } from 'lucide-react';
+import { Sprout, PlusCircle, Edit3, PauseCircle, PlayCircle, CheckCircle, Trash2, Eye, AlertTriangle, Clock, Key, Copy, ShieldCheck } from 'lucide-react';
 import { farmerAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -229,11 +229,55 @@ export const FarmerListings = () => {
                   </div>
                 )}
 
+                {/* Farmer Verification Key Card */}
+                {item.verification_key && (
+                  <div className="mb-3.5 p-3 bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50 border border-emerald-200/90 rounded-2xl">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 flex items-center gap-1">
+                        <Key className="w-3 h-3 text-emerald-600" />
+                        Verification Security Key
+                      </span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(item.verification_key);
+                          showToast('Verification key copied to clipboard!');
+                        }}
+                        className="text-[10px] font-bold text-emerald-700 hover:text-emerald-900 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-xs active:scale-95 flex items-center gap-1 transition-all"
+                        title="Copy Key"
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-sm font-black text-slate-900 tracking-widest bg-white/80 px-2 py-0.5 rounded border border-emerald-200/60">
+                        {item.verification_key}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        {item.status === 'PENDING_AGENT_REVIEW' ? 'Share with agent to approve' : 'Verified'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Agent Inspection Review Remarks */}
+                {item.agent_review && (
+                  <div className="mb-3.5 p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    <div className="font-bold text-slate-800 flex items-center gap-1.5 mb-1 text-[11px]">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Agent Inspection Notes ({item.agent_agency || item.agent_name || 'Verified Agent'})</span>
+                    </div>
+                    <p className="text-slate-600 text-[11px] leading-relaxed italic">
+                      "{item.agent_review}"
+                    </p>
+                  </div>
+                )}
+
                 {/* Pending Agent Review Notice */}
                 {item.status === 'PENDING_AGENT_REVIEW' && (
                   <div className="mb-4 p-2.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span className="text-[11px] font-medium">Pending Agent Review — Hidden from marketplace until approved.</span>
+                    <span className="text-[11px] font-medium">Pending Agent Review — Provide your security key to the visiting quality agent.</span>
                   </div>
                 )}
               </div>

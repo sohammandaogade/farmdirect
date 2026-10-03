@@ -72,6 +72,8 @@ def review_listing(current_user, listing_id):
     data = request.get_json() or {}
     action = (data.get('action') or data.get('decision') or '').strip().upper()
     rejection_reason = data.get('rejection_reason', '').strip()
+    entered_key = (data.get('verification_key') or data.get('key') or '').strip()
+    agent_review = (data.get('agent_review') or data.get('review_notes') or data.get('review') or '').strip()
 
     if action not in ['APPROVE', 'ACCEPT', 'REJECT']:
         return jsonify({
@@ -79,10 +81,30 @@ def review_listing(current_user, listing_id):
             'message': 'Invalid action. Must be either "ACCEPT" / "APPROVE" or "REJECT".'
         }), 400
 
+    # Compulsory Farmer Verification Key Check
+    if not entered_key:
+        return jsonify({
+            'success': False,
+            'message': 'Farmer verification key is compulsory. You must obtain this unique key directly from the farmer.'
+        }), 400
+
+    if listing.verification_key and entered_key.upper() != listing.verification_key.upper():
+        return jsonify({
+            'success': False,
+            'message': 'Invalid verification key. The key entered does not match the farmer\'s listing authorization key.'
+        }), 403
+
     now = datetime.utcnow()
 
     if action in ['APPROVE', 'ACCEPT']:
+        if not agent_review or len(agent_review) < 10:
+            return jsonify({
+                'success': False,
+                'message': 'Official agent inspection review notes are compulsory (minimum 10 characters). Please provide your quality and verification assessment.'
+            }), 400
+
         listing.status = 'PUBLISHED'
+        listing.agent_review = agent_review
         listing.rejection_reason = None
         listing.reviewed_at = now
         listing.reviewed_by_id = current_user.id
@@ -91,7 +113,7 @@ def review_listing(current_user, listing_id):
         notif = Notification(
             user_id=listing.farmer_id,
             title=f'Crop Request Accepted & Published: {listing.crop}',
-            message=f'Your {listing.crop} harvest ({listing.quantity:,.0f} kg) has been accepted and published to the public Marketplace by Agent {agent_agency}.',
+            message=f'Your {listing.crop} harvest ({listing.quantity:,.0f} kg) has been verified and published to the Marketplace by Agent {agent_agency}. Official Notes: "{agent_review[:100]}..."',
             type='listing_approved',
             link='/farmer/listings'
         )
@@ -112,6 +134,7 @@ def review_listing(current_user, listing_id):
             }), 400
 
         listing.status = 'REJECTED'
+        listing.agent_review = agent_review or rejection_reason
         listing.rejection_reason = rejection_reason
         listing.reviewed_at = now
         listing.reviewed_by_id = current_user.id

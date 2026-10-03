@@ -1,3 +1,4 @@
+import secrets
 from flask import Blueprint, request, jsonify
 from database import db
 from models import User, FarmerProfile, ProduceListing, Order, QualityInspection
@@ -57,7 +58,7 @@ def get_listings(current_user):
     listings = query.order_by(ProduceListing.created_at.desc()).all()
     return jsonify({
         'success': True,
-        'data': [l.to_dict(include_farmer=False) for l in listings]
+        'data': [l.to_dict(include_farmer=False, include_key=True) for l in listings]
     }), 200
 
 @farmers_bp.route('/listings', methods=['POST'])
@@ -172,6 +173,8 @@ def create_listing(current_user):
     if qty_val > 50000:
         return jsonify({'success': False, 'message': 'Maximum listing quantity is 50,000 kg.'}), 400
 
+    verification_key = f"VRF-{secrets.token_hex(3).upper()}"
+
     listing = ProduceListing(
         farmer_id=current_user.id,
         crop=crop,
@@ -184,7 +187,8 @@ def create_listing(current_user):
         availability_date=avail_date,
         description=description,
         image_url=image_url,
-        status=initial_status
+        status=initial_status,
+        verification_key=verification_key
     )
     db.session.add(listing)
     db.session.flush()
@@ -196,8 +200,8 @@ def create_listing(current_user):
 
     return jsonify({
         'success': True,
-        'message': 'Produce listing created successfully.' if initial_status == 'ACTIVE' else 'Listing created and held under review.',
-        'data': listing.to_dict(include_farmer=True)
+        'message': 'Produce listing created successfully.' if initial_status == 'ACTIVE' else 'Listing created and held under review. Keep your verification key safe.',
+        'data': listing.to_dict(include_farmer=True, include_key=True)
     }), 201
 
 @farmers_bp.route('/listings/<int:listing_id>', methods=['GET'])
@@ -209,7 +213,7 @@ def get_listing(current_user, listing_id):
         return jsonify({'success': False, 'message': 'Listing not found.'}), 404
     if listing.farmer_id != current_user.id:
         return jsonify({'success': False, 'message': 'Unauthorized to view this listing.'}), 403
-    return jsonify({'success': True, 'data': listing.to_dict(include_farmer=False)}), 200
+    return jsonify({'success': True, 'data': listing.to_dict(include_farmer=False, include_key=True)}), 200
 
 @farmers_bp.route('/listings/<int:listing_id>', methods=['PUT'])
 @token_required

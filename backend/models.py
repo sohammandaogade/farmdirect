@@ -148,6 +148,8 @@ class ProduceListing(db.Model):
     rejection_reason = db.Column(db.Text, nullable=True)
     reviewed_at = db.Column(db.DateTime, nullable=True)
     reviewed_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    verification_key = db.Column(db.String(30), nullable=True, index=True)
+    agent_review = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -157,7 +159,7 @@ class ProduceListing(db.Model):
     orders = db.relationship('Order', back_populates='listing')
     quality_inspections = db.relationship('QualityInspection', back_populates='listing', cascade='all, delete-orphan')
 
-    def to_dict(self, include_farmer=True):
+    def to_dict(self, include_farmer=True, include_key=False):
         data = {
             'id': self.id,
             'farmer_id': self.farmer_id,
@@ -180,9 +182,12 @@ class ProduceListing(db.Model):
             'reviewed_by_name': self.reviewed_by.name if self.reviewed_by else None,
             'agent_name': self.reviewed_by.name if self.reviewed_by else None,
             'agent_agency': (self.reviewed_by.agent_profile.agency_name if (self.reviewed_by and self.reviewed_by.agent_profile) else None),
+            'agent_review': self.agent_review,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
+        if include_key:
+            data['verification_key'] = self.verification_key
         if include_farmer and self.farmer:
             data['farmer_name'] = self.farmer.name
             data['farm_name'] = self.farmer.farmer_profile.farm_name if self.farmer.farmer_profile else self.farmer.name
