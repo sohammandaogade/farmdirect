@@ -224,12 +224,42 @@ def create_app(config_class=Config):
         # Idempotently seed baseline users and listings if enabled
         if app.config.get('ENABLE_DEMO_SEED', True):
             try:
-                from models import User
+                from models import User, AgentProfile
+                # Ensure baseline agent user and profile exist for evaluation
+                agent_user = User.query.filter_by(email="agent@farmdirect.demo").first()
+                if not agent_user:
+                    agent_user = User(
+                        name="Quality Verification Agent",
+                        email="agent@farmdirect.demo",
+                        phone="+91 98440 11223",
+                        role="agent",
+                        is_active=True
+                    )
+                    agent_user.set_password("agent123")
+                    db.session.add(agent_user)
+                    db.session.flush()
+                else:
+                    agent_user.role = "agent"
+                    agent_user.is_active = True
+                    agent_user.set_password("agent123")
+
+                if not AgentProfile.query.filter_by(user_id=agent_user.id).first():
+                    db.session.add(AgentProfile(
+                        user_id=agent_user.id,
+                        agency_name="MahaAgri Quality Verifiers & Certifications",
+                        operating_district="Pune & Western Maharashtra",
+                        license_number="AGY-MH-2026-8841",
+                        verification_badge="VERIFIED_GOV_AGENT"
+                    ))
+                db.session.commit()
+
+                # If baseline admin user is missing, run full seed
                 if User.query.filter_by(email="admin@farmdirect.demo").first() is None:
                     app.logger.info("Baseline admin user missing. Running idempotent database seeding...")
                     from seed import seed_database
                     seed_database()
             except Exception as e:
+                db.session.rollback()
                 app.logger.warning(f"Auto-seed verification warning: {e}")
 
     return app

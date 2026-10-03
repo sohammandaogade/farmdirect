@@ -49,7 +49,9 @@ export const Login = () => {
       showToast(`Logged in as ${user.name} (${user.role.toUpperCase()})`);
       redirectUser(user.role);
     } catch (err) {
-      setError('Demo login failed. Please ensure backend is running.');
+      const msg = err.response?.data?.message || err.message || 'Demo login failed. Please check credentials or try again.';
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setLoading(false);
     }
