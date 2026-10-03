@@ -10,91 +10,109 @@ requests_bp = Blueprint('requests', __name__, url_prefix='/api/requests')
 @token_required
 @role_required('buyer')
 def create_request(current_user):
-    data = request.get_json() or {}
-    listing_id = data.get('listing_id')
-    requested_quantity = data.get('requested_quantity')
-    offered_price = data.get('offered_price')
-    message = data.get('message', '').strip()
+    try:
+        data = request.get_json() or {}
+        listing_id = data.get('listing_id')
+        requested_quantity = data.get('requested_quantity')
+        offered_price = data.get('offered_price')
+        message = data.get('message', '').strip()
 
-    if not listing_id:
-        return jsonify({'success': False, 'message': 'Listing ID is required.'}), 400
+        if not listing_id:
+            return jsonify({'success': False, 'message': 'Listing ID is required.'}), 400
 
-    listing = ProduceListing.query.get(listing_id)
-    if not listing:
-        return jsonify({'success': False, 'message': 'Produce listing not found.'}), 404
+        try:
+            listing_id_int = int(listing_id)
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'message': 'Invalid Listing ID.'}), 400
 
-    if listing.status != 'ACTIVE' or listing.available_quantity <= 0:
-        return jsonify({'success': False, 'message': 'Produce listing is out of stock or inactive.'}), 400
+        listing = db.session.get(ProduceListing, listing_id_int)
+        if not listing:
+            return jsonify({'success': False, 'message': 'Produce listing not found.'}), 404
 
-    if not validate_positive_number(requested_quantity):
-        return jsonify({'success': False, 'message': 'Requested quantity must be greater than 0.'}), 400
+        avail = listing.available_quantity if listing.available_quantity is not None else listing.quantity
+        if listing.status != 'ACTIVE' or (avail is not None and avail <= 0):
+            return jsonify({'success': False, 'message': 'Produce listing is out of stock or inactive.'}), 400
 
-    requested_quantity = float(requested_quantity)
-    if requested_quantity > listing.available_quantity:
+        if not validate_positive_number(requested_quantity):
+            return jsonify({'success': False, 'message': 'Requested quantity must be greater than 0.'}), 400
+
+        requested_quantity = float(requested_quantity)
+        if avail is not None and requested_quantity > avail:
+            return jsonify({
+                'success': False,
+                'message': f'Requested quantity ({requested_quantity:,.0f} kg) exceeds available stock ({avail:,.0f} kg).'
+            }), 400
+
+        if not validate_positive_number(offered_price):
+            return jsonify({'success': False, 'message': 'Offer price must be greater than 0.'}), 400
+
+        offered_price = float(offered_price)
+
+        # Check if buyer already has an active pending/negotiating request for this listing
+        existing = PurchaseRequest.query.filter_by(
+            buyer_id=current_user.id,
+            listing_id=listing.id
+        ).filter(PurchaseRequest.status.in_(['PENDING', 'NEGOTIATING'])).first()
+        
+        if existing:
+            return jsonify({
+                'success': False,
+                'message': 'You already have an active request in progress for this listing.',
+                'data': existing.to_dict()
+            }), 400
+
+        # Create Purchase Request
+        purchase_request = PurchaseRequest(
+            buyer_id=current_user.id,
+            listing_id=listing.id,
+            requested_quantity=requested_quantity,
+            offered_price=offered_price,
+            message=message or f'Offer of ₹{offered_price}/kg for {requested_quantity:,.0f} kg of {listing.crop}.',
+            status='PENDING'
+        )
+        db.session.add(purchase_request)
+        db.session.flush()
+
+        # Create first Negotiation record
+        initial_offer = Negotiation(
+            request_id=purchase_request.id,
+            sender_id=current_user.id,
+            sender_role='buyer',
+            offered_price=offered_price,
+            offered_quantity=requested_quantity,
+            message=purchase_request.message,
+            status='PENDING'
+        )
+        db.session.add(initial_offer)
+
+        # Notify Farmer if listing has a farmer_id
+        if listing.farmer_id:
+            try:
+                farmer_notification = Notification(
+                    user_id=listing.farmer_id,
+                    title=f'New Purchase Request: {listing.crop}',
+                    message=f'{(current_user.name or "Buyer")} sent an offer of ₹{offered_price}/kg for {requested_quantity:,.0f} kg of {listing.crop}.',
+                    type='request',
+                    link='/farmer/requests'
+                )
+                db.session.add(farmer_notification)
+            except Exception:
+                pass
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Purchase request sent successfully.',
+            'data': purchase_request.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
         return jsonify({
             'success': False,
-            'message': f'Requested quantity ({requested_quantity:,.0f} kg) exceeds available stock ({listing.available_quantity:,.0f} kg).'
-        }), 400
-
-    if not validate_positive_number(offered_price):
-        return jsonify({'success': False, 'message': 'Offer price must be greater than 0.'}), 400
-
-    offered_price = float(offered_price)
-
-    # Check if buyer already has an active pending/negotiating request for this listing
-    existing = PurchaseRequest.query.filter_by(
-        buyer_id=current_user.id,
-        listing_id=listing_id
-    ).filter(PurchaseRequest.status.in_(['PENDING', 'NEGOTIATING'])).first()
-    
-    if existing:
-        return jsonify({
-            'success': False,
-            'message': 'You already have an active request in progress for this listing.',
-            'data': existing.to_dict()
-        }), 400
-
-    # Create Purchase Request
-    purchase_request = PurchaseRequest(
-        buyer_id=current_user.id,
-        listing_id=listing.id,
-        requested_quantity=requested_quantity,
-        offered_price=offered_price,
-        message=message or f'Offer of ₹{offered_price}/kg for {requested_quantity:,.0f} kg of {listing.crop}.',
-        status='PENDING'
-    )
-    db.session.add(purchase_request)
-    db.session.flush()
-
-    # Create first Negotiation record
-    initial_offer = Negotiation(
-        request_id=purchase_request.id,
-        sender_id=current_user.id,
-        sender_role='buyer',
-        offered_price=offered_price,
-        offered_quantity=requested_quantity,
-        message=purchase_request.message,
-        status='PENDING'
-    )
-    db.session.add(initial_offer)
-
-    # Notify Farmer
-    farmer_notification = Notification(
-        user_id=listing.farmer_id,
-        title=f'New Purchase Request: {listing.crop}',
-        message=f'{current_user.name} sent an offer of ₹{offered_price}/kg for {requested_quantity:,.0f} kg of {listing.crop}.',
-        type='request',
-        link=f'/farmer/requests'
-    )
-    db.session.add(farmer_notification)
-
-    db.session.commit()
-
-    return jsonify({
-        'success': True,
-        'message': 'Purchase request sent successfully.',
-        'data': purchase_request.to_dict()
-    }), 201
+            'message': f'Failed to process purchase request: {str(e)}'
+        }), 500
 
 @requests_bp.route('', methods=['GET'])
 @token_required

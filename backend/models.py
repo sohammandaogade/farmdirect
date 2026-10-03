@@ -200,10 +200,13 @@ class PurchaseRequest(db.Model):
                 if self.listing.farmer:
                     data['farmer_name'] = self.listing.farmer.name
                     data['farm_name'] = self.listing.farmer.farmer_profile.farm_name if self.listing.farmer.farmer_profile else self.listing.farmer.name
-            data['negotiation_count'] = len(self.negotiations)
-            if self.order:
-                data['order_id'] = self.order.id
-                data['order_number'] = self.order.order_number
+            data['negotiation_count'] = len(self.negotiations) if self.negotiations else 0
+            try:
+                if self.order:
+                    data['order_id'] = self.order.id
+                    data['order_number'] = self.order.order_number
+            except Exception:
+                pass
         return data
 
 

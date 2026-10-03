@@ -122,7 +122,43 @@ def create_app(config_class=Config):
         try:
             from sqlalchemy import text, inspect
             inspector = inspect(db.engine)
-            if 'quality_inspections' in inspector.get_table_names():
+            table_names = inspector.get_table_names()
+            is_pg = 'postgresql' in str(db.engine.url)
+
+            # Auto-migrate 'orders' table for post-delivery ratings
+            if 'orders' in table_names:
+                existing_cols = {c['name'] for c in inspector.get_columns('orders')}
+                order_cols = [
+                    ('rating', 'INTEGER'),
+                    ('review_text', 'TEXT'),
+                    ('rated_at', 'TIMESTAMP' if is_pg else 'DATETIME')
+                ]
+                with db.engine.connect() as conn:
+                    for col_name, col_type in order_cols:
+                        if col_name not in existing_cols:
+                            try:
+                                conn.execute(text(f"ALTER TABLE orders ADD COLUMN {col_name} {col_type}"))
+                            except Exception as ex:
+                                app.logger.warning(f"Could not add {col_name} to orders: {ex}")
+                    conn.commit()
+
+            # Auto-migrate 'produce_listings' table
+            if 'produce_listings' in table_names:
+                existing_cols = {c['name'] for c in inspector.get_columns('produce_listings')}
+                produce_cols = [
+                    ('available_quantity', 'FLOAT')
+                ]
+                with db.engine.connect() as conn:
+                    for col_name, col_type in produce_cols:
+                        if col_name not in existing_cols:
+                            try:
+                                conn.execute(text(f"ALTER TABLE produce_listings ADD COLUMN {col_name} {col_type}"))
+                            except Exception as ex:
+                                app.logger.warning(f"Could not add {col_name} to produce_listings: {ex}")
+                    conn.commit()
+
+            # Auto-migrate 'quality_inspections' table
+            if 'quality_inspections' in table_names:
                 existing_cols = {c['name'] for c in inspector.get_columns('quality_inspections')}
                 new_cols = [
                     ('expected_crop', 'VARCHAR(100)'),
@@ -138,8 +174,20 @@ def create_app(config_class=Config):
                 with db.engine.connect() as conn:
                     for col_name, col_type in new_cols:
                         if col_name not in existing_cols:
-                            conn.execute(text(f"ALTER TABLE quality_inspections ADD COLUMN {col_name} {col_type}"))
+                            try:
+                                conn.execute(text(f"ALTER TABLE quality_inspections ADD COLUMN {col_name} {col_type}"))
+                            except Exception as ex:
+                                app.logger.warning(f"Could not add {col_name} to quality_inspections: {ex}")
                     conn.commit()
+
+            # Verify 'order_complaints' table
+            if 'order_complaints' not in table_names:
+                try:
+                    from models import OrderComplaint
+                    OrderComplaint.__table__.create(db.engine)
+                    app.logger.info("Explicitly created missing table 'order_complaints'.")
+                except Exception as ex:
+                    app.logger.warning(f"OrderComplaint table creation notice: {ex}")
         except Exception as e:
             app.logger.warning(f"Schema column verification warning: {e}")
 
