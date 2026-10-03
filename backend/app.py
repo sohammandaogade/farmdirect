@@ -162,19 +162,21 @@ def create_app(config_class=Config):
                                 conn.execute(text(f"ALTER TABLE produce_listings ADD COLUMN {col_name} {col_type}"))
                             except Exception as ex:
                                 app.logger.warning(f"Could not add {col_name} to produce_listings: {ex}")
-                    # Auto-populate verification keys for any listings missing them
-                    try:
-                        import secrets
-                        from models import ProduceListing
-                        listings_without_keys = ProduceListing.query.filter(ProduceListing.verification_key.is_(None)).all()
-                        for pl in listings_without_keys:
-                            pl.verification_key = f"VRF-{secrets.token_hex(3).upper()}"
-                        if listings_without_keys:
-                            db.session.commit()
-                            app.logger.info(f"Auto-generated verification keys for {len(listings_without_keys)} existing produce listings.")
-                    except Exception as ex:
-                        app.logger.warning(f"Verification key auto-population notice: {ex}")
                     conn.commit()
+
+                # Auto-populate verification keys for any listings missing them (after ALTER TABLE commits)
+                try:
+                    import secrets
+                    from models import ProduceListing
+                    listings_without_keys = ProduceListing.query.filter(ProduceListing.verification_key.is_(None)).all()
+                    for pl in listings_without_keys:
+                        pl.verification_key = f"VRF-{secrets.token_hex(3).upper()}"
+                    if listings_without_keys:
+                        db.session.commit()
+                        app.logger.info(f"Auto-generated verification keys for {len(listings_without_keys)} existing produce listings.")
+                except Exception as ex:
+                    db.session.rollback()
+                    app.logger.warning(f"Verification key auto-population notice: {ex}")
 
             # Auto-migrate 'quality_inspections' table
             if 'quality_inspections' in table_names:
